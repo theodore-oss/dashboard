@@ -68,7 +68,8 @@ body { font-family: 'Sora', sans-serif; background: var(--bg); color: var(--text
 
 /* ── KPI STRIP ── */
 .kpi-strip { display: grid; grid-template-columns: repeat(4,1fr); gap: 1px; background: var(--border); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; margin-bottom: 16px; box-shadow: var(--shadow); }
-.kpi-cell { background: var(--surface); padding: 16px 18px; cursor: default; }
+.kpi-cell { background: var(--surface); padding: 16px 18px; cursor: default; transition: background .15s; }
+.kpi-cell[onclick]:hover { background: #f0ece4; }
 .kpi-cell.active { background: var(--accent-l); }
 .kpi-n { font-size: 9px; font-weight: 600; color: var(--accent); letter-spacing: .06em; text-transform: uppercase; margin-bottom: 4px; display: flex; align-items: center; gap: 5px; }
 .kpi-n::before { content: attr(data-n); width: 16px; height: 16px; border-radius: 50%; background: var(--accent); color: #fff; font-size: 9px; display: flex; align-items: center; justify-content: center; font-weight: 600; flex-shrink: 0; }
@@ -109,6 +110,7 @@ body { font-family: 'Sora', sans-serif; background: var(--bg); color: var(--text
 .rk-val { font-size: 20px; font-weight: 600; color: var(--accent); display: block; line-height: 1; }
 .rk-val.ok { color: var(--ok); } .rk-val.bad { color: var(--danger); }
 .rk-lbl { font-size: 9px; font-weight: 500; color: var(--muted); text-transform: uppercase; letter-spacing: .07em; display: block; margin-top: 3px; }
+.rk-delta { font-size: 9px; display: block; margin-top: 3px; font-weight: 400; }
 
 /* ── SECTION DIVIDER (inside card) ── */
 .section-sep { font-size: 10px; font-weight: 500; color: var(--muted); text-transform: uppercase; letter-spacing: .1em; margin: 18px 0 12px; padding-top: 16px; border-top: 1px solid var(--border); }
@@ -226,8 +228,9 @@ footer { max-width: 1040px; margin: 32px auto 0; padding-top: 20px; border-top: 
 <!-- TABS -->
 <div class="tabs">
   <button class="tab on" onclick="showTab('overview',this)">Vue d'ensemble</button>
-  <button class="tab" onclick="showTab('ops',this)">Opérations</button>
-  <button class="tab" onclick="showTab('finance',this)">Finances</button>
+  <button class="tab" onclick="showTab('ca',this)">Analyse CA</button>
+  <button class="tab" onclick="showTab('fnb',this)">F&B Cost</button>
+  <button class="tab" onclick="showTab('staff',this)">Staff Cost</button>
 </div>
 
 <!-- ══════════════════════════════════════════ VUE D'ENSEMBLE -->
@@ -235,23 +238,23 @@ footer { max-width: 1040px; margin: 32px auto 0; padding-top: 20px; border-top: 
 
   <!-- KPI STRIP -->
   <div class="kpi-strip">
-    <div class="kpi-cell">
+    <div class="kpi-cell" onclick="scrollToBloc(1)" style="cursor:pointer;" title="Voir le détail">
       <div class="kpi-n" data-n="1">CA HT</div>
       <div class="kpi-cell-val" id="kv-ca">36 583 €</div>
       <div class="kpi-cell-delta dn" id="kd-ca">▼ –6,6 % vs semaine préc.</div>
     </div>
-    <div class="kpi-cell">
+    <div class="kpi-cell" onclick="scrollToBloc(2)" style="cursor:pointer;" title="Voir le détail">
       <div class="kpi-n" data-n="2">Réservations</div>
       <div class="kpi-cell-val" id="kv-cov">812</div>
       <div class="kpi-cell-delta neu" id="kd-cov">Couverts servis</div>
       <div style="margin-top:6px;font-size:11px;color:var(--muted);">Remplissage : <strong style="color:var(--accent)" id="kv-fill">78 %</strong></div>
     </div>
-    <div class="kpi-cell">
+    <div class="kpi-cell" onclick="scrollToBloc(3)" style="cursor:pointer;" title="Voir le détail">
       <div class="kpi-n" data-n="3">Ticket moyen</div>
       <div class="kpi-cell-val" id="kv-tkt">45,06 €</div>
       <div class="kpi-cell-delta neu" id="kd-tkt">Déj. 34,15 € · Dîner 50,17 €</div>
     </div>
-    <div class="kpi-cell">
+    <div class="kpi-cell" onclick="scrollToBloc(4)" style="cursor:pointer;" title="Voir le détail">
       <div class="kpi-n" data-n="4">Note Google</div>
       <div class="kpi-cell-val" id="kv-google">4,8 ★</div>
       <div class="kpi-cell-delta up" id="kd-google">= stable vs semaine préc.</div>
@@ -274,13 +277,13 @@ footer { max-width: 1040px; margin: 32px auto 0; padding-top: 20px; border-top: 
       <div class="pc-comps">
         <div class="pc-comp"><span class="pcc-lbl">Food cost</span><span class="pcc-val">27,3 %</span></div>
         <div class="pc-comp"><span class="pcc-lbl">Labour cost</span><span class="pcc-val">34,1 %</span></div>
-        <div class="pc-comp"><span class="pcc-lbl">vs S22</span><span class="pcc-val" style="color:#f9c74f">–1,2 pts</span></div>
+        <div class="pc-comp"><span class="pcc-lbl">vs S12</span><span class="pcc-val" style="color:#f9c74f">–1,2 pts</span></div>
       </div>
     </div>
   </div>
 
   <!-- BLOC 1 : CA HT -->
-  <div class="card">
+  <div class="card" id="bloc-1">
     <div class="card-header">
       <div class="card-num">1</div>
       <span class="card-title" id="day-chart-title">Chiffre d'affaires HT · par jour</span>
@@ -302,7 +305,7 @@ footer { max-width: 1040px; margin: 32px auto 0; padding-top: 20px; border-top: 
   </div>
 
   <!-- BLOC 2 : RÉSERVATIONS -->
-  <div class="card">
+  <div class="card" id="bloc-2">
     <div class="card-header">
       <div class="card-num">2</div>
       <span class="card-title">Réservations & couverts</span>
@@ -310,10 +313,26 @@ footer { max-width: 1040px; margin: 32px auto 0; padding-top: 20px; border-top: 
     </div>
     <div class="card-body">
       <div class="resa-kpis">
-        <div class="rk"><span class="rk-val">812</span><span class="rk-lbl">Couverts</span></div>
-        <div class="rk"><span class="rk-val ok">78 %</span><span class="rk-lbl">Remplissage</span></div>
-        <div class="rk"><span class="rk-val">186</span><span class="rk-lbl">Réservations</span></div>
-        <div class="rk"><span class="rk-val">3,4 j</span><span class="rk-lbl">Délai moy.</span></div>
+        <div class="rk">
+          <span class="rk-val" id="rk-cov">812</span>
+          <span class="rk-lbl">Couverts</span>
+          <span class="rk-delta neu" id="rk-cov-d">—</span>
+        </div>
+        <div class="rk">
+          <span class="rk-val ok" id="rk-fill">78 %</span>
+          <span class="rk-lbl">Remplissage</span>
+          <span class="rk-delta neu" id="rk-fill-d">—</span>
+        </div>
+        <div class="rk">
+          <span class="rk-val" id="rk-resa">186</span>
+          <span class="rk-lbl">Réservations</span>
+          <span class="rk-delta neu" id="rk-resa-d">—</span>
+        </div>
+        <div class="rk">
+          <span class="rk-val" id="rk-delay">3,4 j</span>
+          <span class="rk-lbl">Délai moy.</span>
+          <span class="rk-delta neu" id="rk-delay-d">—</span>
+        </div>
       </div>
 
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:32px;">
@@ -336,7 +355,7 @@ footer { max-width: 1040px; margin: 32px auto 0; padding-top: 20px; border-top: 
   </div>
 
   <!-- BLOC 3 : TICKET MOYEN -->
-  <div class="card">
+  <div class="card" id="bloc-3">
     <div class="card-header">
       <div class="card-num">3</div>
       <span class="card-title">Ticket moyen · Déjeuner & Dîner</span>
@@ -352,7 +371,7 @@ footer { max-width: 1040px; margin: 32px auto 0; padding-top: 20px; border-top: 
   </div>
 
   <!-- BLOC 4 : NOTE GOOGLE -->
-  <div class="card">
+  <div class="card" id="bloc-4">
     <div class="card-header">
       <div class="card-num">4</div>
       <span class="card-title">Note Google · évolution</span>
@@ -376,7 +395,7 @@ footer { max-width: 1040px; margin: 32px auto 0; padding-top: 20px; border-top: 
   </div>
 
   <!-- BLOC 5 : RATIOS -->
-  <div class="card">
+  <div class="card" id="bloc-5">
     <div class="card-header">
       <div class="card-num">5</div>
       <span class="card-title">Ratios de gestion</span>
@@ -423,7 +442,7 @@ footer { max-width: 1040px; margin: 32px auto 0; padding-top: 20px; border-top: 
   </div>
 
   <!-- BLOC 6 : TOP 5 PLATS -->
-  <div class="card">
+  <div class="card" id="bloc-6">
     <div class="card-header">
       <div class="card-num">6</div>
       <span class="card-title">Top 5 plats de la semaine</span>
@@ -442,133 +461,394 @@ footer { max-width: 1040px; margin: 32px auto 0; padding-top: 20px; border-top: 
 
 </div><!-- /overview -->
 
-<!-- ══════════════════════════════════════════ OPÉRATIONS -->
-<div id="ops" class="view">
-  <div class="grid-2">
-    <div class="card">
-      <div class="card-header"><div class="card-num">1</div><span class="card-title">Équipe & coûts salariaux</span><span class="card-src">Skello <span class="mock-tag">fictif</span></span></div>
-      <div class="card-body">
-        <table class="staff-tbl">
-          <thead><tr><th>Poste</th><th>Effectif</th><th>Heures</th><th>Coût</th></tr></thead>
-          <tbody>
-            <tr><td>Cuisine</td><td>6</td><td>248 h<span class="ot-tag">+8h supp.</span></td><td>4 960 €</td></tr>
-            <tr><td>Salle</td><td>5</td><td>190 h<span class="ot-tag">+4h supp.</span></td><td>3 420 €</td></tr>
-            <tr><td>Bar</td><td>2</td><td>72 h</td><td>1 296 €</td></tr>
-            <tr><td>Plonge</td><td>2</td><td>80 h</td><td>1 360 €</td></tr>
-            <tr><td>Total</td><td>15</td><td>590 h</td><td>13 036 €</td></tr>
-          </tbody>
-        </table>
-        <div class="info-box">Staff cost : <strong>13 036 €</strong> · Labour cost : <strong>34,1 %</strong> · Heures supp. : <strong style="color:var(--danger)">12 h</strong></div>
-      </div>
-    </div>
-    <div class="card">
-      <div class="card-header"><div class="card-num">2</div><span class="card-title">Réservations par service</span><span class="card-src">Zenchef <span class="mock-tag">fictif</span></span></div>
-      <div class="card-body">
-        <div class="bar-rows" style="margin-bottom:16px;">
-          <div style="font-size:10px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:8px;">Déjeuner</div>
-          <div class="br"><span class="br-lbl">Lun – Ven</span><div class="br-track"><div class="br-fill" style="width:65%"></div></div><span class="br-val">65 %</span></div>
-          <div class="br"><span class="br-lbl">Week-end</span><div class="br-track"><div class="br-fill" style="width:88%"></div></div><span class="br-val">88 %</span></div>
-          <div style="font-size:10px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin:14px 0 8px;">Dîner</div>
-          <div class="br"><span class="br-lbl">Lun – Ven</span><div class="br-track"><div class="br-fill g" style="width:74%"></div></div><span class="br-val">74 %</span></div>
-          <div class="br"><span class="br-lbl">Week-end</span><div class="br-track"><div class="br-fill g" style="width:96%"></div></div><span class="br-val">96 %</span></div>
-        </div>
-        <div class="info-box">Creux : lundi & dimanche soir · Potentiel ≈ +25 % CA si alignés sur le niveau du jeudi</div>
-      </div>
-    </div>
-  </div>
-  <div class="card">
-    <div class="card-header"><div class="card-num">3</div><span class="card-title">CA moyen par jour · depuis l'ouverture</span><span class="card-src">Lightspeed · données réelles</span></div>
-    <div class="card-body">
-      <div class="bar-rows">
-        <div class="br"><span class="br-lbl">Lundi</span><div class="br-track"><div class="br-fill" style="width:53%"></div></div><span class="br-val">3 975 €</span></div>
-        <div class="br"><span class="br-lbl">Mardi</span><div class="br-track"><div class="br-fill" style="width:64%"></div></div><span class="br-val">4 812 €</span></div>
-        <div class="br"><span class="br-lbl">Mercredi</span><div class="br-track"><div class="br-fill" style="width:69%"></div></div><span class="br-val">5 183 €</span></div>
-        <div class="br"><span class="br-lbl">Jeudi</span><div class="br-track"><div class="br-fill" style="width:69%"></div></div><span class="br-val">5 246 €</span></div>
-        <div class="br"><span class="br-lbl">Vendredi</span><div class="br-track"><div class="br-fill" style="width:77%"></div></div><span class="br-val">5 832 €</span></div>
-        <div class="br"><span class="br-lbl">Samedi</span><div class="br-track"><div class="br-fill" style="width:100%"></div></div><span class="br-val">7 565 €</span></div>
-        <div class="br"><span class="br-lbl">Dimanche</span><div class="br-track"><div class="br-fill g" style="width:49%"></div></div><span class="br-val">3 719 €</span></div>
-      </div>
-    </div>
-  </div>
-</div><!-- /ops -->
+<!-- ══════════════════════════════════════════ ONGLET : ANALYSE CA -->
+<div id="ca" class="view">
 
-<!-- ══════════════════════════════════════════ FINANCES -->
-<div id="finance" class="view">
-  <div class="grid-3">
-    <div class="card">
-      <div class="card-header"><div class="card-num">1</div><span class="card-title">CA hebdomadaire</span><span class="card-src">Lightspeed · réel</span></div>
-      <div class="card-body">
-        <div class="fin-rows">
-          <div class="fin-row"><span class="fn-lbl">CA HT semaine</span><span class="fn-val acc">36 583 €</span></div>
-          <div class="fin-row"><span class="fn-lbl">TVA collectée (10 %)</span><span class="fn-val">3 658 €</span></div>
-          <div class="fin-row"><span class="fn-lbl">CA TTC</span><span class="fn-val">40 241 €</span></div>
-          <div class="fin-row"><span class="fn-lbl">vs semaine préc.</span><span class="fn-val bad2">– 6,6 %</span></div>
-          <div class="fin-row"><span class="fn-lbl">CA annualisé (×360/7)</span><span class="fn-val acc">∼ 1,88 M€</span></div>
-          <div class="fin-row"><span class="fn-lbl">Meilleur jour (Sam)</span><span class="fn-val ok2">8 629 €</span></div>
-        </div>
+  <!-- KPI strip CA — 4 cases -->
+  <div class="kpi-strip" style="margin-bottom:16px;">
+    <div class="kpi-cell" onclick="scrollToBloc('ca-1')" style="cursor:pointer;">
+      <div class="kpi-n" data-n="1">CA total</div>
+      <div class="kpi-cell-val" id="ca-kv1">36 583 €</div>
+      <div class="kpi-cell-delta dn" id="ca-kd1">▼ –6,6 % vs période préc.</div>
+    </div>
+    <div class="kpi-cell" onclick="scrollToBloc('ca-2')" style="cursor:pointer;">
+      <div class="kpi-n" data-n="2">Ticket moyen</div>
+      <div class="kpi-cell-val" id="ca-kv2">45,06 €</div>
+      <div class="kpi-cell-delta neu" id="ca-kd2">Déj. 34,15 € · Dîner 50,17 €</div>
+    </div>
+    <div class="kpi-cell" onclick="scrollToBloc('ca-3')" style="cursor:pointer;">
+      <div class="kpi-n" data-n="3">Top cuisine</div>
+      <div style="margin-top:6px;display:flex;flex-direction:column;gap:3px;">
+        <div style="font-size:11px;font-weight:500;color:var(--text);">1. Jamón ibérico bellota</div>
+        <div style="font-size:11px;color:var(--text);">2. Tortilla de Rosario</div>
+        <div style="font-size:11px;color:var(--muted);">3. Lentejas</div>
       </div>
     </div>
-    <div class="card">
-      <div class="card-header"><div class="card-num">2</div><span class="card-title">Food cost & achats</span><span class="card-src">Pennylane <span class="mock-tag">fictif</span></span></div>
-      <div class="card-body">
-        <div class="fin-rows" style="margin-bottom:14px;">
-          <div class="fin-row"><span class="fn-lbl">Factures reçues</span><span class="fn-val">11</span></div>
-          <div class="fin-row"><span class="fn-lbl">Fournisseurs actifs</span><span class="fn-val">4</span></div>
-          <div class="fin-row"><span class="fn-lbl">Total achats HT</span><span class="fn-val">9 270 €</span></div>
-          <div class="fin-row"><span class="fn-lbl">Réglées</span><span class="fn-val ok2">7 450 €</span></div>
-          <div class="fin-row"><span class="fn-lbl">En attente</span><span class="fn-val bad2">1 820 € · 3 fact.</span></div>
-          <div class="fin-row"><span class="fn-lbl">Food cost / CA</span><span class="fn-val ok2">27,3 %</span></div>
-        </div>
-        <div class="bar-rows">
-          <div class="br"><span class="br-lbl">Fournisseur A</span><div class="br-track"><div class="br-fill" style="width:68%"></div></div><span class="br-val">3 240 €</span></div>
-          <div class="br"><span class="br-lbl">Fournisseur B</span><div class="br-track"><div class="br-fill" style="width:42%"></div></div><span class="br-val">2 010 €</span></div>
-          <div class="br"><span class="br-lbl">Fournisseur C</span><div class="br-track"><div class="br-fill" style="width:30%"></div></div><span class="br-val">1 440 €</span></div>
-          <div class="br"><span class="br-lbl">Autres</span><div class="br-track"><div class="br-fill g" style="width:16%"></div></div><span class="br-val">760 €</span></div>
-        </div>
-      </div>
-    </div>
-    <div class="card">
-      <div class="card-header"><div class="card-num">3</div><span class="card-title">Masse salariale</span><span class="card-src">Skello <span class="mock-tag">fictif</span></span></div>
-      <div class="card-body">
-        <div class="fin-rows">
-          <div class="fin-row"><span class="fn-lbl">Coût total semaine</span><span class="fn-val acc">13 036 €</span></div>
-          <div class="fin-row"><span class="fn-lbl">Heures planifiées</span><span class="fn-val">578 h</span></div>
-          <div class="fin-row"><span class="fn-lbl">Heures supplémentaires</span><span class="fn-val bad2">12 h</span></div>
-          <div class="fin-row"><span class="fn-lbl">Labour cost / CA</span><span class="fn-val ok2">34,1 %</span></div>
-          <div class="fin-row"><span class="fn-lbl">Cuisine</span><span class="fn-val">4 960 €</span></div>
-          <div class="fin-row"><span class="fn-lbl">Salle</span><span class="fn-val">3 420 €</span></div>
-          <div class="fin-row"><span class="fn-lbl">Bar + Plonge</span><span class="fn-val">2 656 €</span></div>
-        </div>
+    <div class="kpi-cell" onclick="scrollToBloc('ca-3')" style="cursor:pointer;">
+      <div class="kpi-n" data-n="4">Top boissons</div>
+      <div style="margin-top:6px;display:flex;flex-direction:column;gap:3px;">
+        <div style="font-size:11px;font-weight:500;color:var(--text);">1. Vino tinto de la casa</div>
+        <div style="font-size:11px;color:var(--text);">2. Cerveza Estrella</div>
+        <div style="font-size:11px;color:var(--muted);">3. Vermut</div>
       </div>
     </div>
   </div>
-  <div class="prime-card">
-    <div class="pc-left">
-      <h3>Prime Cost · synthèse</h3>
-      <div class="pc-val">61,4 %</div>
-      <div class="pc-sub">Food 9 270 € (27,3 %) + Salaires 13 036 € (34,1 %) / CA HT 36 583 €</div>
+
+  <!-- BLOC CA-1 : CA TOTAL -->
+  <div class="card" id="bloc-ca-1">
+    <div class="card-header">
+      <div class="card-num">1</div>
+      <span class="card-title" id="ca1-title">CA HT · par jour</span>
+      <span class="card-src">Lightspeed · données réelles</span>
     </div>
-    <div class="pc-right">
-      <div style="width:220px">
-        <div class="gauge-labels"><span>Excellent &lt;55</span><span>OK &lt;65</span><span>Alerte &gt;65</span></div>
-        <div class="gauge"><div class="gauge-fill" style="width:61.4%"></div></div>
-      </div>
-      <div class="pc-comps">
-        <div class="pc-comp"><span class="pcc-lbl">Coûts prime totaux</span><span class="pcc-val">22 306 €</span></div>
-        <div class="pc-comp"><span class="pcc-lbl">Marge brute estimée</span><span class="pcc-val" style="color:#f9c74f">38,6 %</span></div>
-      </div>
-    </div>
-  </div>
-  <div class="card">
-    <div class="card-header"><div class="card-num">4</div><span class="card-title">Évolution mensuelle · oct. 2025 – mars 2026</span><span class="card-src">Lightspeed · réel</span></div>
     <div class="card-body">
-      <div class="chart-h160"><canvas id="monthChart"></canvas></div>
+      <div class="cleg">
+        <div class="cleg-item"><span class="cleg-line" style="background:#8B1A1A;height:2.5px;"></span>Total</div>
+        <div class="cleg-item"><span class="cleg-dashed" style="border-color:#8B1A1A;"></span>Dîner</div>
+        <div class="cleg-item"><span class="cleg-dashed" style="border-color:#C8963C;"></span>Déjeuner</div>
+        <div class="cleg-item"><span class="cleg-dashed" style="border-color:rgba(140,136,130,0.55);"></span>Période préc.</div>
+      </div>
+      <div class="chart-h160"><canvas id="ca1Chart"></canvas></div>
+
+      <!-- Répartition déjeuner / dîner — visuel -->
+      <div class="section-sep">Répartition déjeuner / dîner</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;">
+        <div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:14px 16px;display:flex;align-items:center;gap:14px;">
+          <div style="font-size:26px;line-height:1;flex-shrink:0;">☀️</div>
+          <div>
+            <div style="font-size:9px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px;">Déjeuner</div>
+            <div style="font-size:20px;font-weight:600;color:var(--accent);" id="ca1-midi-ca">8 879 €</div>
+            <div style="font-size:10px;color:var(--muted);margin-top:2px;" id="ca1-midi-sub">24 % du CA · 34,15 € / cvt</div>
+          </div>
+        </div>
+        <div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:14px 16px;display:flex;align-items:center;gap:14px;">
+          <div style="font-size:26px;line-height:1;flex-shrink:0;">🌙</div>
+          <div>
+            <div style="font-size:9px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px;">Dîner</div>
+            <div style="font-size:20px;font-weight:600;color:var(--accent);" id="ca1-soir-ca">27 691 €</div>
+            <div style="font-size:10px;color:var(--muted);margin-top:2px;" id="ca1-soir-sub">76 % du CA · 50,17 € / cvt</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Répartition cuisine / boissons — même mise en forme -->
+      <div class="section-sep">Répartition cuisine / boissons</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+        <div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:14px 16px;display:flex;align-items:center;gap:14px;">
+          <div style="font-size:26px;line-height:1;flex-shrink:0;">🍽️</div>
+          <div>
+            <div style="font-size:9px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px;">Cuisine</div>
+            <div style="font-size:20px;font-weight:600;color:var(--accent);" id="ca1-food-val">30 364 €</div>
+            <div style="font-size:10px;color:var(--muted);margin-top:2px;" id="ca1-food-pct">83 % du CA</div>
+          </div>
+        </div>
+        <div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:14px 16px;display:flex;align-items:center;gap:14px;">
+          <div style="font-size:26px;line-height:1;flex-shrink:0;">🍷</div>
+          <div>
+            <div style="font-size:9px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px;">Boissons</div>
+            <div style="font-size:20px;font-weight:600;color:var(--accent);" id="ca1-bev-val">6 219 €</div>
+            <div style="font-size:10px;color:var(--muted);margin-top:2px;" id="ca1-bev-pct">17 % du CA</div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
-</div><!-- /finance -->
+
+  <!-- BLOC CA-2 : TICKET MOYEN -->
+  <div class="card" id="bloc-ca-2">
+    <div class="card-header">
+      <div class="card-num">2</div>
+      <span class="card-title">Ticket moyen · détail & historique</span>
+      <span class="card-src">Lightspeed · données réelles</span>
+    </div>
+    <div class="card-body">
+
+      <!-- Segmentation service -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px;">
+        <div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:14px 16px;display:flex;align-items:center;gap:14px;">
+          <div style="font-size:26px;line-height:1;flex-shrink:0;">☀️</div>
+          <div>
+            <div style="font-size:9px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px;">Déjeuner</div>
+            <div style="font-size:22px;font-weight:600;color:var(--accent);" id="ca2-tkt-midi">34,15 €</div>
+            <div style="font-size:10px;color:var(--muted);margin-top:2px;">par couvert</div>
+          </div>
+        </div>
+        <div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:14px 16px;display:flex;align-items:center;gap:14px;">
+          <div style="font-size:26px;line-height:1;flex-shrink:0;">🌙</div>
+          <div>
+            <div style="font-size:9px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px;">Dîner</div>
+            <div style="font-size:22px;font-weight:600;color:var(--accent);" id="ca2-tkt-soir">50,17 €</div>
+            <div style="font-size:10px;color:var(--muted);margin-top:2px;">par couvert</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Segmentation type -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px;">
+        <div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:14px 16px;display:flex;align-items:center;gap:14px;">
+          <div style="font-size:26px;line-height:1;flex-shrink:0;">🍽️</div>
+          <div>
+            <div style="font-size:9px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px;">Cuisine</div>
+            <div style="font-size:22px;font-weight:600;color:var(--accent);" id="ca2-tkt-food">37,50 €</div>
+            <div style="font-size:10px;color:var(--muted);margin-top:2px;">par couvert</div>
+          </div>
+        </div>
+        <div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:14px 16px;display:flex;align-items:center;gap:14px;">
+          <div style="font-size:26px;line-height:1;flex-shrink:0;">🍷</div>
+          <div>
+            <div style="font-size:9px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px;">Boissons</div>
+            <div style="font-size:22px;font-weight:600;color:var(--accent);" id="ca2-tkt-bev">7,56 €</div>
+            <div style="font-size:10px;color:var(--muted);margin-top:2px;">par couvert</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-sep">Évolution du ticket moyen · 6 dernières périodes</div>
+      <div class="cleg">
+        <div class="cleg-item"><span style="width:12px;height:12px;border-radius:2px;background:rgba(139,26,26,0.75);display:inline-block;"></span>Dîner</div>
+        <div class="cleg-item"><span style="width:12px;height:12px;border-radius:2px;background:rgba(200,150,60,0.75);display:inline-block;"></span>Déjeuner</div>
+      </div>
+      <div class="chart-h160"><canvas id="ca2Chart"></canvas></div>
+    </div>
+  </div>
+
+  <!-- BLOC CA-3 : TOP 10 PRODUITS -->
+  <div class="card" id="bloc-ca-3">
+    <div class="card-header">
+      <div class="card-num">3</div>
+      <span class="card-title">Top produits · par chiffre d'affaires</span>
+      <span class="card-src">Lightspeed · données réelles</span>
+    </div>
+    <div class="card-body">
+      <div class="grid-2">
+        <div>
+          <div class="section-sep">🍽️ Cuisine — top 10</div>
+          <div class="plats">
+            <div class="plat"><span class="plat-num">1</span><span class="plat-name">Jamón ibérico bellota</span><span class="plat-qty">165 vtes</span><span class="plat-ca">3 600 €</span></div>
+            <div class="plat"><span class="plat-num">2</span><span class="plat-name">Tortilla de Rosario</span><span class="plat-qty">315 vtes</span><span class="plat-ca">3 432 €</span></div>
+            <div class="plat"><span class="plat-num">3</span><span class="plat-name">Lentejas</span><span class="plat-qty">129 vtes</span><span class="plat-ca">2 111 €</span></div>
+            <div class="plat"><span class="plat-num">4</span><span class="plat-name">Pimientos de Padrón</span><span class="plat-qty">242 vtes</span><span class="plat-ca">1 980 €</span></div>
+            <div class="plat"><span class="plat-num">5</span><span class="plat-name">Pan con tomate</span><span class="plat-qty">580 vtes</span><span class="plat-ca">1 845 €</span></div>
+            <div class="plat"><span class="plat-num">6</span><span class="plat-name">Merluza en salsa verde</span><span class="plat-qty">74 vtes</span><span class="plat-ca">1 610 €</span></div>
+            <div class="plat"><span class="plat-num">7</span><span class="plat-name">Mejillones en escabeche</span><span class="plat-qty">134 vtes</span><span class="plat-ca">1 581 €</span></div>
+            <div class="plat"><span class="plat-num">8</span><span class="plat-name">Salpicón</span><span class="plat-qty">128 vtes</span><span class="plat-ca">1 510 €</span></div>
+            <div class="plat"><span class="plat-num">9</span><span class="plat-name">Carilleras</span><span class="plat-qty">57 vtes</span><span class="plat-ca">1 239 €</span></div>
+            <div class="plat"><span class="plat-num">10</span><span class="plat-name">Tarta de queso</span><span class="plat-qty">199 vtes</span><span class="plat-ca">1 080 €</span></div>
+          </div>
+        </div>
+        <div>
+          <div class="section-sep">🍷 Boissons — top 10</div>
+          <div class="plats">
+            <div class="plat"><span class="plat-num">1</span><span class="plat-name">Vino tinto de la casa</span><span class="plat-qty">284 vtes</span><span class="plat-ca">2 130 €</span></div>
+            <div class="plat"><span class="plat-num">2</span><span class="plat-name">Cerveza Estrella Damm</span><span class="plat-qty">412 vtes</span><span class="plat-ca">1 854 €</span></div>
+            <div class="plat"><span class="plat-num">3</span><span class="plat-name">Vermut Rosario</span><span class="plat-qty">198 vtes</span><span class="plat-ca">1 386 €</span></div>
+            <div class="plat"><span class="plat-num">4</span><span class="plat-name">Agua con gas</span><span class="plat-qty">520 vtes</span><span class="plat-ca">1 300 €</span></div>
+            <div class="plat"><span class="plat-num">5</span><span class="plat-name">Vino blanco Albariño</span><span class="plat-qty">142 vtes</span><span class="plat-ca">1 136 €</span></div>
+            <div class="plat"><span class="plat-num">6</span><span class="plat-name">Café solo</span><span class="plat-qty">380 vtes</span><span class="plat-ca">950 €</span></div>
+            <div class="plat"><span class="plat-num">7</span><span class="plat-name">Sangria maison</span><span class="plat-qty">96 vtes</span><span class="plat-ca">864 €</span></div>
+            <div class="plat"><span class="plat-num">8</span><span class="plat-name">Agua sin gas</span><span class="plat-qty">410 vtes</span><span class="plat-ca">820 €</span></div>
+            <div class="plat"><span class="plat-num">9</span><span class="plat-name">Cava brut nature</span><span class="plat-qty">62 vtes</span><span class="plat-ca">558 €</span></div>
+            <div class="plat"><span class="plat-num">10</span><span class="plat-name">Horchata de la casa</span><span class="plat-qty">148 vtes</span><span class="plat-ca">444 €</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /ca -->
+
+<!-- ══════════════════════════════════════════ ONGLET : F&B COST -->
+<div id="fnb" class="view">
+
+  <!-- KPI strip F&B -->
+  <div class="kpi-strip" style="margin-bottom:16px;">
+    <div class="kpi-cell" onclick="scrollToBloc('fnb-1')" style="cursor:pointer;">
+      <div class="kpi-n" data-n="1">F&B Cost total</div>
+      <div class="kpi-cell-val" id="fnb-kv1">9 270 €</div>
+      <div class="kpi-cell-delta neu" id="fnb-kd1">27,3 % du CA</div>
+    </div>
+    <div class="kpi-cell" onclick="scrollToBloc('fnb-2')" style="cursor:pointer;">
+      <div class="kpi-n" data-n="2">Food cost</div>
+      <div class="kpi-cell-val" id="fnb-kv2">7 680 €</div>
+      <div class="kpi-cell-delta neu" id="fnb-kd2">21,0 % du CA</div>
+    </div>
+    <div class="kpi-cell" onclick="scrollToBloc('fnb-3')" style="cursor:pointer;">
+      <div class="kpi-n" data-n="3">Beverage cost</div>
+      <div class="kpi-cell-val" id="fnb-kv3">1 590 €</div>
+      <div class="kpi-cell-delta neu" id="fnb-kd3">4,3 % du CA</div>
+    </div>
+    <div class="kpi-cell" onclick="scrollToBloc('fnb-4')" style="cursor:pointer;">
+      <div class="kpi-n" data-n="4">Top fournisseur</div>
+      <div class="kpi-cell-val" style="font-size:1.05rem;line-height:1.3;">Fournisseur A</div>
+      <div class="kpi-cell-delta neu">3 240 € · 35 %</div>
+    </div>
+  </div>
+
+  <!-- BLOC FNB-1 : F&B TOTAL -->
+  <div class="card" id="bloc-fnb-1">
+    <div class="card-header">
+      <div class="card-num">1</div>
+      <span class="card-title">F&B Cost total</span>
+      <span class="card-src">Pennylane <span class="mock-tag">fictif</span></span>
+    </div>
+    <div class="card-body">
+      <div class="grid-2" style="margin-bottom:16px;">
+        <div class="svc"><span class="svc-lbl">F&B Cost €</span><div class="svc-val" id="fnb1-eur">9 270 €</div><div class="svc-sub" id="fnb1-eur-d">—</div></div>
+        <div class="svc"><span class="svc-lbl">F&B Cost % CA</span><div class="svc-val" id="fnb1-pct">27,3 %</div><div class="svc-sub" id="fnb1-pct-d">—</div></div>
+      </div>
+      <div class="bar-rows">
+        <div class="br"><span class="br-lbl">Food cost</span><div class="br-track"><div class="br-fill" style="width:83%"></div></div><span class="br-val" id="fnb1-food-val">7 680 € · 83 %</span></div>
+        <div class="br"><span class="br-lbl">Beverage cost</span><div class="br-track"><div class="br-fill g" style="width:17%"></div></div><span class="br-val" id="fnb1-bev-val">1 590 € · 17 %</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- BLOC FNB-2 : FOOD COST -->
+  <div class="card" id="bloc-fnb-2">
+    <div class="card-header">
+      <div class="card-num">2</div>
+      <span class="card-title">Food cost · évolution sur 6 périodes</span>
+      <span class="card-src">Pennylane <span class="mock-tag">fictif</span></span>
+    </div>
+    <div class="card-body">
+      <div class="cleg">
+        <div class="cleg-item"><span style="width:12px;height:12px;border-radius:2px;background:rgba(139,26,26,0.75);display:inline-block;"></span>Food cost €</div>
+        <div class="cleg-item"><span class="cleg-line" style="background:#C8963C;height:2px;"></span>% du CA</div>
+      </div>
+      <div class="chart-h160"><canvas id="fnb2Chart"></canvas></div>
+    </div>
+  </div>
+
+  <!-- BLOC FNB-3 : BEVERAGE COST -->
+  <div class="card" id="bloc-fnb-3">
+    <div class="card-header">
+      <div class="card-num">3</div>
+      <span class="card-title">Beverage cost · évolution sur 6 périodes</span>
+      <span class="card-src">Pennylane <span class="mock-tag">fictif</span></span>
+    </div>
+    <div class="card-body">
+      <div class="cleg">
+        <div class="cleg-item"><span style="width:12px;height:12px;border-radius:2px;background:rgba(139,26,26,0.4);display:inline-block;"></span>Bev cost €</div>
+        <div class="cleg-item"><span class="cleg-line" style="background:#C8963C;height:2px;"></span>% du CA</div>
+      </div>
+      <div class="chart-h160"><canvas id="fnb3Chart"></canvas></div>
+    </div>
+  </div>
+
+  <!-- BLOC FNB-4 : TOP 10 FOURNISSEURS -->
+  <div class="card" id="bloc-fnb-4">
+    <div class="card-header">
+      <div class="card-num">4</div>
+      <span class="card-title">Top 10 fournisseurs</span>
+      <span class="card-src">Pennylane <span class="mock-tag">fictif</span></span>
+    </div>
+    <div class="card-body">
+      <div class="plats" id="fnb4-list">
+        <div class="plat"><span class="plat-num">1</span><span class="plat-name">Fournisseur A</span><span class="plat-qty">35 %</span><span class="plat-ca">3 240 €</span></div>
+        <div class="plat"><span class="plat-num">2</span><span class="plat-name">Fournisseur B</span><span class="plat-qty">22 %</span><span class="plat-ca">2 010 €</span></div>
+        <div class="plat"><span class="plat-num">3</span><span class="plat-name">Fournisseur C</span><span class="plat-qty">16 %</span><span class="plat-ca">1 440 €</span></div>
+        <div class="plat"><span class="plat-num">4</span><span class="plat-name">Fournisseur D</span><span class="plat-qty">10 %</span><span class="plat-ca">940 €</span></div>
+        <div class="plat"><span class="plat-num">5</span><span class="plat-name">Fournisseur E</span><span class="plat-qty">8 %</span><span class="plat-ca">760 €</span></div>
+        <div class="plat"><span class="plat-num">6</span><span class="plat-name">Fournisseur F</span><span class="plat-qty">4 %</span><span class="plat-ca">390 €</span></div>
+        <div class="plat"><span class="plat-num">7</span><span class="plat-name">Fournisseur G</span><span class="plat-qty">2 %</span><span class="plat-ca">220 €</span></div>
+        <div class="plat"><span class="plat-num">8</span><span class="plat-name">Fournisseur H</span><span class="plat-qty">1 %</span><span class="plat-ca">110 €</span></div>
+        <div class="plat"><span class="plat-num">9</span><span class="plat-name">Fournisseur I</span><span class="plat-qty">1 %</span><span class="plat-ca">90 €</span></div>
+        <div class="plat"><span class="plat-num">10</span><span class="plat-name">Autres</span><span class="plat-qty">1 %</span><span class="plat-ca">70 €</span></div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /fnb -->
+
+<!-- ══════════════════════════════════════════ ONGLET : STAFF COST -->
+<div id="staff" class="view">
+
+  <!-- KPI strip Staff -->
+  <div class="kpi-strip" style="margin-bottom:16px;">
+    <div class="kpi-cell">
+      <div class="kpi-n" data-n="1">Staff cost total</div>
+      <div class="kpi-cell-val" id="st-kv1">13 036 €</div>
+      <div class="kpi-cell-delta neu" id="st-kd1">34,1 % du CA</div>
+    </div>
+    <div class="kpi-cell">
+      <div class="kpi-n" data-n="2">Staff cost cuisine</div>
+      <div class="kpi-cell-val" id="st-kv2">7 616 €</div>
+      <div class="kpi-cell-delta neu" id="st-kd2">19,9 % du CA</div>
+    </div>
+    <div class="kpi-cell">
+      <div class="kpi-n" data-n="3">Staff cost salle</div>
+      <div class="kpi-cell-val" id="st-kv3">5 420 €</div>
+      <div class="kpi-cell-delta neu" id="st-kd3">14,2 % du CA</div>
+    </div>
+  </div>
+
+  <!-- Totaux absolus + % CA -->
+  <div class="grid-2" style="margin-bottom:16px;">
+    <div class="card">
+      <div class="card-header"><div class="card-num" style="background:var(--muted);">€</div><span class="card-title">Coûts en valeur absolue</span></div>
+      <div class="card-body">
+        <div class="fin-rows">
+          <div class="fin-row"><span class="fn-lbl">Staff cost total</span><span class="fn-val acc" id="st-abs-total">13 036 €</span></div>
+          <div class="fin-row"><span class="fn-lbl">vs période préc.</span><span class="fn-val neu" id="st-abs-delta">—</span></div>
+          <div class="fin-row"><span class="fn-lbl">Cuisine</span><span class="fn-val" id="st-abs-cuisine">7 616 €</span></div>
+          <div class="fin-row"><span class="fn-lbl">vs période préc.</span><span class="fn-val neu" id="st-abs-cuisine-d">—</span></div>
+          <div class="fin-row"><span class="fn-lbl">Salle</span><span class="fn-val" id="st-abs-salle">5 420 €</span></div>
+          <div class="fin-row"><span class="fn-lbl">vs période préc.</span><span class="fn-val neu" id="st-abs-salle-d">—</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header"><div class="card-num" style="background:var(--muted);">%</div><span class="card-title">Coûts en % du CA</span></div>
+      <div class="card-body">
+        <div class="fin-rows">
+          <div class="fin-row"><span class="fn-lbl">Labour cost total</span><span class="fn-val acc" id="st-pct-total">34,1 %</span></div>
+          <div class="fin-row"><span class="fn-lbl">vs période préc.</span><span class="fn-val neu" id="st-pct-delta">— pts</span></div>
+          <div class="fin-row"><span class="fn-lbl">% Cuisine</span><span class="fn-val" id="st-pct-cuisine">19,9 %</span></div>
+          <div class="fin-row"><span class="fn-lbl">vs période préc.</span><span class="fn-val neu" id="st-pct-cuisine-d">— pts</span></div>
+          <div class="fin-row"><span class="fn-lbl">% Salle</span><span class="fn-val" id="st-pct-salle">14,2 %</span></div>
+          <div class="fin-row"><span class="fn-lbl">vs période préc.</span><span class="fn-val neu" id="st-pct-salle-d">— pts</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Détail par équipe -->
+  <div class="card">
+    <div class="card-header"><div class="card-num">4</div><span class="card-title">Détail par équipe</span><span class="card-src">Skello <span class="mock-tag">fictif</span></span></div>
+    <div class="card-body">
+      <table class="staff-tbl">
+        <thead><tr><th>Équipe</th><th>Effectif</th><th>Heures</th><th>H. supp.</th><th>Coût</th></tr></thead>
+        <tbody>
+          <tr>
+            <td>Cuisine</td>
+            <td id="st-cuisine-eff">8</td>
+            <td id="st-cuisine-h">328 h</td>
+            <td><span class="ot-tag" id="st-cuisine-ot">+8 h</span></td>
+            <td id="st-cuisine-cost">7 616 €</td>
+          </tr>
+          <tr>
+            <td>Salle</td>
+            <td id="st-salle-eff">7</td>
+            <td id="st-salle-h">270 h</td>
+            <td><span class="ot-tag" id="st-salle-ot">+4 h</span></td>
+            <td id="st-salle-cost">5 420 €</td>
+          </tr>
+          <tr>
+            <td>Total</td>
+            <td id="st-total-eff">15</td>
+            <td id="st-total-h">598 h</td>
+            <td><span class="ot-tag" id="st-total-ot">+12 h</span></td>
+            <td id="st-total-cost">13 036 €</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div><!-- /staff -->
 
 <footer>
-  <span>Rosario · Dashboard · S23 / 23–29 mars 2026</span>
+  <span id="footer-lbl">Rosario · Dashboard · S13 · 23–29 mars 2026</span>
   <div class="src-list">
     <span class="src-i"><span class="src-dot"></span>Lightspeed (réel)</span>
     <span class="src-i"><span class="src-dot mock"></span>Zenchef (à connecter)</span>
@@ -584,7 +864,7 @@ footer { max-width: 1040px; margin: 32px auto 0; padding-top: 20px; border-top: 
 <script>
 
 /* ════════════ DONNÉES ════════════ */
-const S23 = [
+const S13 = [
   { lbl:'Lun 23', midi:965,  soir:3055, total:4020 },
   { lbl:'Mar 24', midi:1244, soir:3937, total:5181 },
   { lbl:'Mer 25', midi:1323, soir:4189, total:5512 },
@@ -593,7 +873,7 @@ const S23 = [
   { lbl:'Sam 28', midi:2072, soir:6557, total:8629 },
   { lbl:'Dim 29', midi:847,  soir:2267, total:3114 },
 ];
-const S22 = [3820, 4950, 5260, 4150, 5510, 8230, 3230]; // S22 totaux pour comparaison
+const S12 = [3820, 4950, 5260, 4150, 5510, 8230, 3230]; // S12 totaux pour comparaison
 
 const WEEKS = [
   { key:'2025-W42', lbl:'S42 · 13–19 oct 2025',   ca:10739, prev_ca:null },
@@ -614,11 +894,11 @@ const WEEKS = [
   { key:'2026-W06', lbl:'S6 · 2–8 fév 2026',       ca:38200, prev_ca:35800 },
   { key:'2026-W07', lbl:'S7 · 9–15 fév 2026',      ca:41500, prev_ca:38200 },
   { key:'2026-W08', lbl:'S8 · 16–22 fév 2026',     ca:43100, prev_ca:41500 },
-  { key:'2026-W09', lbl:'S9 · 23 fév–1 mar 2026',  ca:56565, prev_ca:43100 },
-  { key:'2026-W10', lbl:'S20 · 2–8 mar 2026',      ca:37414, prev_ca:56565 },
-  { key:'2026-W11', lbl:'S21 · 9–15 mar 2026',     ca:38803, prev_ca:37414 },
-  { key:'2026-W12', lbl:'S22 · 16–22 mar 2026',    ca:39151, prev_ca:38803 },
-  { key:'2026-W13', lbl:'S23 · 23–29 mar 2026',    ca:36583, prev_ca:39151 },
+  { key:'2026-W09', lbl:'S9 · 23 fév–1 mar 2026',   ca:56565, prev_ca:43100 },
+  { key:'2026-W10', lbl:'S10 · 2–8 mar 2026',        ca:37414, prev_ca:56565 },
+  { key:'2026-W11', lbl:'S11 · 9–15 mar 2026',       ca:38803, prev_ca:37414 },
+  { key:'2026-W12', lbl:'S12 · 16–22 mar 2026',      ca:39151, prev_ca:38803 },
+  { key:'2026-W13', lbl:'S13 · 23–29 mar 2026',      ca:36583, prev_ca:39151 },
 ];
 const MONTHS = [
   { key:'2025-11', lbl:'Novembre 2025',  ca:119773, prev_ca:null },
@@ -633,25 +913,53 @@ const TKT_WEEKS = WEEKS.map((w,i) => ({
   lbl: w.lbl.split(' · ')[0],
   dej:  31 + i * 0.18,
   soir: 46 + i * 0.22,
-  dej_prev:  30.5 + i * 0.16,
-  soir_prev: 45.2 + i * 0.20,
 }));
 
-// Note Google fictive par semaine
+// Note Google fictive par semaine (stable autour de 4.8)
 const GOOGLE_WEEKS = WEEKS.map((w,i) => ({
   lbl: w.lbl.split(' · ')[0],
-  note: Math.min(5, 4.6 + Math.random() * 0.3),
+  note: +(4.6 + Math.min(0.35, i * 0.015)).toFixed(1),
 }));
+
+// Métriques fictives par semaine (couverts, remplissage, réservations, etc.)
+const METRICS_W = WEEKS.map((w,i) => {
+  const couverts   = Math.round(w.ca / (44 + i * 0.04));
+  const rempli     = 62 + i * 1.5;
+  const resa       = Math.round(couverts * 0.72 / 2.4);
+  const noshows    = Math.max(0, Math.round(resa * 0.045));
+  const walkin     = couverts - resa * 2;
+  const tktMidi    = +(31 + i * 0.18).toFixed(2);
+  const tktSoir    = +(46 + i * 0.22).toFixed(2);
+  const foodCost   = +(28.5 - i * 0.05).toFixed(1);
+  const labourCost = +(35.2 - i * 0.05).toFixed(1);
+  return { couverts, rempli, resa, noshows, walkin, tktMidi, tktSoir, foodCost, labourCost,
+           primeCost: +(foodCost + labourCost).toFixed(1),
+           rempliMidi: Math.round(rempli * 0.87), rempliSoir: Math.round(rempli * 1.05) };
+});
+
+const METRICS_M = MONTHS.map((m,i) => {
+  const couverts   = Math.round(m.ca / 44.5);
+  const rempli     = 70 + i * 5;
+  const resa       = Math.round(couverts * 0.72 / 2.4 * 4.3);
+  const noshows    = Math.max(0, Math.round(resa * 0.043));
+  const tktMidi    = +(32 + i * 0.4).toFixed(2);
+  const tktSoir    = +(47 + i * 0.5).toFixed(2);
+  const foodCost   = +(28 - i * 0.1).toFixed(1);
+  const labourCost = +(34.5 - i * 0.1).toFixed(1);
+  return { couverts, rempli, resa, noshows, tktMidi, tktSoir, foodCost, labourCost,
+           primeCost: +(foodCost + labourCost).toFixed(1),
+           rempliMidi: Math.round(rempli * 0.87), rempliSoir: Math.round(rempli * 1.05) };
+});
 
 /* ════════════ GRAPHIQUE 1 : CA PAR JOUR ════════════ */
 const dayChart = new Chart(document.getElementById('dayChart'), {
   type: 'line',
   data: {
-    labels: S23.map(d => d.lbl),
+    labels: S13.map(d => d.lbl),
     datasets: [
       {
         label: 'Total',
-        data: S23.map(d => d.total),
+        data: S13.map(d => d.total),
         type: 'line',
         borderColor: '#8B1A1A', borderWidth: 2.5,
         pointBackgroundColor: '#8B1A1A', pointRadius: 5, pointHoverRadius: 7,
@@ -660,7 +968,7 @@ const dayChart = new Chart(document.getElementById('dayChart'), {
       },
       {
         label: 'Dîner',
-        data: S23.map(d => d.soir),
+        data: S13.map(d => d.soir),
         type: 'line',
         borderColor: '#8B1A1A', borderWidth: 1.5, borderDash: [5,4],
         pointBackgroundColor: '#8B1A1A', pointRadius: 3, pointHoverRadius: 5,
@@ -669,7 +977,7 @@ const dayChart = new Chart(document.getElementById('dayChart'), {
       },
       {
         label: 'Déjeuner',
-        data: S23.map(d => d.midi),
+        data: S13.map(d => d.midi),
         type: 'line',
         borderColor: '#C8963C', borderWidth: 1.5, borderDash: [5,4],
         pointBackgroundColor: '#C8963C', pointRadius: 3, pointHoverRadius: 5,
@@ -678,7 +986,7 @@ const dayChart = new Chart(document.getElementById('dayChart'), {
       },
       {
         label: 'Sem. préc.',
-        data: S22,
+        data: S12,
         type: 'line',
         borderColor: 'rgba(140,136,130,0.4)', borderWidth: 1, borderDash: [4,4],
         pointRadius: 0, pointHoverRadius: 4,
@@ -807,30 +1115,105 @@ new Chart(document.getElementById('googleChart'), {
   }
 });
 
-/* ════════════ GRAPHIQUE MENSUEL ════════════ */
-new Chart(document.getElementById('monthChart'), {
-  type: 'bar',
+/* ════════════ GRAPHIQUE MENSUEL (fin. tab supprimé) ════════════ */
+// Données F&B fictives par période
+const FNB_W = METRICS_W.map((m, i) => ({
+  foodEur: Math.round(WEEKS[i].ca * m.foodCost / 100 * 0.77),
+  bevEur:  Math.round(WEEKS[i].ca * m.foodCost / 100 * 0.23),
+  foodPct: +(m.foodCost * 0.77).toFixed(1),
+  bevPct:  +(m.foodCost * 0.23).toFixed(1),
+  staffCuisine: Math.round(WEEKS[i].ca * m.labourCost / 100 * 0.58),
+  staffSalle:   Math.round(WEEKS[i].ca * m.labourCost / 100 * 0.42),
+}));
+const FNB_M = METRICS_M.map((m, i) => ({
+  foodEur: Math.round(MONTHS[i].ca * m.foodCost / 100 * 0.77),
+  bevEur:  Math.round(MONTHS[i].ca * m.foodCost / 100 * 0.23),
+  foodPct: +(m.foodCost * 0.77).toFixed(1),
+  bevPct:  +(m.foodCost * 0.23).toFixed(1),
+  staffCuisine: Math.round(MONTHS[i].ca * m.labourCost / 100 * 0.58),
+  staffSalle:   Math.round(MONTHS[i].ca * m.labourCost / 100 * 0.42),
+}));
+
+// ── GRAPHIQUE CA1 (clone du dayChart pour l'onglet Analyse CA) ──
+const ca1Chart = new Chart(document.getElementById('ca1Chart'), {
+  type: 'line',
   data: {
-    labels: MONTHS.map(m => m.lbl),
-    datasets: [{
-      data: MONTHS.map(m => m.ca),
-      backgroundColor: MONTHS.map((m,i) => i === 3 ? '#8B1A1A' : 'rgba(139,26,26,0.2)'),
-      borderColor: '#8B1A1A', borderWidth: 1, borderRadius: 4,
-    }]
+    labels: S13.map(d => d.lbl),
+    datasets: [
+      { label:'Total',     data: S13.map(d=>d.total), type:'line', borderColor:'#8B1A1A', borderWidth:2.5, pointBackgroundColor:'#8B1A1A', pointRadius:5, pointHoverRadius:7, tension:0.35, fill:true, backgroundColor:'rgba(139,26,26,0.06)', order:1 },
+      { label:'Dîner',     data: S13.map(d=>d.soir),  type:'line', borderColor:'#8B1A1A', borderWidth:1.5, borderDash:[5,4], pointBackgroundColor:'#8B1A1A', pointRadius:3, pointHoverRadius:5, tension:0.35, fill:false, order:1 },
+      { label:'Déjeuner',  data: S13.map(d=>d.midi),  type:'line', borderColor:'#C8963C', borderWidth:1.5, borderDash:[5,4], pointBackgroundColor:'#C8963C', pointRadius:3, pointHoverRadius:5, tension:0.35, fill:false, order:1 },
+      { label:'Préc.',     data: S12,                  type:'line', borderColor:'rgba(140,136,130,0.4)', borderWidth:1, borderDash:[4,4], pointRadius:0, tension:0.3, fill:false, order:1 },
+      { label:'CA mensuel',data: [],                   type:'bar',  backgroundColor:[], borderColor:'#8B1A1A', borderWidth:1, borderRadius:4, hidden:true, order:2 },
+    ]
   },
   options: {
-    responsive: true, maintainAspectRatio: false,
-    plugins: {
-      legend: { display: false },
-      tooltip: {
-        backgroundColor: '#fff', borderColor: '#e4e1d9', borderWidth: 1,
-        titleColor: '#1a1916', bodyColor: '#8a8680', padding: 10,
-        callbacks: { label: c => `  CA HT : ${Math.round(c.parsed.y).toLocaleString('fr-FR')} €` }
-      }
-    },
-    scales: {
-      x: { grid: { display: false }, ticks: { font: { family:'Sora', size:11 } } },
-      y: { grid: { color:'rgba(0,0,0,.05)' }, ticks: { font: { family:'Sora', size:11 }, callback: v => Math.round(v/1000) + ' k€' } }
+    responsive:true, maintainAspectRatio:false,
+    interaction:{ mode:'index', intersect:false },
+    plugins:{ legend:{display:false}, tooltip:{ backgroundColor:'#fff', borderColor:'#e4e1d9', borderWidth:1, titleColor:'#1a1916', bodyColor:'#8a8680', padding:10, callbacks:{ label: c=>`  ${c.dataset.label} : ${Math.round(c.parsed.y).toLocaleString('fr-FR')} €` } } },
+    scales:{ x:{ offset:true, grid:{display:false}, ticks:{font:{family:'Sora',size:10}} }, y:{ grid:{color:'rgba(0,0,0,.05)'}, ticks:{font:{family:'Sora',size:10}, callback:v=>Math.round(v/1000)+' k€'} } }
+  }
+});
+
+// ── GRAPHIQUE CA2 : TICKET MOYEN ──
+const ca2Chart = new Chart(document.getElementById('ca2Chart'), {
+  type:'bar',
+  data:{
+    labels: METRICS_W.slice(-6).map((_,i)=>WEEKS[WEEKS.length-6+i].lbl.split(' · ')[0]),
+    datasets:[
+      { label:'Dîner',    data: METRICS_W.slice(-6).map(m=>+m.tktSoir.toFixed(2)), backgroundColor:'rgba(139,26,26,0.75)', borderRadius:3, borderSkipped:false },
+      { label:'Déjeuner', data: METRICS_W.slice(-6).map(m=>+m.tktMidi.toFixed(2)), backgroundColor:'rgba(200,150,60,0.75)', borderRadius:3, borderSkipped:false },
+    ]
+  },
+  options:{
+    responsive:true, maintainAspectRatio:false, layout:{padding:{top:20}},
+    interaction:{mode:'index',intersect:false},
+    plugins:{ legend:{display:false}, tooltip:{ backgroundColor:'#fff', borderColor:'#e4e1d9', borderWidth:1, titleColor:'#1a1916', bodyColor:'#8a8680', padding:10, callbacks:{label:c=>`  ${c.dataset.label} : ${c.parsed.y.toFixed(2)} €`} } },
+    scales:{ x:{grid:{display:false},ticks:{font:{family:'Sora',size:10}}}, y:{grid:{color:'rgba(0,0,0,.05)'},ticks:{font:{family:'Sora',size:10},callback:v=>v.toFixed(0)+' €'},min:0} },
+    animation:{ onComplete:function(){ const ch=this,ctx=ch.ctx; ctx.save(); ctx.font='500 10px Sora,sans-serif'; ctx.textAlign='center'; ctx.textBaseline='bottom'; ch.data.datasets.forEach((ds,i)=>{ const meta=ch.getDatasetMeta(i); meta.data.forEach((bar,j)=>{ ctx.fillStyle=i===0?'#8B1A1A':'#C8963C'; ctx.fillText(ds.data[j].toFixed(0)+' €',bar.x,bar.y-3); }); }); ctx.restore(); } }
+  }
+});
+
+// ── GRAPHIQUE FNB2 : FOOD COST (bar + ligne %) ──
+const fnb2Chart = new Chart(document.getElementById('fnb2Chart'), {
+  type:'bar',
+  data:{
+    labels: FNB_W.slice(-6).map((_,i)=>WEEKS[WEEKS.length-6+i].lbl.split(' · ')[0]),
+    datasets:[
+      { label:'Food cost €', data:FNB_W.slice(-6).map(f=>f.foodEur), backgroundColor:'rgba(139,26,26,0.75)', borderRadius:3, yAxisID:'y', order:2 },
+      { label:'% CA',        data:FNB_W.slice(-6).map(f=>f.foodPct), type:'line', borderColor:'#C8963C', borderWidth:2, pointBackgroundColor:'#C8963C', pointRadius:4, tension:0.35, fill:false, yAxisID:'y2', order:1 },
+    ]
+  },
+  options:{
+    responsive:true, maintainAspectRatio:false,
+    interaction:{mode:'index',intersect:false},
+    plugins:{ legend:{display:false}, tooltip:{ backgroundColor:'#fff', borderColor:'#e4e1d9', borderWidth:1, titleColor:'#1a1916', bodyColor:'#8a8680', padding:10, callbacks:{label:c=>c.datasetIndex===0?`  Food cost : ${Math.round(c.parsed.y).toLocaleString('fr-FR')} €`:`  % CA : ${c.parsed.y.toFixed(1)} %`} } },
+    scales:{
+      x:{ grid:{display:false}, ticks:{font:{family:'Sora',size:10}} },
+      y:{ grid:{color:'rgba(0,0,0,.05)'}, ticks:{font:{family:'Sora',size:10},callback:v=>Math.round(v/1000)+' k€'}, position:'left' },
+      y2:{ min:0, max:40, grid:{display:false}, ticks:{font:{family:'Sora',size:10},callback:v=>v+'%'}, position:'right' }
+    }
+  }
+});
+
+// ── GRAPHIQUE FNB3 : BEVERAGE COST ──
+const fnb3Chart = new Chart(document.getElementById('fnb3Chart'), {
+  type:'bar',
+  data:{
+    labels: FNB_W.slice(-6).map((_,i)=>WEEKS[WEEKS.length-6+i].lbl.split(' · ')[0]),
+    datasets:[
+      { label:'Bev cost €', data:FNB_W.slice(-6).map(f=>f.bevEur), backgroundColor:'rgba(139,26,26,0.4)', borderRadius:3, yAxisID:'y', order:2 },
+      { label:'% CA',       data:FNB_W.slice(-6).map(f=>f.bevPct), type:'line', borderColor:'#C8963C', borderWidth:2, pointBackgroundColor:'#C8963C', pointRadius:4, tension:0.35, fill:false, yAxisID:'y2', order:1 },
+    ]
+  },
+  options:{
+    responsive:true, maintainAspectRatio:false,
+    interaction:{mode:'index',intersect:false},
+    plugins:{ legend:{display:false}, tooltip:{ backgroundColor:'#fff', borderColor:'#e4e1d9', borderWidth:1, titleColor:'#1a1916', bodyColor:'#8a8680', padding:10, callbacks:{label:c=>c.datasetIndex===0?`  Bev cost : ${Math.round(c.parsed.y).toLocaleString('fr-FR')} €`:`  % CA : ${c.parsed.y.toFixed(1)} %`} } },
+    scales:{
+      x:{ grid:{display:false}, ticks:{font:{family:'Sora',size:10}} },
+      y:{ grid:{color:'rgba(0,0,0,.05)'}, ticks:{font:{family:'Sora',size:10},callback:v=>Math.round(v/1000)+' k€'}, position:'left' },
+      y2:{ min:0, max:15, grid:{display:false}, ticks:{font:{family:'Sora',size:10},callback:v=>v+'%'}, position:'right' }
     }
   }
 });
@@ -842,80 +1225,163 @@ function currentList() { return gran === 'week' ? WEEKS : MONTHS; }
 function renderPeriod() {
   const list = currentList();
   idx = Math.max(0, Math.min(list.length - 1, idx));
-  const p = list[idx];
+  const p  = list[idx];
+  const m  = gran === 'week' ? METRICS_W[idx] : METRICS_M[idx];
+  const pi = gran === 'week' ? (idx > 0 ? METRICS_W[idx-1] : null) : (idx > 0 ? METRICS_M[idx-1] : null);
+  const unit = gran === 'week' ? 'vs semaine préc.' : 'vs mois préc.';
+
   document.getElementById('pnav-lbl').textContent = p.lbl;
   document.getElementById('hdr-sub').textContent  = p.lbl + ' · Dashboard Rosario';
   document.querySelectorAll('.pnav-btn')[0].style.opacity = idx === 0 ? '.3' : '1';
   document.querySelectorAll('.pnav-btn')[1].style.opacity = idx === list.length-1 ? '.3' : '1';
 
-  const pct   = p.prev_ca ? ((p.ca - p.prev_ca) / p.prev_ca * 100).toFixed(1) : null;
-  const arrow = pct === null ? '' : (pct >= 0 ? '▲' : '▼');
-  const cls   = pct === null ? 'neu' : (pct >= 0 ? 'up' : 'dn');
-  const unit  = gran === 'week' ? 'vs semaine préc.' : 'vs mois préc.';
-  document.getElementById('kv-ca').textContent = p.ca.toLocaleString('fr-FR') + ' €';
-  document.getElementById('kd-ca').textContent = pct !== null ? `${arrow} ${pct >= 0?'+':''}${pct} % ${unit}` : 'Première période';
-  document.getElementById('kd-ca').className = 'kpi-cell-delta ' + cls;
+  // ── Helpers delta ──
+  const fmtPct = (val, prev) => {
+    if (!prev) return { txt: '—', cls: 'neu' };
+    const p = ((val - prev) / prev * 100).toFixed(1);
+    return { txt: `${+p>=0?'▲ +':'▼ '}${p} %`, cls: +p>=0?'up':'dn' };
+  };
+  const fmtPts = (val, prev) => {
+    if (!prev) return { txt: '—', cls: 'neu' };
+    const d = (val - prev).toFixed(1);
+    return { txt: `${+d>=0?'▲ +':'▼ '}${d} pts`, cls: +d>=0?'up':'dn' };
+  };
+  const fmtDays = (val, prev) => {
+    if (!prev) return { txt: '—', cls: 'neu' };
+    const d = (val - prev).toFixed(1);
+    return { txt: `${+d>=0?'▲ +':'▼ '}${d} j`, cls: +d>=0?'dn':'up' };
+  };
+  const setDelta = (id, o) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.textContent = o.txt;
+    el.className = 'rk-delta ' + o.cls;
+  };
+
+  // Délai moyen fictif cohérent par période
+  const delay = (i) => +(3.2 + i * 0.05).toFixed(1);
+
+  const set  = (id, val) => document.getElementById(id).textContent = val;
+  const setd = (id, txt, cls) => { set(id, txt); document.getElementById(id).className = 'kpi-cell-delta ' + cls; };
+
+  // ── KPI Bandeau ──
+  const caFmt = fmtPct(p.ca, p.prev_ca);
+  set('kv-ca',   p.ca.toLocaleString('fr-FR') + ' €');
+  setd('kd-ca',  caFmt.txt + (p.prev_ca ? ' ' + unit : ''), caFmt.cls);
+
+  set('kv-cov',  m.couverts.toLocaleString('fr-FR'));
+  setd('kd-cov', 'Couverts servis', 'neu');
+  document.getElementById('kv-fill').textContent = Math.round(m.rempli) + ' %';
+
+  const tktTotal = +((m.tktMidi * 0.32 + m.tktSoir * 0.68)).toFixed(2);
+  set('kv-tkt',  tktTotal.toFixed(2) + ' €');
+  setd('kd-tkt', `Déj. ${m.tktMidi} € · Dîner ${m.tktSoir} €`, 'neu');
 
   const days = gran === 'week' ? 7 : new Date(p.key.slice(0,4), p.key.slice(5,7), 0).getDate();
   const ann  = Math.round(p.ca / days * 360 / 10000) / 100;
-  document.getElementById('ann-val').textContent = '∼ ' + ann.toFixed(2).replace('.',',') + ' M€';
+  set('ann-val', '∼ ' + ann.toFixed(2).replace('.',',') + ' M€');
 
-  // Mise à jour du graphique CA
+  // ── Bloc 2 : KPIs réservations + deltas ──
+  const delayVal  = delay(idx);
+  const delayPrev = idx > 0 ? delay(idx - 1) : null;
+  document.getElementById('rk-cov').textContent   = m.couverts.toLocaleString('fr-FR');
+  document.getElementById('rk-fill').textContent  = Math.round(m.rempli) + ' %';
+  document.getElementById('rk-resa').textContent  = m.resa.toLocaleString('fr-FR');
+  document.getElementById('rk-delay').textContent = delayVal.toFixed(1).replace('.', ',') + ' j';
+  setDelta('rk-cov-d',   fmtPct(m.couverts, pi?.couverts));
+  setDelta('rk-fill-d',  fmtPts(m.rempli,   pi?.rempli));
+  setDelta('rk-resa-d',  fmtPct(m.resa,     pi?.resa));
+  setDelta('rk-delay-d', fmtDays(delayVal,  delayPrev));
+
+  // ── Bloc 2 : Barres mode de réservation ──
+  const resaPct = Math.round(m.resa * 100 / (m.resa + Math.max(5, Math.round(m.couverts * 0.28 / 2.4))));
+  const walkPct = 100 - resaPct;
+  const walkN   = Math.round(m.couverts / 2.4 * walkPct / 100);
+  document.querySelectorAll('.br-fill')[0].style.width = resaPct + '%';
+  document.querySelectorAll('.br-val')[0].textContent  = m.resa + ' (' + resaPct + ' %)';
+  document.querySelectorAll('.br-fill')[1].style.width = walkPct + '%';
+  document.querySelectorAll('.br-val')[1].textContent  = walkN + ' (' + walkPct + ' %)';
+
+  // ── Bloc 2 : Barres remplissage par service ──
+  document.querySelectorAll('.br-fill')[2].style.width = m.rempliMidi + '%';
+  document.querySelectorAll('.br-val')[2].textContent  = m.rempliMidi + ' %';
+  document.querySelectorAll('.br-fill')[3].style.width = Math.min(m.rempliSoir, 100) + '%';
+  document.querySelectorAll('.br-val')[3].textContent  = m.rempliSoir + ' %';
+
+  // ── Bloc 3 : Ticket moyen — 6 semaines ou 6 mois ──
+  const tktSlice = gran === 'week'
+    ? METRICS_W.slice(Math.max(0, idx - 5), idx + 1).map((mm, i) => ({
+        lbl: WEEKS[Math.max(0, idx-5)+i].lbl.split(' · ')[0], dej: mm.tktMidi, soir: mm.tktSoir }))
+    : METRICS_M.slice(Math.max(0, idx - 5), idx + 1).map((mm, i) => ({
+        lbl: MONTHS[Math.max(0, idx-5)+i].lbl.split(' ')[0] + ' ' + MONTHS[Math.max(0, idx-5)+i].lbl.split(' ')[1],
+        dej: mm.tktMidi, soir: mm.tktSoir }));
+  tktChart.data.labels           = tktSlice.map(d => d.lbl);
+  tktChart.data.datasets[0].data = tktSlice.map(d => +d.soir.toFixed(2));
+  tktChart.data.datasets[1].data = tktSlice.map(d => +d.dej.toFixed(2));
+  tktChart.update('active');
+
+  // ── Bloc 5 : Ratios ──
+  const ratios = [
+    { nm:'Food cost',    val:m.foodCost,   cible:'< 30 %', cls: m.foodCost < 30 ? 'gd' : 'bd', w: m.foodCost },
+    { nm:'Labour cost',  val:m.labourCost, cible:'< 35 %', cls: m.labourCost < 35 ? 'wn' : 'bd', w: m.labourCost },
+    { nm:'Prime Cost',   val:m.primeCost,  cible:'< 65 %', cls: m.primeCost < 65 ? 'wn' : 'bd', w: m.primeCost },
+    { nm:'CA / couvert', val:tktTotal,     cible:'> 45 €',  cls: tktTotal > 45 ? 'gd' : 'bd', w: tktTotal / 80 * 100 },
+  ];
+  const rlHeads = document.querySelectorAll('.rl-head');
+  const rlFills = document.querySelectorAll('.rl-fill');
+  const rlSubs  = document.querySelectorAll('.rl-sub');
+  ratios.forEach((r, i) => {
+    if (!rlHeads[i]) return;
+    rlHeads[i].querySelector('.rl-val').textContent = r.nm === 'CA / couvert' ? r.val.toFixed(2) + ' €' : r.val + ' %';
+    rlHeads[i].querySelector('.rl-val').className   = 'rl-val ' + r.cls;
+    if (rlFills[i]) rlFills[i].style.width = Math.min(r.w, 100) + '%';
+  });
+
+  // ── Prime Cost hero ──
+  document.querySelector('.pc-val').textContent = m.primeCost + ' %';
+  document.querySelector('.pc-sub').textContent = `Food cost ${m.foodCost} % + Labour cost ${m.labourCost} % — Cible < 65 %`;
+  document.querySelector('.gauge-fill').style.width = Math.min(m.primeCost, 100) + '%';
+  document.querySelectorAll('.pcc-val')[0].textContent = m.foodCost + ' %';
+  document.querySelectorAll('.pcc-val')[1].textContent = m.labourCost + ' %';
+
+  // ── Graphique CA ──
   if (gran === 'week') {
-    const isS23  = p.key === '2026-W13';
-    const prevIdx = idx > 0 ? idx - 1 : null;
-    const prevW   = prevIdx !== null ? WEEKS[prevIdx] : null;
-    const weights = [0.11, 0.13, 0.14, 0.13, 0.15, 0.22, 0.12];
+    const isS13  = p.key === '2026-W13';
+    const prevW  = idx > 0 ? WEEKS[idx-1] : null;
+    const weights  = [0.11, 0.13, 0.14, 0.13, 0.15, 0.22, 0.12];
     const dayNames = ['Lun','Mar','Mer','Jeu','Ven','Sam','Dim'];
-
     let labels, total, midi, soir;
-    if (isS23) {
-      labels = S23.map(d => d.lbl);
-      total  = S23.map(d => d.total);
-      midi   = S23.map(d => d.midi);
-      soir   = S23.map(d => d.soir);
+    if (isS13) {
+      labels = S13.map(d => d.lbl); total = S13.map(d => d.total);
+      midi = S13.map(d => d.midi); soir = S13.map(d => d.soir);
     } else {
-      labels = dayNames;
-      total  = weights.map(w => Math.round(p.ca * w));
-      midi   = total.map(v => Math.round(v * 0.24));
-      soir   = total.map(v => Math.round(v * 0.76));
+      labels = dayNames; total = weights.map(w => Math.round(p.ca * w));
+      midi = total.map(v => Math.round(v * 0.24)); soir = total.map(v => Math.round(v * 0.76));
     }
     const prevTotal = prevW ? weights.map(w => Math.round(prevW.ca * w)) : [];
-
     dayChart.data.labels = labels;
-    // ds0 = Total (line)
-    dayChart.data.datasets[0].data = total; dayChart.data.datasets[0].hidden = false;
-    // ds1 = Dîner (line dashed)
-    dayChart.data.datasets[1].data = soir;  dayChart.data.datasets[1].hidden = false;
-    // ds2 = Déjeuner (line dashed)
-    dayChart.data.datasets[2].data = midi;  dayChart.data.datasets[2].hidden = false;
-    // ds3 = Sem. préc. (line dashed grey)
+    dayChart.data.datasets[0].data = total;  dayChart.data.datasets[0].hidden = false;
+    dayChart.data.datasets[1].data = soir;   dayChart.data.datasets[1].hidden = false;
+    dayChart.data.datasets[2].data = midi;   dayChart.data.datasets[2].hidden = false;
     dayChart.data.datasets[3].data = prevTotal; dayChart.data.datasets[3].hidden = prevTotal.length === 0;
-    // ds4 = barres mensuelles → masquées
-    dayChart.data.datasets[4].data = []; dayChart.data.datasets[4].hidden = true;
-
+    dayChart.data.datasets[4].data = [];     dayChart.data.datasets[4].hidden = true;
     document.getElementById('day-chart-title').textContent = 'Chiffre d\'affaires HT · par jour';
-
   } else {
-    // Vue mois : 6 derniers mois
     const start = Math.max(0, idx - 5);
     const slice = MONTHS.slice(start, idx + 1);
-
     dayChart.data.labels = slice.map(m => m.lbl);
-    // Masquer les 4 courbes
-    dayChart.data.datasets[0].data = []; dayChart.data.datasets[0].hidden = true;
-    dayChart.data.datasets[1].data = []; dayChart.data.datasets[1].hidden = true;
-    dayChart.data.datasets[2].data = []; dayChart.data.datasets[2].hidden = true;
-    dayChart.data.datasets[3].data = []; dayChart.data.datasets[3].hidden = true;
-    // Afficher les barres
+    [0,1,2,3].forEach(i => { dayChart.data.datasets[i].data = []; dayChart.data.datasets[i].hidden = true; });
     dayChart.data.datasets[4].data            = slice.map(m => m.ca);
     dayChart.data.datasets[4].backgroundColor = slice.map((m,i) => i === slice.length-1 ? '#8B1A1A' : 'rgba(139,26,26,0.25)');
     dayChart.data.datasets[4].hidden          = false;
-
     document.getElementById('day-chart-title').textContent = 'Chiffre d\'affaires HT · 6 derniers mois';
   }
-
   dayChart.update('active');
+
+  // Mise à jour des onglets secondaires
+  const f  = gran === 'week' ? FNB_W[idx]  : FNB_M[idx];
+  const fi = idx > 0 ? (gran === 'week' ? FNB_W[idx-1] : FNB_M[idx-1]) : null;
+  updateSecondaryTabs(p, m, pi, f, fi);
 }
 
 function setGran(g, el) {
@@ -950,6 +1416,181 @@ function applyCustom() {
   document.getElementById('kd-ca').className   = 'kpi-cell-delta neu';
   const ann = Math.round(approxCA / days * 360 / 10000) / 100;
   document.getElementById('ann-val').textContent = '∼ ' + ann.toFixed(2).replace('.',',') + ' M€';
+}
+
+/* ════════════ SCROLL TO BLOC ════════════ */
+function scrollToBloc(n) {
+  const id = typeof n === 'number' ? 'bloc-' + n : 'bloc-' + n;
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  el.style.outline = '2px solid rgba(139,26,26,0.3)';
+  el.style.outlineOffset = '3px';
+  setTimeout(() => { el.style.outline = ''; el.style.outlineOffset = ''; }, 1200);
+}
+
+/* ════════════ UPDATE SECONDARY TABS ════════════ */
+function updateSecondaryTabs(p, m, pi, f, fi) {
+  const unit = gran === 'week' ? 'vs S préc.' : 'vs M préc.';
+  const s    = (id,v) => { const e=document.getElementById(id); if(e) e.textContent=v; };
+  const fmtD = (v,pv,isEur) => {
+    if(!pv) return '—';
+    const d = isEur ? Math.round(v-pv) : +(v-pv).toFixed(1);
+    const sign = d>=0 ? '+' : '';
+    return `${sign}${isEur ? d.toLocaleString('fr-FR')+' €' : d+'%'} ${unit}`;
+  };
+  const fmtP = (v,pv) => {
+    if(!pv) return '—';
+    const d = ((v-pv)/pv*100).toFixed(1);
+    return `${+d>=0?'▲ +':'▼ '}${d} % ${unit}`;
+  };
+
+  // ── Analyse CA ──
+  s('ca-prime-val', m.primeCost + ' %');
+  s('ca-prime-sub', `Food cost ${m.foodCost} % + Labour cost ${m.labourCost} % — Cible < 65 %`);
+  document.getElementById('ca-prime-gauge') && (document.getElementById('ca-prime-gauge').style.width = Math.min(m.primeCost,100)+'%');
+  s('ca-fc-pct', m.foodCost + ' %');
+  s('ca-lc-pct', m.labourCost + ' %');
+  s('ca-kv1', p.ca.toLocaleString('fr-FR') + ' €');
+  const caPct = p.prev_ca ? ((p.ca-p.prev_ca)/p.prev_ca*100).toFixed(1) : null;
+  s('ca-kd1', caPct ? `${+caPct>=0?'▲ +':'▼ '}${caPct} % ${unit}` : '—');
+  const tktT = +((m.tktMidi*0.32+m.tktSoir*0.68)).toFixed(2);
+  s('ca-kv2', tktT.toFixed(2) + ' €');
+  s('ca-kd2', `Déj. ${m.tktMidi} € · Dîner ${m.tktSoir} €`);
+  // ca1Chart
+  const foodEur = Math.round(p.ca * 0.83), bevEur = Math.round(p.ca * 0.17);
+  s('ca1-food-val', foodEur.toLocaleString('fr-FR') + ' €');
+  s('ca1-food-pct', '83 % du CA');
+  s('ca1-bev-val',  bevEur.toLocaleString('fr-FR') + ' €');
+  s('ca1-bev-pct',  '17 % du CA');
+  const midiCA = Math.round(p.ca * 0.24), soirCA = Math.round(p.ca * 0.76);
+  s('ca1-midi-ca', midiCA.toLocaleString('fr-FR') + ' €');
+  s('ca1-soir-ca', soirCA.toLocaleString('fr-FR') + ' €');
+  s('ca2-tkt-food', (tktT * 0.83).toFixed(2) + ' €');
+  s('ca2-tkt-bev',  (tktT * 0.17).toFixed(2) + ' €');
+  s('ca2-tkt-midi', m.tktMidi + ' €');
+  s('ca2-tkt-soir', m.tktSoir + ' €');
+  // ca2Chart update
+  const tktSlice = gran==='week'
+    ? METRICS_W.slice(Math.max(0,idx-5),idx+1)
+    : METRICS_M.slice(Math.max(0,idx-5),idx+1);
+  const tktLbls = gran==='week'
+    ? tktSlice.map((_,i)=>WEEKS[Math.max(0,idx-5)+i].lbl.split(' · ')[0])
+    : tktSlice.map((_,i)=>MONTHS[Math.max(0,idx-5)+i].lbl.split(' ')[0]);
+  ca2Chart.data.labels = tktLbls;
+  ca2Chart.data.datasets[0].data = tktSlice.map(mm=>+mm.tktSoir.toFixed(2));
+  ca2Chart.data.datasets[1].data = tktSlice.map(mm=>+mm.tktMidi.toFixed(2));
+  ca2Chart.update('active');
+  // ca1Chart sync
+  updateCa1Chart(p, m);
+
+  // ── F&B Cost ──
+  const fnbEur = f.foodEur + f.bevEur;
+  const fnbPct = +(f.foodPct + f.bevPct).toFixed(1);
+  s('fnb-kv1', fnbEur.toLocaleString('fr-FR') + ' €');
+  s('fnb-kd1', fnbPct + ' % du CA');
+  s('fnb-kv2', f.foodEur.toLocaleString('fr-FR') + ' €');
+  s('fnb-kd2', f.foodPct + ' % du CA');
+  s('fnb-kv3', f.bevEur.toLocaleString('fr-FR') + ' €');
+  s('fnb-kd3', f.bevPct + ' % du CA');
+  s('fnb1-eur', fnbEur.toLocaleString('fr-FR') + ' €');
+  s('fnb1-eur-d', fi ? fmtD(fnbEur, fi.foodEur+fi.bevEur, true) : '—');
+  s('fnb1-pct', fnbPct + ' %');
+  s('fnb1-pct-d', fi ? fmtD(fnbPct, +(fi.foodPct+fi.bevPct).toFixed(1), false) + ' pts' : '—');
+  s('fnb1-food-val', f.foodEur.toLocaleString('fr-FR') + ' € · ' + Math.round(f.foodEur/fnbEur*100) + ' %');
+  s('fnb1-bev-val',  f.bevEur.toLocaleString('fr-FR')  + ' € · ' + Math.round(f.bevEur/fnbEur*100)  + ' %');
+  // fnb2/fnb3 charts
+  const fnbList  = gran==='week' ? FNB_W : FNB_M;
+  const perList  = gran==='week' ? WEEKS : MONTHS;
+  const fnbSlice = fnbList.slice(Math.max(0,idx-5),idx+1);
+  const fnbLbls  = fnbSlice.map((_,i)=>perList[Math.max(0,idx-5)+i].lbl.split(' ')[0]);
+  fnb2Chart.data.labels = fnbLbls;
+  fnb2Chart.data.datasets[0].data = fnbSlice.map(f=>f.foodEur);
+  fnb2Chart.data.datasets[1].data = fnbSlice.map(f=>f.foodPct);
+  fnb2Chart.update('active');
+  fnb3Chart.data.labels = fnbLbls;
+  fnb3Chart.data.datasets[0].data = fnbSlice.map(f=>f.bevEur);
+  fnb3Chart.data.datasets[1].data = fnbSlice.map(f=>f.bevPct);
+  fnb3Chart.update('active');
+
+  // ── Staff Cost ──
+  const stTotal = Math.round(p.ca * m.labourCost / 100);
+  const stCuis  = Math.round(stTotal * 0.58);
+  const stSalle = stTotal - stCuis;
+  const stPctCuis = +(m.labourCost * 0.58).toFixed(1);
+  const stPctSalle= +(m.labourCost * 0.42).toFixed(1);
+  const piTotal = pi ? Math.round((gran==='week'?WEEKS[idx-1]:MONTHS[idx-1]).ca * pi.labourCost / 100) : null;
+  const piCuis  = piTotal ? Math.round(piTotal * 0.58) : null;
+  const piSalle = piTotal ? piTotal - piCuis : null;
+  s('st-kv1', stTotal.toLocaleString('fr-FR') + ' €');
+  s('st-kd1', +(m.labourCost).toFixed(1) + ' % du CA');
+  s('st-kv2', stCuis.toLocaleString('fr-FR') + ' €');
+  s('st-kd2', stPctCuis + ' % du CA');
+  s('st-kv3', stSalle.toLocaleString('fr-FR') + ' €');
+  s('st-kd3', stPctSalle + ' % du CA');
+  s('st-abs-total', stTotal.toLocaleString('fr-FR') + ' €');
+  s('st-abs-delta', piTotal ? fmtP(stTotal, piTotal) : '—');
+  s('st-abs-cuisine', stCuis.toLocaleString('fr-FR') + ' €');
+  s('st-abs-cuisine-d', piCuis ? fmtP(stCuis, piCuis) : '—');
+  s('st-abs-salle', stSalle.toLocaleString('fr-FR') + ' €');
+  s('st-abs-salle-d', piSalle ? fmtP(stSalle, piSalle) : '—');
+  s('st-pct-total', m.labourCost + ' %');
+  s('st-pct-delta', pi ? fmtD(m.labourCost, pi.labourCost, false) + ' pts' : '—');
+  s('st-pct-cuisine', stPctCuis + ' %');
+  s('st-pct-cuisine-d', pi ? fmtD(stPctCuis, +(pi.labourCost*0.58).toFixed(1), false) + ' pts' : '—');
+  s('st-pct-salle', stPctSalle + ' %');
+  s('st-pct-salle-d', pi ? fmtD(stPctSalle, +(pi.labourCost*0.42).toFixed(1), false) + ' pts' : '—');
+  const hCuis = gran==='week' ? Math.round(stCuis/20) : Math.round(stCuis/20*4.3);
+  const hSalle= gran==='week' ? Math.round(stSalle/18) : Math.round(stSalle/18*4.3);
+  s('st-cuisine-eff', gran==='week' ? '8' : '8');
+  s('st-cuisine-h', hCuis + ' h');
+  s('st-cuisine-cost', stCuis.toLocaleString('fr-FR') + ' €');
+  s('st-salle-eff', gran==='week' ? '7' : '7');
+  s('st-salle-h', hSalle + ' h');
+  s('st-salle-cost', stSalle.toLocaleString('fr-FR') + ' €');
+  s('st-total-eff', '15');
+  s('st-total-h', (hCuis+hSalle) + ' h');
+  s('st-total-cost', stTotal.toLocaleString('fr-FR') + ' €');
+}
+
+function updateCa1Chart(p, m) {
+  if (gran === 'week') {
+    const isS13 = p.key === '2026-W13';
+    const prevW = idx > 0 ? WEEKS[idx-1] : null;
+    const weights = [0.11,0.13,0.14,0.13,0.15,0.22,0.12];
+    const dayNames = ['Lun','Mar','Mer','Jeu','Ven','Sam','Dim'];
+    let labels, total, midi, soir;
+    if (isS13) { labels=S13.map(d=>d.lbl); total=S13.map(d=>d.total); midi=S13.map(d=>d.midi); soir=S13.map(d=>d.soir); }
+    else { labels=dayNames; total=weights.map(w=>Math.round(p.ca*w)); midi=total.map(v=>Math.round(v*0.24)); soir=total.map(v=>Math.round(v*0.76)); }
+    const prev = prevW ? weights.map(w=>Math.round(prevW.ca*w)) : [];
+    ca1Chart.data.labels = labels;
+    [0,1,2,3].forEach(i=>ca1Chart.data.datasets[i].hidden=false);
+    ca1Chart.data.datasets[0].data=total; ca1Chart.data.datasets[1].data=soir;
+    ca1Chart.data.datasets[2].data=midi;  ca1Chart.data.datasets[3].data=prev;
+    ca1Chart.data.datasets[3].hidden = prev.length===0;
+    ca1Chart.data.datasets[4].data=[]; ca1Chart.data.datasets[4].hidden=true;
+    document.getElementById('ca1-title') && (document.getElementById('ca1-title').textContent='CA HT · par jour');
+  } else {
+    const start = Math.max(0,idx-5);
+    const slice = MONTHS.slice(start,idx+1);
+    ca1Chart.data.labels = slice.map(m=>m.lbl);
+    [0,1,2,3].forEach(i=>{ca1Chart.data.datasets[i].data=[]; ca1Chart.data.datasets[i].hidden=true;});
+    ca1Chart.data.datasets[4].data = slice.map(m=>m.ca);
+    ca1Chart.data.datasets[4].backgroundColor = slice.map((_,i)=>i===slice.length-1?'#8B1A1A':'rgba(139,26,26,0.25)');
+    ca1Chart.data.datasets[4].hidden = false;
+    document.getElementById('ca1-title') && (document.getElementById('ca1-title').textContent='CA HT · 6 derniers mois');
+  }
+  ca1Chart.update('active');
+}
+
+/* ════════════ SCROLL TO BLOC ════════════ */
+function scrollToBloc(n) {
+  const el = document.getElementById('bloc-' + n);
+  if (!el) return;
+  el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  el.style.outline = '2px solid rgba(139,26,26,0.3)';
+  el.style.outlineOffset = '3px';
+  setTimeout(() => { el.style.outline = ''; el.style.outlineOffset = ''; }, 1200);
 }
 
 /* ════════════ TABS ════════════ */
