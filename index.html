@@ -1,0 +1,966 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rosario · Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #f7f6f3; --surface: #ffffff; --border: #e4e1d9;
+  --text: #1a1916; --muted: #8a8680;
+  --accent: #8B1A1A; --accent-l: #f5e8e8;
+  --gold: #C8963C; --gold-l: #fdf3e3;
+  --ok: #27ae60; --ok-l: #eafaf1;
+  --danger: #c0392b; --danger-l: #fdedec;
+  --radius: 10px;
+  --shadow: 0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.04);
+}
+body { font-family: 'Sora', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; padding: 40px 24px 80px; }
+.wrap { max-width: 1040px; margin: 0 auto; }
+
+/* ── HEADER ── */
+.header { display: flex; align-items: flex-end; justify-content: space-between; padding-bottom: 24px; margin-bottom: 28px; border-bottom: 1px solid var(--border); }
+.header-left h1 { font-size: 22px; font-weight: 600; letter-spacing: -.3px; margin-bottom: 4px; }
+.header-left p  { font-size: 12px; color: var(--muted); font-weight: 300; }
+.header-right   { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; }
+
+.period-picker { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; }
+.period-granularity { display: flex; background: var(--surface); border: 1px solid var(--border); border-radius: 100px; overflow: hidden; }
+.pgran { padding: 5px 14px; font-size: 11px; font-weight: 500; border: none; background: transparent; color: var(--muted); cursor: pointer; font-family: 'Sora', sans-serif; transition: all .2s; }
+.pgran:hover { color: var(--accent); }
+.pgran.on { background: var(--accent); color: #fff; border-radius: 100px; }
+.period-nav { display: flex; align-items: center; gap: 8px; }
+.pnav-btn { width: 28px; height: 28px; border-radius: 50%; border: 1px solid var(--border); background: var(--surface); color: var(--muted); font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-family: 'Sora', sans-serif; transition: all .2s; flex-shrink: 0; }
+.pnav-btn:hover { border-color: var(--accent); color: var(--accent); }
+.pnav-lbl { font-size: 12px; font-weight: 500; color: var(--text); min-width: 200px; text-align: center; padding: 4px 10px; border-radius: 6px; border: 1px solid transparent; white-space: nowrap; }
+.period-custom { display: none; align-items: center; gap: 8px; }
+.period-custom.show { display: flex; }
+.period-custom input[type="date"] { font-family: 'Sora', sans-serif; font-size: 11px; color: var(--text); background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 5px 10px; outline: none; }
+.period-custom input[type="date"]:focus { border-color: var(--accent); }
+.period-custom span { font-size: 11px; color: var(--muted); }
+.period-custom button { padding: 5px 12px; font-size: 11px; font-weight: 500; background: var(--accent); color: #fff; border: none; border-radius: 6px; cursor: pointer; font-family: 'Sora', sans-serif; }
+
+.ann-badge { display: inline-flex; align-items: center; gap: 8px; background: var(--accent); color: #fff; padding: 6px 16px; border-radius: 100px; font-size: 12px; font-weight: 500; }
+.ann-dot { width: 6px; height: 6px; border-radius: 50%; background: #f9c74f; animation: pulse 2s infinite; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
+
+/* ── TABS ── */
+.tabs { display: flex; gap: 4px; margin-bottom: 24px; border-bottom: 1px solid var(--border); }
+.tab { padding: 8px 18px 10px; font-size: 12px; font-weight: 500; border: none; background: transparent; color: var(--muted); cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -1px; transition: all .2s; font-family: 'Sora', sans-serif; }
+.tab:hover { color: var(--accent); }
+.tab.on { color: var(--accent); border-bottom-color: var(--accent); }
+.view { display: none; } .view.on { display: block; }
+
+/* ── CARD ── */
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; margin-bottom: 16px; }
+.card-header { display: flex; align-items: center; gap: 10px; padding: 14px 20px; border-bottom: 1px solid var(--border); background: #fafaf8; }
+.card-num { width: 22px; height: 22px; border-radius: 50%; background: var(--accent); color: #fff; font-size: 10px; font-weight: 600; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.card-title { font-size: 13px; font-weight: 600; flex: 1; }
+.card-src { font-size: 10px; color: var(--muted); }
+.card-body { padding: 20px; }
+.mock-tag { font-size: 10px; padding: 1px 6px; background: var(--gold-l); border: 1px solid #e8c97a; border-radius: 4px; color: var(--gold); margin-left: 6px; }
+
+/* ── GRIDS ── */
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+
+/* ── KPI STRIP ── */
+.kpi-strip { display: grid; grid-template-columns: repeat(4,1fr); gap: 1px; background: var(--border); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; margin-bottom: 16px; box-shadow: var(--shadow); }
+.kpi-cell { background: var(--surface); padding: 16px 18px; cursor: default; }
+.kpi-cell.active { background: var(--accent-l); }
+.kpi-n { font-size: 9px; font-weight: 600; color: var(--accent); letter-spacing: .06em; text-transform: uppercase; margin-bottom: 4px; display: flex; align-items: center; gap: 5px; }
+.kpi-n::before { content: attr(data-n); width: 16px; height: 16px; border-radius: 50%; background: var(--accent); color: #fff; font-size: 9px; display: flex; align-items: center; justify-content: center; font-weight: 600; flex-shrink: 0; }
+.kpi-cell-lbl { font-size: 10px; font-weight: 500; color: var(--muted); text-transform: uppercase; letter-spacing: .07em; margin-bottom: 5px; }
+.kpi-cell-val { font-size: 24px; font-weight: 600; color: var(--accent); line-height: 1; margin-bottom: 4px; }
+.kpi-cell-delta { font-size: 11px; font-weight: 400; }
+.up { color: var(--ok); } .dn { color: var(--danger); } .neu { color: var(--muted); }
+
+/* ── PRIME COST ── */
+.prime-card { background: var(--accent); border-radius: var(--radius); box-shadow: var(--shadow); padding: 22px 28px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; overflow: hidden; position: relative; }
+.prime-card::after { content: 'PRIME COST'; position: absolute; right: -20px; top: 50%; transform: translateY(-50%) rotate(90deg); font-size: 4.5rem; font-weight: 600; color: rgba(255,255,255,.04); pointer-events: none; white-space: nowrap; }
+.pc-left h3 { font-size: 10px; font-weight: 500; color: rgba(255,255,255,.5); letter-spacing: .12em; text-transform: uppercase; margin-bottom: 6px; }
+.pc-val { font-size: 3.2rem; font-weight: 600; color: #f9c74f; line-height: 1; }
+.pc-sub { font-size: 11px; color: rgba(255,255,255,.5); margin-top: 5px; }
+.pc-right { display: flex; flex-direction: column; align-items: flex-end; gap: 10px; }
+.gauge-labels { display: flex; justify-content: space-between; font-size: 9px; color: rgba(255,255,255,.3); letter-spacing: .07em; text-transform: uppercase; margin-bottom: 5px; }
+.gauge { height: 6px; background: rgba(255,255,255,.12); border-radius: 3px; overflow: hidden; width: 220px; }
+.gauge-fill { height: 100%; border-radius: 3px; background: linear-gradient(90deg,#27ae60 0%,#f9c74f 58%,#e74c3c 100%); }
+.pc-comps { display: flex; gap: 20px; }
+.pc-comp .pcc-lbl { font-size: 9px; letter-spacing: .08em; text-transform: uppercase; color: rgba(255,255,255,.35); display: block; }
+.pc-comp .pcc-val { font-size: 15px; font-weight: 500; color: rgba(255,255,255,.75); }
+
+/* ── CHART WRAPPERS ── */
+.chart-h160 { position: relative; height: 160px; }
+.chart-h140 { position: relative; height: 140px; }
+.chart-h120 { position: relative; height: 120px; }
+
+/* ── SVC SPLIT ── */
+.svc-split { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 16px; }
+.svc { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 12px 14px; }
+.svc-lbl { font-size: 10px; font-weight: 500; color: var(--muted); text-transform: uppercase; letter-spacing: .07em; display: block; margin-bottom: 5px; }
+.svc-val { font-size: 18px; font-weight: 600; color: var(--accent); }
+.svc-sub { font-size: 11px; color: var(--muted); margin-top: 2px; }
+
+/* ── RESA KPIS ── */
+.resa-kpis { display: grid; grid-template-columns: repeat(4,1fr); gap: 10px; margin-bottom: 20px; }
+.rk { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 12px; text-align: center; }
+.rk-val { font-size: 20px; font-weight: 600; color: var(--accent); display: block; line-height: 1; }
+.rk-val.ok { color: var(--ok); } .rk-val.bad { color: var(--danger); }
+.rk-lbl { font-size: 9px; font-weight: 500; color: var(--muted); text-transform: uppercase; letter-spacing: .07em; display: block; margin-top: 3px; }
+
+/* ── SECTION DIVIDER (inside card) ── */
+.section-sep { font-size: 10px; font-weight: 500; color: var(--muted); text-transform: uppercase; letter-spacing: .1em; margin: 18px 0 12px; padding-top: 16px; border-top: 1px solid var(--border); }
+
+/* ── BAR ROWS ── */
+.bar-rows { display: flex; flex-direction: column; gap: 10px; }
+.br { display: grid; grid-template-columns: 130px 1fr 58px; align-items: center; gap: 10px; }
+.br-lbl { font-size: 11px; color: var(--muted); text-align: left; }
+.br-track { height: 5px; background: var(--bg); border-radius: 3px; overflow: hidden; border: 1px solid var(--border); }
+.br-fill { height: 100%; border-radius: 3px; background: var(--accent); opacity: .65; }
+.br-fill.g { background: var(--gold); opacity: .8; }
+.br-val { font-size: 11px; color: var(--text); text-align: right; font-weight: 500; }
+
+/* ── RATIO LIST ── */
+.ratio-list { display: flex; flex-direction: column; gap: 13px; }
+.rl-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 4px; }
+.rl-nm { font-size: 12px; color: var(--text); }
+.rl-val { font-size: 14px; font-weight: 600; }
+.rl-val.gd { color: var(--ok); } .rl-val.wn { color: var(--gold); } .rl-val.bd { color: var(--danger); }
+.rl-sub { font-size: 10px; color: var(--muted); text-align: right; margin-top: 2px; }
+.rl-track { height: 4px; background: var(--bg); border-radius: 2px; overflow: hidden; border: 1px solid var(--border); }
+.rl-fill { height: 100%; border-radius: 2px; }
+
+/* ── TOP PLATS ── */
+.plats { display: flex; flex-direction: column; }
+.plat { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--border); }
+.plat:last-child { border-bottom: none; }
+.plat:hover { background: var(--bg); margin: 0 -20px; padding: 10px 20px; border-radius: 6px; }
+.plat-num { font-size: 11px; font-weight: 600; color: var(--accent); width: 16px; flex-shrink: 0; }
+.plat-name { flex: 1; font-size: 13px; }
+.plat-qty { font-size: 11px; color: var(--muted); width: 65px; text-align: right; }
+.plat-ca { font-size: 13px; font-weight: 600; color: var(--accent); width: 64px; text-align: right; }
+
+/* ── STAFF TABLE ── */
+.staff-tbl { width: 100%; border-collapse: collapse; }
+.staff-tbl th { font-size: 10px; font-weight: 500; color: var(--muted); text-transform: uppercase; letter-spacing: .07em; text-align: left; padding: 0 0 10px; border-bottom: 1px solid var(--border); }
+.staff-tbl th:last-child { text-align: right; }
+.staff-tbl td { padding: 10px 0; font-size: 12px; border-bottom: 1px solid var(--border); }
+.staff-tbl tr:last-child td { border-bottom: none; font-weight: 600; color: var(--accent); }
+.staff-tbl td:last-child { text-align: right; font-weight: 500; }
+.ot-tag { font-size: 10px; color: var(--danger); margin-left: 5px; }
+
+/* ── FIN ROWS ── */
+.fin-rows { display: flex; flex-direction: column; }
+.fin-row { display: flex; justify-content: space-between; align-items: baseline; padding: 9px 0; border-bottom: 1px solid var(--border); font-size: 12px; }
+.fin-row:last-child { border-bottom: none; }
+.fn-lbl { color: var(--muted); }
+.fn-val { font-size: 14px; font-weight: 600; }
+.fn-val.acc { color: var(--accent); } .fn-val.ok2 { color: var(--ok); } .fn-val.bad2 { color: var(--danger); }
+
+/* ── INFO BOX ── */
+.info-box { padding: 10px 14px; background: var(--gold-l); border: 1px solid #e8c97a; border-radius: 8px; font-size: 11px; color: #7a5c1a; line-height: 1.6; margin-top: 12px; }
+
+/* ── CHART LEGEND ── */
+.cleg { display: flex; gap: 16px; justify-content: flex-end; margin-bottom: 10px; }
+.cleg-item { display: flex; align-items: center; gap: 5px; font-size: 10px; color: var(--muted); }
+.cleg-line { width: 18px; height: 2px; border-radius: 1px; }
+.cleg-dashed { width: 18px; height: 0; border-top: 2px dashed; }
+
+/* ── STAR RATING ── */
+.stars { display: flex; gap: 2px; margin: 4px 0; }
+.star { font-size: 16px; }
+.star.full { color: #f9c74f; }
+.star.half { color: #f9c74f; opacity: .5; }
+.star.empty { color: var(--border); }
+
+/* ── FOOTER ── */
+footer { max-width: 1040px; margin: 32px auto 0; padding-top: 20px; border-top: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; font-size: 11px; color: var(--muted); }
+.src-list { display: flex; gap: 14px; }
+.src-i { display: flex; align-items: center; gap: 4px; font-size: 10px; }
+.src-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); }
+.src-dot.mock { background: var(--gold); }
+
+@media(max-width:900px){
+  .kpi-strip,.resa-kpis{ grid-template-columns: repeat(2,1fr); }
+  .grid-2,.grid-3 { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<!-- HEADER -->
+<div class="header">
+  <div class="header-left">
+    <h1>Rosario · Dashboard</h1>
+    <p id="hdr-sub">Semaine 23 · 23 – 29 mars 2026 · Dashboard Rosario</p>
+  </div>
+  <div class="header-right">
+    <div class="period-picker">
+      <div class="period-granularity">
+        <button class="pgran on" onclick="setGran('week',this)">Semaine</button>
+        <button class="pgran"    onclick="setGran('month',this)">Mois</button>
+        <button class="pgran"    onclick="setGran('custom',this)">Période libre</button>
+      </div>
+      <div class="period-nav">
+        <button class="pnav-btn" onclick="navPeriod(-1)">‹</button>
+        <span class="pnav-lbl" id="pnav-lbl">Semaine 23 · 23 – 29 mars 2026</span>
+        <button class="pnav-btn" onclick="navPeriod(+1)">›</button>
+      </div>
+      <div class="period-custom" id="period-custom">
+        <input type="date" id="date-from" value="2025-10-17">
+        <span>→</span>
+        <input type="date" id="date-to" value="2026-03-29">
+        <button onclick="applyCustom()">Appliquer</button>
+      </div>
+    </div>
+    <div class="ann-badge">
+      <span class="ann-dot"></span>
+      CA annualisé · <strong id="ann-val" style="color:#f9c74f;margin-left:4px;">∼ 1,88 M€</strong>
+    </div>
+  </div>
+</div>
+
+<!-- TABS -->
+<div class="tabs">
+  <button class="tab on" onclick="showTab('overview',this)">Vue d'ensemble</button>
+  <button class="tab" onclick="showTab('ops',this)">Opérations</button>
+  <button class="tab" onclick="showTab('finance',this)">Finances</button>
+</div>
+
+<!-- ══════════════════════════════════════════ VUE D'ENSEMBLE -->
+<div id="overview" class="view on">
+
+  <!-- KPI STRIP -->
+  <div class="kpi-strip">
+    <div class="kpi-cell">
+      <div class="kpi-n" data-n="1">CA HT</div>
+      <div class="kpi-cell-val" id="kv-ca">36 583 €</div>
+      <div class="kpi-cell-delta dn" id="kd-ca">▼ –6,6 % vs semaine préc.</div>
+    </div>
+    <div class="kpi-cell">
+      <div class="kpi-n" data-n="2">Réservations</div>
+      <div class="kpi-cell-val" id="kv-cov">812</div>
+      <div class="kpi-cell-delta neu" id="kd-cov">Couverts servis</div>
+      <div style="margin-top:6px;font-size:11px;color:var(--muted);">Remplissage : <strong style="color:var(--accent)" id="kv-fill">78 %</strong></div>
+    </div>
+    <div class="kpi-cell">
+      <div class="kpi-n" data-n="3">Ticket moyen</div>
+      <div class="kpi-cell-val" id="kv-tkt">45,06 €</div>
+      <div class="kpi-cell-delta neu" id="kd-tkt">Déj. 34,15 € · Dîner 50,17 €</div>
+    </div>
+    <div class="kpi-cell">
+      <div class="kpi-n" data-n="4">Note Google</div>
+      <div class="kpi-cell-val" id="kv-google">4,8 ★</div>
+      <div class="kpi-cell-delta up" id="kd-google">= stable vs semaine préc.</div>
+      <div style="margin-top:4px;font-size:10px;color:var(--muted);" id="kv-reviews">746 avis</div>
+    </div>
+  </div>
+
+  <!-- PRIME COST -->
+  <div class="prime-card">
+    <div class="pc-left">
+      <h3>Prime Cost · KPI #1</h3>
+      <div class="pc-val">61,4 %</div>
+      <div class="pc-sub">Food cost 27,3 % + Labour cost 34,1 % — Cible &lt; 65 %</div>
+    </div>
+    <div class="pc-right">
+      <div style="width:220px">
+        <div class="gauge-labels"><span>Excellent &lt;55</span><span>Cible &lt;65</span><span>Alerte &gt;65</span></div>
+        <div class="gauge"><div class="gauge-fill" style="width:61.4%"></div></div>
+      </div>
+      <div class="pc-comps">
+        <div class="pc-comp"><span class="pcc-lbl">Food cost</span><span class="pcc-val">27,3 %</span></div>
+        <div class="pc-comp"><span class="pcc-lbl">Labour cost</span><span class="pcc-val">34,1 %</span></div>
+        <div class="pc-comp"><span class="pcc-lbl">vs S22</span><span class="pcc-val" style="color:#f9c74f">–1,2 pts</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- BLOC 1 : CA HT -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-num">1</div>
+      <span class="card-title" id="day-chart-title">Chiffre d'affaires HT · par jour</span>
+      <span class="card-src">Lightspeed · données réelles</span>
+    </div>
+    <div class="card-body">
+      <div class="cleg">
+        <div class="cleg-item"><span class="cleg-line" style="background:#8B1A1A;height:2.5px;"></span>Total</div>
+        <div class="cleg-item"><span class="cleg-dashed" style="border-color:#8B1A1A;"></span>Dîner</div>
+        <div class="cleg-item"><span class="cleg-dashed" style="border-color:#C8963C;"></span>Déjeuner</div>
+        <div class="cleg-item"><span class="cleg-dashed" style="border-color:rgba(140,136,130,0.55);"></span>Sem. préc.</div>
+      </div>
+      <div class="chart-h160"><canvas id="dayChart"></canvas></div>
+      <div class="svc-split">
+        <div class="svc"><span class="svc-lbl">Déjeuner · 24 %</span><div class="svc-val">8 879 €</div><div class="svc-sub">260 couverts · 34,15 € / cvt</div></div>
+        <div class="svc"><span class="svc-lbl">Dîner · 76 %</span><div class="svc-val">27 691 €</div><div class="svc-sub">552 couverts · 50,17 € / cvt</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- BLOC 2 : RÉSERVATIONS -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-num">2</div>
+      <span class="card-title">Réservations & couverts</span>
+      <span class="card-src">Zenchef <span class="mock-tag">fictif</span></span>
+    </div>
+    <div class="card-body">
+      <div class="resa-kpis">
+        <div class="rk"><span class="rk-val">812</span><span class="rk-lbl">Couverts</span></div>
+        <div class="rk"><span class="rk-val ok">78 %</span><span class="rk-lbl">Remplissage</span></div>
+        <div class="rk"><span class="rk-val">186</span><span class="rk-lbl">Réservations</span></div>
+        <div class="rk"><span class="rk-val">3,4 j</span><span class="rk-lbl">Délai moy.</span></div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:32px;">
+        <div>
+          <div class="section-sep">Mode de réservation</div>
+          <div class="bar-rows">
+            <div class="br"><span class="br-lbl">Réservation</span><div class="br-track"><div class="br-fill" style="width:72%"></div></div><span class="br-val">134 (72 %)</span></div>
+            <div class="br"><span class="br-lbl">Client de passage</span><div class="br-track"><div class="br-fill g" style="width:28%"></div></div><span class="br-val">52 (28 %)</span></div>
+          </div>
+        </div>
+        <div style="border-left:1px solid var(--border);padding-left:32px;">
+          <div class="section-sep">Taux de remplissage par service</div>
+          <div class="bar-rows">
+            <div class="br"><span class="br-lbl">Midi</span><div class="br-track"><div class="br-fill" style="width:71%"></div></div><span class="br-val">71 %</span></div>
+            <div class="br"><span class="br-lbl">Soir</span><div class="br-track"><div class="br-fill" style="width:82%"></div></div><span class="br-val">82 %</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- BLOC 3 : TICKET MOYEN -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-num">3</div>
+      <span class="card-title">Ticket moyen · Déjeuner & Dîner</span>
+      <span class="card-src">Lightspeed · données réelles</span>
+    </div>
+    <div class="card-body">
+      <div class="cleg">
+        <div class="cleg-item"><span style="width:12px;height:12px;border-radius:2px;background:rgba(139,26,26,0.75);display:inline-block;"></span>Dîner</div>
+        <div class="cleg-item"><span style="width:12px;height:12px;border-radius:2px;background:rgba(200,150,60,0.75);display:inline-block;"></span>Déjeuner</div>
+      </div>
+      <div class="chart-h160"><canvas id="tktChart"></canvas></div>
+    </div>
+  </div>
+
+  <!-- BLOC 4 : NOTE GOOGLE -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-num">4</div>
+      <span class="card-title">Note Google · évolution</span>
+      <span class="card-src">Google <span class="mock-tag">fictif</span></span>
+    </div>
+    <div class="card-body">
+      <div style="display:flex;align-items:flex-start;gap:32px;margin-bottom:20px;">
+        <div>
+          <div style="font-size:11px;color:var(--muted);margin-bottom:4px;">Note actuelle</div>
+          <div style="font-size:40px;font-weight:600;color:var(--accent);line-height:1;" id="google-note">4,8</div>
+          <div class="stars" id="google-stars">
+            <span class="star full">★</span><span class="star full">★</span><span class="star full">★</span><span class="star full">★</span><span class="star half">★</span>
+          </div>
+          <div style="font-size:11px;color:var(--muted);margin-top:4px;" id="google-count">746 avis · +12 cette semaine</div>
+        </div>
+        <div style="flex:1;">
+          <div class="chart-h120"><canvas id="googleChart"></canvas></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- BLOC 5 : RATIOS -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-num">5</div>
+      <span class="card-title">Ratios de gestion</span>
+      <span class="card-src">Multi-sources</span>
+    </div>
+    <div class="card-body">
+      <div class="grid-2">
+        <div class="ratio-list">
+          <div>
+            <div class="rl-head"><span class="rl-nm">Food cost</span><span class="rl-val gd">27,3 %</span></div>
+            <div class="rl-track"><div class="rl-fill" style="width:27.3%;background:var(--ok);opacity:.7;"></div></div>
+            <div class="rl-sub">Cible &lt; 30 % <span class="mock-tag">Pennylane fictif</span></div>
+          </div>
+          <div>
+            <div class="rl-head"><span class="rl-nm">Labour cost</span><span class="rl-val wn">34,1 %</span></div>
+            <div class="rl-track"><div class="rl-fill" style="width:34.1%;background:var(--gold);opacity:.7;"></div></div>
+            <div class="rl-sub">Cible &lt; 35 % <span class="mock-tag">Skello fictif</span></div>
+          </div>
+          <div>
+            <div class="rl-head"><span class="rl-nm">Prime Cost</span><span class="rl-val wn">61,4 %</span></div>
+            <div class="rl-track"><div class="rl-fill" style="width:61.4%;background:var(--gold);opacity:.6;"></div></div>
+            <div class="rl-sub">Cible &lt; 65 %</div>
+          </div>
+        </div>
+        <div class="ratio-list">
+          <div>
+            <div class="rl-head"><span class="rl-nm">CA / couvert</span><span class="rl-val gd">45,06 €</span></div>
+            <div class="rl-track"><div class="rl-fill" style="width:75%;background:var(--ok);opacity:.6;"></div></div>
+            <div class="rl-sub">Cible &gt; 45 €</div>
+          </div>
+          <div>
+            <div class="rl-head"><span class="rl-nm">Part alcool / CA</span><span class="rl-val gd">13,3 %</span></div>
+            <div class="rl-track"><div class="rl-fill" style="width:44%;background:var(--ok);opacity:.6;"></div></div>
+            <div class="rl-sub">Données réelles</div>
+          </div>
+          <div>
+            <div class="rl-head"><span class="rl-nm">Heures supplémentaires</span><span class="rl-val bd">12 h</span></div>
+            <div class="rl-track"><div class="rl-fill" style="width:40%;background:var(--danger);opacity:.6;"></div></div>
+            <div class="rl-sub">Cible = 0 <span class="mock-tag">Skello fictif</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- BLOC 6 : TOP 5 PLATS -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-num">6</div>
+      <span class="card-title">Top 5 plats de la semaine</span>
+      <span class="card-src">Lightspeed · données réelles</span>
+    </div>
+    <div class="card-body">
+      <div class="plats">
+        <div class="plat"><span class="plat-num">1</span><span class="plat-name">Jamón ibérico bellota</span><span class="plat-qty">165 ventes</span><span class="plat-ca">3 600 €</span></div>
+        <div class="plat"><span class="plat-num">2</span><span class="plat-name">Tortilla de Rosario</span><span class="plat-qty">315 ventes</span><span class="plat-ca">3 432 €</span></div>
+        <div class="plat"><span class="plat-num">3</span><span class="plat-name">Lentejas</span><span class="plat-qty">129 ventes</span><span class="plat-ca">2 111 €</span></div>
+        <div class="plat"><span class="plat-num">4</span><span class="plat-name">Pimientos de Padrón</span><span class="plat-qty">242 ventes</span><span class="plat-ca">1 980 €</span></div>
+        <div class="plat"><span class="plat-num">5</span><span class="plat-name">Pan con tomate</span><span class="plat-qty">580 ventes</span><span class="plat-ca">1 845 €</span></div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /overview -->
+
+<!-- ══════════════════════════════════════════ OPÉRATIONS -->
+<div id="ops" class="view">
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-header"><div class="card-num">1</div><span class="card-title">Équipe & coûts salariaux</span><span class="card-src">Skello <span class="mock-tag">fictif</span></span></div>
+      <div class="card-body">
+        <table class="staff-tbl">
+          <thead><tr><th>Poste</th><th>Effectif</th><th>Heures</th><th>Coût</th></tr></thead>
+          <tbody>
+            <tr><td>Cuisine</td><td>6</td><td>248 h<span class="ot-tag">+8h supp.</span></td><td>4 960 €</td></tr>
+            <tr><td>Salle</td><td>5</td><td>190 h<span class="ot-tag">+4h supp.</span></td><td>3 420 €</td></tr>
+            <tr><td>Bar</td><td>2</td><td>72 h</td><td>1 296 €</td></tr>
+            <tr><td>Plonge</td><td>2</td><td>80 h</td><td>1 360 €</td></tr>
+            <tr><td>Total</td><td>15</td><td>590 h</td><td>13 036 €</td></tr>
+          </tbody>
+        </table>
+        <div class="info-box">Staff cost : <strong>13 036 €</strong> · Labour cost : <strong>34,1 %</strong> · Heures supp. : <strong style="color:var(--danger)">12 h</strong></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header"><div class="card-num">2</div><span class="card-title">Réservations par service</span><span class="card-src">Zenchef <span class="mock-tag">fictif</span></span></div>
+      <div class="card-body">
+        <div class="bar-rows" style="margin-bottom:16px;">
+          <div style="font-size:10px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:8px;">Déjeuner</div>
+          <div class="br"><span class="br-lbl">Lun – Ven</span><div class="br-track"><div class="br-fill" style="width:65%"></div></div><span class="br-val">65 %</span></div>
+          <div class="br"><span class="br-lbl">Week-end</span><div class="br-track"><div class="br-fill" style="width:88%"></div></div><span class="br-val">88 %</span></div>
+          <div style="font-size:10px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin:14px 0 8px;">Dîner</div>
+          <div class="br"><span class="br-lbl">Lun – Ven</span><div class="br-track"><div class="br-fill g" style="width:74%"></div></div><span class="br-val">74 %</span></div>
+          <div class="br"><span class="br-lbl">Week-end</span><div class="br-track"><div class="br-fill g" style="width:96%"></div></div><span class="br-val">96 %</span></div>
+        </div>
+        <div class="info-box">Creux : lundi & dimanche soir · Potentiel ≈ +25 % CA si alignés sur le niveau du jeudi</div>
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-header"><div class="card-num">3</div><span class="card-title">CA moyen par jour · depuis l'ouverture</span><span class="card-src">Lightspeed · données réelles</span></div>
+    <div class="card-body">
+      <div class="bar-rows">
+        <div class="br"><span class="br-lbl">Lundi</span><div class="br-track"><div class="br-fill" style="width:53%"></div></div><span class="br-val">3 975 €</span></div>
+        <div class="br"><span class="br-lbl">Mardi</span><div class="br-track"><div class="br-fill" style="width:64%"></div></div><span class="br-val">4 812 €</span></div>
+        <div class="br"><span class="br-lbl">Mercredi</span><div class="br-track"><div class="br-fill" style="width:69%"></div></div><span class="br-val">5 183 €</span></div>
+        <div class="br"><span class="br-lbl">Jeudi</span><div class="br-track"><div class="br-fill" style="width:69%"></div></div><span class="br-val">5 246 €</span></div>
+        <div class="br"><span class="br-lbl">Vendredi</span><div class="br-track"><div class="br-fill" style="width:77%"></div></div><span class="br-val">5 832 €</span></div>
+        <div class="br"><span class="br-lbl">Samedi</span><div class="br-track"><div class="br-fill" style="width:100%"></div></div><span class="br-val">7 565 €</span></div>
+        <div class="br"><span class="br-lbl">Dimanche</span><div class="br-track"><div class="br-fill g" style="width:49%"></div></div><span class="br-val">3 719 €</span></div>
+      </div>
+    </div>
+  </div>
+</div><!-- /ops -->
+
+<!-- ══════════════════════════════════════════ FINANCES -->
+<div id="finance" class="view">
+  <div class="grid-3">
+    <div class="card">
+      <div class="card-header"><div class="card-num">1</div><span class="card-title">CA hebdomadaire</span><span class="card-src">Lightspeed · réel</span></div>
+      <div class="card-body">
+        <div class="fin-rows">
+          <div class="fin-row"><span class="fn-lbl">CA HT semaine</span><span class="fn-val acc">36 583 €</span></div>
+          <div class="fin-row"><span class="fn-lbl">TVA collectée (10 %)</span><span class="fn-val">3 658 €</span></div>
+          <div class="fin-row"><span class="fn-lbl">CA TTC</span><span class="fn-val">40 241 €</span></div>
+          <div class="fin-row"><span class="fn-lbl">vs semaine préc.</span><span class="fn-val bad2">– 6,6 %</span></div>
+          <div class="fin-row"><span class="fn-lbl">CA annualisé (×360/7)</span><span class="fn-val acc">∼ 1,88 M€</span></div>
+          <div class="fin-row"><span class="fn-lbl">Meilleur jour (Sam)</span><span class="fn-val ok2">8 629 €</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header"><div class="card-num">2</div><span class="card-title">Food cost & achats</span><span class="card-src">Pennylane <span class="mock-tag">fictif</span></span></div>
+      <div class="card-body">
+        <div class="fin-rows" style="margin-bottom:14px;">
+          <div class="fin-row"><span class="fn-lbl">Factures reçues</span><span class="fn-val">11</span></div>
+          <div class="fin-row"><span class="fn-lbl">Fournisseurs actifs</span><span class="fn-val">4</span></div>
+          <div class="fin-row"><span class="fn-lbl">Total achats HT</span><span class="fn-val">9 270 €</span></div>
+          <div class="fin-row"><span class="fn-lbl">Réglées</span><span class="fn-val ok2">7 450 €</span></div>
+          <div class="fin-row"><span class="fn-lbl">En attente</span><span class="fn-val bad2">1 820 € · 3 fact.</span></div>
+          <div class="fin-row"><span class="fn-lbl">Food cost / CA</span><span class="fn-val ok2">27,3 %</span></div>
+        </div>
+        <div class="bar-rows">
+          <div class="br"><span class="br-lbl">Fournisseur A</span><div class="br-track"><div class="br-fill" style="width:68%"></div></div><span class="br-val">3 240 €</span></div>
+          <div class="br"><span class="br-lbl">Fournisseur B</span><div class="br-track"><div class="br-fill" style="width:42%"></div></div><span class="br-val">2 010 €</span></div>
+          <div class="br"><span class="br-lbl">Fournisseur C</span><div class="br-track"><div class="br-fill" style="width:30%"></div></div><span class="br-val">1 440 €</span></div>
+          <div class="br"><span class="br-lbl">Autres</span><div class="br-track"><div class="br-fill g" style="width:16%"></div></div><span class="br-val">760 €</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header"><div class="card-num">3</div><span class="card-title">Masse salariale</span><span class="card-src">Skello <span class="mock-tag">fictif</span></span></div>
+      <div class="card-body">
+        <div class="fin-rows">
+          <div class="fin-row"><span class="fn-lbl">Coût total semaine</span><span class="fn-val acc">13 036 €</span></div>
+          <div class="fin-row"><span class="fn-lbl">Heures planifiées</span><span class="fn-val">578 h</span></div>
+          <div class="fin-row"><span class="fn-lbl">Heures supplémentaires</span><span class="fn-val bad2">12 h</span></div>
+          <div class="fin-row"><span class="fn-lbl">Labour cost / CA</span><span class="fn-val ok2">34,1 %</span></div>
+          <div class="fin-row"><span class="fn-lbl">Cuisine</span><span class="fn-val">4 960 €</span></div>
+          <div class="fin-row"><span class="fn-lbl">Salle</span><span class="fn-val">3 420 €</span></div>
+          <div class="fin-row"><span class="fn-lbl">Bar + Plonge</span><span class="fn-val">2 656 €</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="prime-card">
+    <div class="pc-left">
+      <h3>Prime Cost · synthèse</h3>
+      <div class="pc-val">61,4 %</div>
+      <div class="pc-sub">Food 9 270 € (27,3 %) + Salaires 13 036 € (34,1 %) / CA HT 36 583 €</div>
+    </div>
+    <div class="pc-right">
+      <div style="width:220px">
+        <div class="gauge-labels"><span>Excellent &lt;55</span><span>OK &lt;65</span><span>Alerte &gt;65</span></div>
+        <div class="gauge"><div class="gauge-fill" style="width:61.4%"></div></div>
+      </div>
+      <div class="pc-comps">
+        <div class="pc-comp"><span class="pcc-lbl">Coûts prime totaux</span><span class="pcc-val">22 306 €</span></div>
+        <div class="pc-comp"><span class="pcc-lbl">Marge brute estimée</span><span class="pcc-val" style="color:#f9c74f">38,6 %</span></div>
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-header"><div class="card-num">4</div><span class="card-title">Évolution mensuelle · oct. 2025 – mars 2026</span><span class="card-src">Lightspeed · réel</span></div>
+    <div class="card-body">
+      <div class="chart-h160"><canvas id="monthChart"></canvas></div>
+    </div>
+  </div>
+</div><!-- /finance -->
+
+<footer>
+  <span>Rosario · Dashboard · S23 / 23–29 mars 2026</span>
+  <div class="src-list">
+    <span class="src-i"><span class="src-dot"></span>Lightspeed (réel)</span>
+    <span class="src-i"><span class="src-dot mock"></span>Zenchef (à connecter)</span>
+    <span class="src-i"><span class="src-dot mock"></span>Skello (à connecter)</span>
+    <span class="src-i"><span class="src-dot mock"></span>Pennylane (à connecter)</span>
+    <span class="src-i"><span class="src-dot mock"></span>Google (à connecter)</span>
+  </div>
+</footer>
+
+</div><!-- /wrap -->
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script>
+
+/* ════════════ DONNÉES ════════════ */
+const S23 = [
+  { lbl:'Lun 23', midi:965,  soir:3055, total:4020 },
+  { lbl:'Mar 24', midi:1244, soir:3937, total:5181 },
+  { lbl:'Mer 25', midi:1323, soir:4189, total:5512 },
+  { lbl:'Jeu 26', midi:1044, soir:3306, total:4350 },
+  { lbl:'Ven 27', midi:1386, soir:4391, total:5777 },
+  { lbl:'Sam 28', midi:2072, soir:6557, total:8629 },
+  { lbl:'Dim 29', midi:847,  soir:2267, total:3114 },
+];
+const S22 = [3820, 4950, 5260, 4150, 5510, 8230, 3230]; // S22 totaux pour comparaison
+
+const WEEKS = [
+  { key:'2025-W42', lbl:'S42 · 13–19 oct 2025',   ca:10739, prev_ca:null },
+  { key:'2025-W44', lbl:'S44 · 27 oct–2 nov 2025', ca:14200, prev_ca:10739 },
+  { key:'2025-W45', lbl:'S45 · 3–9 nov 2025',      ca:26800, prev_ca:14200 },
+  { key:'2025-W46', lbl:'S46 · 10–16 nov 2025',    ca:28400, prev_ca:26800 },
+  { key:'2025-W47', lbl:'S47 · 17–23 nov 2025',    ca:30100, prev_ca:28400 },
+  { key:'2025-W48', lbl:'S48 · 24–30 nov 2025',    ca:31200, prev_ca:30100 },
+  { key:'2025-W49', lbl:'S49 · 1–7 déc 2025',      ca:29800, prev_ca:31200 },
+  { key:'2025-W50', lbl:'S50 · 8–14 déc 2025',     ca:32100, prev_ca:29800 },
+  { key:'2025-W51', lbl:'S51 · 15–21 déc 2025',    ca:34500, prev_ca:32100 },
+  { key:'2025-W52', lbl:'S52 · 22–28 déc 2025',    ca:18200, prev_ca:34500 },
+  { key:'2026-W01', lbl:'S1 · 29 déc–4 jan 2026',  ca:21000, prev_ca:18200 },
+  { key:'2026-W02', lbl:'S2 · 5–11 jan 2026',      ca:30400, prev_ca:21000 },
+  { key:'2026-W03', lbl:'S3 · 12–18 jan 2026',     ca:33200, prev_ca:30400 },
+  { key:'2026-W04', lbl:'S4 · 19–25 jan 2026',     ca:34600, prev_ca:33200 },
+  { key:'2026-W05', lbl:'S5 · 26 jan–1 fév 2026',  ca:35800, prev_ca:34600 },
+  { key:'2026-W06', lbl:'S6 · 2–8 fév 2026',       ca:38200, prev_ca:35800 },
+  { key:'2026-W07', lbl:'S7 · 9–15 fév 2026',      ca:41500, prev_ca:38200 },
+  { key:'2026-W08', lbl:'S8 · 16–22 fév 2026',     ca:43100, prev_ca:41500 },
+  { key:'2026-W09', lbl:'S9 · 23 fév–1 mar 2026',  ca:56565, prev_ca:43100 },
+  { key:'2026-W10', lbl:'S20 · 2–8 mar 2026',      ca:37414, prev_ca:56565 },
+  { key:'2026-W11', lbl:'S21 · 9–15 mar 2026',     ca:38803, prev_ca:37414 },
+  { key:'2026-W12', lbl:'S22 · 16–22 mar 2026',    ca:39151, prev_ca:38803 },
+  { key:'2026-W13', lbl:'S23 · 23–29 mar 2026',    ca:36583, prev_ca:39151 },
+];
+const MONTHS = [
+  { key:'2025-11', lbl:'Novembre 2025',  ca:119773, prev_ca:null },
+  { key:'2025-12', lbl:'Décembre 2025',  ca:128871, prev_ca:119773 },
+  { key:'2026-01', lbl:'Janvier 2026',   ca:130200, prev_ca:128871 },
+  { key:'2026-02', lbl:'Février 2026',   ca:177345, prev_ca:130200 },
+  { key:'2026-03', lbl:'Mars 2026',      ca:159709, prev_ca:177345 },
+];
+
+// Ticket moyen fictif par semaine (déj / dîner)
+const TKT_WEEKS = WEEKS.map((w,i) => ({
+  lbl: w.lbl.split(' · ')[0],
+  dej:  31 + i * 0.18,
+  soir: 46 + i * 0.22,
+  dej_prev:  30.5 + i * 0.16,
+  soir_prev: 45.2 + i * 0.20,
+}));
+
+// Note Google fictive par semaine
+const GOOGLE_WEEKS = WEEKS.map((w,i) => ({
+  lbl: w.lbl.split(' · ')[0],
+  note: Math.min(5, 4.6 + Math.random() * 0.3),
+}));
+
+/* ════════════ GRAPHIQUE 1 : CA PAR JOUR ════════════ */
+const dayChart = new Chart(document.getElementById('dayChart'), {
+  type: 'line',
+  data: {
+    labels: S23.map(d => d.lbl),
+    datasets: [
+      {
+        label: 'Total',
+        data: S23.map(d => d.total),
+        type: 'line',
+        borderColor: '#8B1A1A', borderWidth: 2.5,
+        pointBackgroundColor: '#8B1A1A', pointRadius: 5, pointHoverRadius: 7,
+        tension: 0.35, fill: true, backgroundColor: 'rgba(139,26,26,0.06)',
+        order: 1,
+      },
+      {
+        label: 'Dîner',
+        data: S23.map(d => d.soir),
+        type: 'line',
+        borderColor: '#8B1A1A', borderWidth: 1.5, borderDash: [5,4],
+        pointBackgroundColor: '#8B1A1A', pointRadius: 3, pointHoverRadius: 5,
+        tension: 0.35, fill: false,
+        order: 1,
+      },
+      {
+        label: 'Déjeuner',
+        data: S23.map(d => d.midi),
+        type: 'line',
+        borderColor: '#C8963C', borderWidth: 1.5, borderDash: [5,4],
+        pointBackgroundColor: '#C8963C', pointRadius: 3, pointHoverRadius: 5,
+        tension: 0.35, fill: false,
+        order: 1,
+      },
+      {
+        label: 'Sem. préc.',
+        data: S22,
+        type: 'line',
+        borderColor: 'rgba(140,136,130,0.4)', borderWidth: 1, borderDash: [4,4],
+        pointRadius: 0, pointHoverRadius: 4,
+        tension: 0.3, fill: false,
+        order: 1,
+      },
+      {
+        label: 'CA mensuel',
+        data: [],
+        type: 'bar',
+        backgroundColor: [], borderColor: '#8B1A1A', borderWidth: 1,
+        borderRadius: 4, hidden: true,
+        order: 2,
+      },
+    ]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    interaction: { mode: 'index', intersect: false },
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        backgroundColor: '#fff', borderColor: '#e4e1d9', borderWidth: 1,
+        titleColor: '#1a1916', bodyColor: '#8a8680', padding: 10,
+        callbacks: { label: c => `  ${c.dataset.label} : ${Math.round(c.parsed.y).toLocaleString('fr-FR')} €` }
+      }
+    },
+    scales: {
+      x: { offset: true, grid: { display: false }, ticks: { font: { family:'Sora', size:10 } } },
+      y: { grid: { color:'rgba(0,0,0,.05)' }, ticks: { font: { family:'Sora', size:10 }, callback: v => Math.round(v/1000) + ' k€' } }
+    }
+  }
+});
+
+/* ════════════ GRAPHIQUE 3 : TICKET MOYEN (bar) ════════════ */
+const tktData = TKT_WEEKS.slice(-8);
+const tktChart = new Chart(document.getElementById('tktChart'), {
+  type: 'bar',
+  data: {
+    labels: tktData.map(d => d.lbl),
+    datasets: [
+      {
+        label: 'Dîner',
+        data: tktData.map(d => +d.soir.toFixed(2)),
+        backgroundColor: 'rgba(139,26,26,0.75)',
+        borderRadius: 3, borderSkipped: false,
+      },
+      {
+        label: 'Déjeuner',
+        data: tktData.map(d => +d.dej.toFixed(2)),
+        backgroundColor: 'rgba(200,150,60,0.75)',
+        borderRadius: 3, borderSkipped: false,
+      },
+    ]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    interaction: { mode: 'index', intersect: false },
+    layout: { padding: { top: 20 } },
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        backgroundColor: '#fff', borderColor: '#e4e1d9', borderWidth: 1,
+        titleColor: '#1a1916', bodyColor: '#8a8680', padding: 10,
+        callbacks: { label: c => `  ${c.dataset.label} : ${c.parsed.y.toFixed(2)} €` }
+      }
+    },
+    scales: {
+      x: { grid: { display: false }, ticks: { font: { family:'Sora', size:10 } } },
+      y: {
+        grid: { color:'rgba(0,0,0,.05)' },
+        ticks: { font: { family:'Sora', size:10 }, callback: v => v.toFixed(0) + ' €' },
+        min: 0,
+      }
+    },
+    animation: {
+      onComplete: function() {
+        const chart = this;
+        const ctx = chart.ctx;
+        ctx.save();
+        ctx.font = '500 10px Sora, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'bottom';
+        chart.data.datasets.forEach((dataset, i) => {
+          const meta = chart.getDatasetMeta(i);
+          meta.data.forEach((bar, j) => {
+            const val = dataset.data[j];
+            ctx.fillStyle = i === 0 ? '#8B1A1A' : '#C8963C';
+            ctx.fillText(val.toFixed(0) + ' €', bar.x, bar.y - 3);
+          });
+        });
+        ctx.restore();
+      }
+    }
+  }
+});
+
+/* ════════════ GRAPHIQUE 4 : NOTE GOOGLE ════════════ */
+const googleData = GOOGLE_WEEKS.slice(-10);
+new Chart(document.getElementById('googleChart'), {
+  type: 'line',
+  data: {
+    labels: googleData.map(d => d.lbl),
+    datasets: [{
+      label: 'Note Google',
+      data: googleData.map(d => +d.note.toFixed(1)),
+      borderColor: '#f9c74f', borderWidth: 2,
+      pointBackgroundColor: '#f9c74f', pointRadius: 3,
+      tension: 0.35, fill: true, backgroundColor: 'rgba(249,199,79,0.08)',
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        backgroundColor: '#fff', borderColor: '#e4e1d9', borderWidth: 1,
+        titleColor: '#1a1916', bodyColor: '#8a8680', padding: 8,
+        callbacks: { label: c => `  Note : ${c.parsed.y.toFixed(1)} / 5` }
+      }
+    },
+    scales: {
+      x: { grid: { display: false }, ticks: { font: { family:'Sora', size:9 } } },
+      y: { min: 4, max: 5, grid: { color:'rgba(0,0,0,.05)' }, ticks: { font: { family:'Sora', size:9 }, callback: v => v.toFixed(1) } }
+    }
+  }
+});
+
+/* ════════════ GRAPHIQUE MENSUEL ════════════ */
+new Chart(document.getElementById('monthChart'), {
+  type: 'bar',
+  data: {
+    labels: MONTHS.map(m => m.lbl),
+    datasets: [{
+      data: MONTHS.map(m => m.ca),
+      backgroundColor: MONTHS.map((m,i) => i === 3 ? '#8B1A1A' : 'rgba(139,26,26,0.2)'),
+      borderColor: '#8B1A1A', borderWidth: 1, borderRadius: 4,
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        backgroundColor: '#fff', borderColor: '#e4e1d9', borderWidth: 1,
+        titleColor: '#1a1916', bodyColor: '#8a8680', padding: 10,
+        callbacks: { label: c => `  CA HT : ${Math.round(c.parsed.y).toLocaleString('fr-FR')} €` }
+      }
+    },
+    scales: {
+      x: { grid: { display: false }, ticks: { font: { family:'Sora', size:11 } } },
+      y: { grid: { color:'rgba(0,0,0,.05)' }, ticks: { font: { family:'Sora', size:11 }, callback: v => Math.round(v/1000) + ' k€' } }
+    }
+  }
+});
+
+/* ════════════ PERIOD PICKER ════════════ */
+let gran = 'week', idx = WEEKS.length - 1;
+function currentList() { return gran === 'week' ? WEEKS : MONTHS; }
+
+function renderPeriod() {
+  const list = currentList();
+  idx = Math.max(0, Math.min(list.length - 1, idx));
+  const p = list[idx];
+  document.getElementById('pnav-lbl').textContent = p.lbl;
+  document.getElementById('hdr-sub').textContent  = p.lbl + ' · Dashboard Rosario';
+  document.querySelectorAll('.pnav-btn')[0].style.opacity = idx === 0 ? '.3' : '1';
+  document.querySelectorAll('.pnav-btn')[1].style.opacity = idx === list.length-1 ? '.3' : '1';
+
+  const pct   = p.prev_ca ? ((p.ca - p.prev_ca) / p.prev_ca * 100).toFixed(1) : null;
+  const arrow = pct === null ? '' : (pct >= 0 ? '▲' : '▼');
+  const cls   = pct === null ? 'neu' : (pct >= 0 ? 'up' : 'dn');
+  const unit  = gran === 'week' ? 'vs semaine préc.' : 'vs mois préc.';
+  document.getElementById('kv-ca').textContent = p.ca.toLocaleString('fr-FR') + ' €';
+  document.getElementById('kd-ca').textContent = pct !== null ? `${arrow} ${pct >= 0?'+':''}${pct} % ${unit}` : 'Première période';
+  document.getElementById('kd-ca').className = 'kpi-cell-delta ' + cls;
+
+  const days = gran === 'week' ? 7 : new Date(p.key.slice(0,4), p.key.slice(5,7), 0).getDate();
+  const ann  = Math.round(p.ca / days * 360 / 10000) / 100;
+  document.getElementById('ann-val').textContent = '∼ ' + ann.toFixed(2).replace('.',',') + ' M€';
+
+  // Mise à jour du graphique CA
+  if (gran === 'week') {
+    const isS23  = p.key === '2026-W13';
+    const prevIdx = idx > 0 ? idx - 1 : null;
+    const prevW   = prevIdx !== null ? WEEKS[prevIdx] : null;
+    const weights = [0.11, 0.13, 0.14, 0.13, 0.15, 0.22, 0.12];
+    const dayNames = ['Lun','Mar','Mer','Jeu','Ven','Sam','Dim'];
+
+    let labels, total, midi, soir;
+    if (isS23) {
+      labels = S23.map(d => d.lbl);
+      total  = S23.map(d => d.total);
+      midi   = S23.map(d => d.midi);
+      soir   = S23.map(d => d.soir);
+    } else {
+      labels = dayNames;
+      total  = weights.map(w => Math.round(p.ca * w));
+      midi   = total.map(v => Math.round(v * 0.24));
+      soir   = total.map(v => Math.round(v * 0.76));
+    }
+    const prevTotal = prevW ? weights.map(w => Math.round(prevW.ca * w)) : [];
+
+    dayChart.data.labels = labels;
+    // ds0 = Total (line)
+    dayChart.data.datasets[0].data = total; dayChart.data.datasets[0].hidden = false;
+    // ds1 = Dîner (line dashed)
+    dayChart.data.datasets[1].data = soir;  dayChart.data.datasets[1].hidden = false;
+    // ds2 = Déjeuner (line dashed)
+    dayChart.data.datasets[2].data = midi;  dayChart.data.datasets[2].hidden = false;
+    // ds3 = Sem. préc. (line dashed grey)
+    dayChart.data.datasets[3].data = prevTotal; dayChart.data.datasets[3].hidden = prevTotal.length === 0;
+    // ds4 = barres mensuelles → masquées
+    dayChart.data.datasets[4].data = []; dayChart.data.datasets[4].hidden = true;
+
+    document.getElementById('day-chart-title').textContent = 'Chiffre d\'affaires HT · par jour';
+
+  } else {
+    // Vue mois : 6 derniers mois
+    const start = Math.max(0, idx - 5);
+    const slice = MONTHS.slice(start, idx + 1);
+
+    dayChart.data.labels = slice.map(m => m.lbl);
+    // Masquer les 4 courbes
+    dayChart.data.datasets[0].data = []; dayChart.data.datasets[0].hidden = true;
+    dayChart.data.datasets[1].data = []; dayChart.data.datasets[1].hidden = true;
+    dayChart.data.datasets[2].data = []; dayChart.data.datasets[2].hidden = true;
+    dayChart.data.datasets[3].data = []; dayChart.data.datasets[3].hidden = true;
+    // Afficher les barres
+    dayChart.data.datasets[4].data            = slice.map(m => m.ca);
+    dayChart.data.datasets[4].backgroundColor = slice.map((m,i) => i === slice.length-1 ? '#8B1A1A' : 'rgba(139,26,26,0.25)');
+    dayChart.data.datasets[4].hidden          = false;
+
+    document.getElementById('day-chart-title').textContent = 'Chiffre d\'affaires HT · 6 derniers mois';
+  }
+
+  dayChart.update('active');
+}
+
+function setGran(g, el) {
+  gran = g;
+  document.querySelectorAll('.pgran').forEach(b => b.classList.remove('on'));
+  el.classList.add('on');
+  const custom = document.getElementById('period-custom');
+  if (g === 'custom') { custom.classList.add('show'); return; }
+  custom.classList.remove('show');
+  idx = currentList().length - 1;
+  renderPeriod();
+}
+
+function navPeriod(dir) {
+  if (gran === 'custom') return;
+  idx = Math.max(0, Math.min(currentList().length - 1, idx + dir));
+  renderPeriod();
+}
+
+function applyCustom() {
+  const from = document.getElementById('date-from').value;
+  const to   = document.getElementById('date-to').value;
+  if (!from || !to) return;
+  const fmt = d => new Date(d).toLocaleDateString('fr-FR', { day:'numeric', month:'short', year:'numeric' });
+  const days = Math.round((new Date(to) - new Date(from)) / 86400000) + 1;
+  const approxCA = Math.round(days * 5200);
+  document.getElementById('pnav-lbl').textContent = fmt(from) + ' – ' + fmt(to);
+  document.getElementById('hdr-sub').textContent  = fmt(from) + ' → ' + fmt(to) + ' · Dashboard Rosario';
+  document.getElementById('period-custom').classList.remove('show');
+  document.getElementById('kv-ca').textContent = approxCA.toLocaleString('fr-FR') + ' €';
+  document.getElementById('kd-ca').textContent = days + ' jours sélectionnés';
+  document.getElementById('kd-ca').className   = 'kpi-cell-delta neu';
+  const ann = Math.round(approxCA / days * 360 / 10000) / 100;
+  document.getElementById('ann-val').textContent = '∼ ' + ann.toFixed(2).replace('.',',') + ' M€';
+}
+
+/* ════════════ TABS ════════════ */
+function showTab(id, el) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('on'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('on'));
+  document.getElementById(id).classList.add('on');
+  el.classList.add('on');
+}
+
+renderPeriod();
+</script>
+</body>
+</html>
