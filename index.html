@@ -942,6 +942,8 @@ async function loadLiveData() {
         rempliMidi: 70,
         rempliSoir: 82,
         // Extra
+        caNet:      +sum('CA_Net_Total').toFixed(2),
+        caNet:      +sum('CA_Net_Total').toFixed(0),
         caNetMidi:  +sum('CA_Net_Midi').toFixed(0),
         caNetSoir:  +sum('CA_Net_Soir').toFixed(0),
         caFood:     +sum('CA_Food_HT').toFixed(0),
@@ -1532,7 +1534,8 @@ function renderPeriod() {
   setd('kd-cov', 'Couverts servis', 'neu');
   document.getElementById('kv-fill').textContent = Math.round(m.rempli) + ' %';
 
-  const tktTotal = m.couverts > 0 ? +(p.ca / m.couverts).toFixed(2) : +((m.tktMidi * 0.32 + m.tktSoir * 0.68)).toFixed(2);
+  const caNet = m.caNet || p.ca; // CA net réel depuis le Sheet
+  const tktTotal = m.couverts > 0 ? +(caNet / m.couverts).toFixed(2) : +((m.tktMidi * 0.32 + m.tktSoir * 0.68)).toFixed(2);
   set('kv-tkt',  tktTotal.toFixed(2) + ' €');
   setd('kd-tkt', `Déj. ${m.tktMidi} € · Dîner ${m.tktSoir} €`, 'neu');
 
