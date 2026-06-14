@@ -863,6 +863,254 @@ footer { max-width: 1040px; margin: 32px auto 0; padding-top: 20px; border-top: 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script>
 
+// ════════════════════════════════════════════════════════════════
+// ROSARIO LIVE DATA — chargement depuis Google Sheet
+// ════════════════════════════════════════════════════════════════
+const SHEET_ID = '1IKHeZaPg2Hc-XExx_namZzH9ylIoUAmPjr3QtnShT2Q';
+const CSV_BASE = 'https://docs.google.com/spreadsheets/d/' + SHEET_ID + '/gviz/tq?tqx=out:csv&sheet=';
+
+// Fetch CSV and parse to array of objects
+async function fetchSheet(tabName) {
+  const url = CSV_BASE + encodeURIComponent(tabName);
+  const r = await fetch(url);
+  const text = await r.text();
+  const lines = text.trim().split('\n');
+  const headers = parseCSVLine(lines[0]);
+  return lines.slice(1).map(line => {
+    const vals = parseCSVLine(line);
+    const obj = {};
+    headers.forEach((h, i) => obj[h] = vals[i] || '');
+    return obj;
+  });
+}
+
+function parseCSVLine(line) {
+  const result = [];
+  let cur = '', inQ = false;
+  for (let i = 0; i < line.length; i++) {
+    const c = line[i];
+    if (c === '"') { inQ = !inQ; }
+    else if (c === ',' && !inQ) { result.push(cur.trim()); cur = ''; }
+    else { cur += c; }
+  }
+  result.push(cur.trim());
+  return result;
+}
+
+function n(v) { return parseFloat(String(v).replace(',','.')) || 0; }
+
+// ── Grouper les lignes par semaine ISO (lun→dim) ──
+function getWeekKey(dateStr) {
+  // dateStr = "20260613"
+  const y = +dateStr.slice(0,4), m = +dateStr.slice(4,6)-1, d = +dateStr.slice(6,8);
+  const dt = new Date(y, m, d);
+  const day = dt.getDay() || 7; // 1=lun, 7=dim
+  const monday = new Date(dt); monday.setDate(dt.getDate() - day + 1);
+  const yy = monday.getFullYear();
+  const start = new Date(yy, 0, 1);
+  const week = Math.ceil(((monday - start) / 86400000 + start.getDay() + 1) / 7);
+  return yy + '-W' + String(week).padStart(2,'0');
+}
+
+function weekLabel(rows) {
+  // rows = array of KPI rows for a week
+  const dates = rows.map(r => r['Date']).sort();
+  const first = dates[0], last = dates[dates.length-1];
+  const fmt = s => s.slice(6,8)+'/'+s.slice(4,6);
+  return fmt(first) + ' – ' + fmt(last);
+}
+
+// ── Construction des structures WEEKS, METRICS_W, TKT_WEEKS depuis le Sheet ──
+async function loadLiveData() {
+  try {
+    const [kpiRows, top10Rows] = await Promise.all([
+      fetchSheet('KPI_Journaliers'),
+      fetchSheet('Top10_Journaliers'),
+    ]);
+
+    if (!kpiRows.length) { console.log('Sheet vide, données fictives conservées'); return; }
+
+    // Groupe par semaine
+    const byWeek = {};
+    kpiRows.forEach(row => {
+      const wk = getWeekKey(row['Date']);
+      if (!byWeek[wk]) byWeek[wk] = [];
+      byWeek[wk].push(row);
+    });
+
+    const weekKeys = Object.keys(byWeek).sort();
+
+    // Rebuild WEEKS array
+    const liveWEEKS = weekKeys.map((wk, i) => {
+      const rows = byWeek[wk];
+      const ca = rows.reduce((s,r) => s + n(r['CA_Net_Total']), 0);
+      const prev_ca = i > 0 ? weekKeys.slice(0,i).reduce((s,k) =>
+        s + byWeek[k].reduce((ss,r) => ss + n(r['CA_Net_Total']), 0), 0) / i : null;
+      const prevWk = i > 0 ? weekKeys[i-1] : null;
+      const prev_ca_week = prevWk ? byWeek[prevWk].reduce((s,r) => s + n(r['CA_Net_Total']), 0) : null;
+      return { key: wk, lbl: wk + ' · ' + weekLabel(rows), ca: Math.round(ca), prev_ca: Math.round(prev_ca_week || 0) || null };
+    });
+
+    // Rebuild METRICS_W
+    const liveMETRICS_W = weekKeys.map(wk => {
+      const rows = byWeek[wk];
+      const sum = (col) => rows.reduce((s,r) => s + n(r[col]), 0);
+      const avg = (col) => rows.length ? sum(col)/rows.length : 0;
+      const caNet   = sum('CA_Net_Total');
+      const cov     = sum('Couverts_Total');
+      const covMidi = sum('Couverts_Midi');
+      const covSoir = sum('Couverts_Soir');
+      return {
+        couverts:   Math.round(cov),
+        rempli:     70, // pas dans le Sheet
+        resa:       Math.round(cov * 0.7),
+        noshows:    0,
+        walkin:     Math.round(cov * 0.3),
+        tktMidi:    +avg('Tkt_Moy_Midi').toFixed(2),
+        tktSoir:    +avg('Tkt_Moy_Soir').toFixed(2),
+        foodCost:   28,
+        labourCost: 34,
+        primeCost:  62,
+        rempliMidi: 70,
+        rempliSoir: 82,
+        // Extra
+        caNetMidi:  +sum('CA_Net_Midi').toFixed(0),
+        caNetSoir:  +sum('CA_Net_Soir').toFixed(0),
+        caFood:     +sum('CA_Food_HT').toFixed(0),
+        caBoisss:   +sum('CA_Boissons_HT').toFixed(0),
+        tktFood:    +avg('Tkt_Moy_Food').toFixed(2),
+        tktBoisss:  +avg('Tkt_Moy_Boissons').toFixed(2),
+      };
+    });
+
+    // Rebuild TKT_WEEKS
+    const liveTKT_WEEKS = weekKeys.map((wk, i) => {
+      const m = liveMETRICS_W[i];
+      return { lbl: wk, dej: m.tktMidi, soir: m.tktSoir };
+    });
+
+    // Rebuild day-by-day for current week (last week in data)
+    const lastWk = weekKeys[weekKeys.length - 1];
+    const lastWkRows = byWeek[lastWk].sort((a,b) => a['Date'].localeCompare(b['Date']));
+    const DAY_NAMES = ['Dim','Lun','Mar','Mer','Jeu','Ven','Sam'];
+    const liveCURRENT = lastWkRows.map(row => {
+      const d = row['Date'];
+      const dt = new Date(+d.slice(0,4), +d.slice(4,6)-1, +d.slice(6,8));
+      return {
+        lbl:   DAY_NAMES[dt.getDay()] + ' ' + d.slice(6,8),
+        midi:  n(row['CA_Net_Midi']),
+        soir:  n(row['CA_Net_Soir']),
+        total: n(row['CA_Net_Total']),
+        date:  d,
+      };
+    });
+
+    // Previous week for comparison
+    const prevWkKey = weekKeys.length > 1 ? weekKeys[weekKeys.length-2] : null;
+    const livePREV = prevWkKey
+      ? byWeek[prevWkKey].sort((a,b) => a['Date'].localeCompare(b['Date']))
+          .map(r => n(r['CA_Net_Total']))
+      : [];
+
+    // Top10 for current week
+    const lastDate = lastWkRows[lastWkRows.length-1]?.['Date'];
+    const wkTop10 = top10Rows.filter(r => {
+      const d = r['Date']; return d >= lastWk.replace('W','') && byWeek[lastWk]?.some(kr => kr['Date'] === d);
+    });
+    // Aggregate by article
+    const foodAgg = {}, boissAgg = {};
+    top10Rows.filter(r => byWeek[lastWk]?.some(kr => kr['Date'] === r['Date'])).forEach(r => {
+      const key = r['Article'], ca = n(r['CA']), qty = n(r['Quantite']);
+      if (r['Categorie'] === 'Food') {
+        foodAgg[key] = foodAgg[key] || {name:key, ca:0, qty:0};
+        foodAgg[key].ca += ca; foodAgg[key].qty += qty;
+      } else {
+        boissAgg[key] = boissAgg[key] || {name:key, ca:0, qty:0};
+        boissAgg[key].ca += ca; boissAgg[key].qty += qty;
+      }
+    });
+    const liveTop10Food  = Object.values(foodAgg).sort((a,b)=>b.ca-a.ca).slice(0,10);
+    const liveTop10Bois  = Object.values(boissAgg).sort((a,b)=>b.ca-a.ca).slice(0,10);
+
+    // ── Override des constantes globales ──
+    WEEKS.length = 0;
+    liveWEEKS.forEach(w => WEEKS.push(w));
+
+    METRICS_W.length = 0;
+    liveMETRICS_W.forEach(m => METRICS_W.push(m));
+
+    TKT_WEEKS.length = 0;
+    liveTKT_WEEKS.forEach(t => TKT_WEEKS.push(t));
+
+    // Override S13 (semaine courante)
+    S13.length = 0;
+    liveCURRENT.forEach(d => S13.push(d));
+
+    // Override S12 (semaine précédente)
+    S12.length = 0;
+    livePREV.forEach(v => S12.push(v));
+
+    // Stocke top10 globalement
+    window.LIVE_TOP10_FOOD  = liveTop10Food;
+    window.LIVE_TOP10_BOIS  = liveTop10Bois;
+    window.LIVE_METRICS     = liveMETRICS_W;
+    window.LIVE_WEEKS       = liveWEEKS;
+
+    // Rafraîchit l'affichage
+    idx = WEEKS.length - 1;
+    renderPeriod();
+
+    // Met à jour le top 10 dans l'onglet CA
+    updateTop10UI(liveTop10Food, liveTop10Bois);
+
+    console.log('✅ Données live chargées:', liveWEEKS.length, 'semaines,', kpiRows.length, 'jours');
+
+  } catch(e) {
+    console.warn('⚠️ Erreur chargement données live, données fictives conservées:', e.message);
+  }
+}
+
+function updateTop10UI(food, bois) {
+  // Met à jour le top 10 food
+  const foodEl = document.querySelectorAll('#bloc-ca-3 .plats')[0];
+  const boisEl = document.querySelectorAll('#bloc-ca-3 .plats')[1];
+  if (foodEl && food.length) {
+    foodEl.innerHTML = food.map((p,i) => `
+      <div class="plat">
+        <span class="plat-num">${i+1}</span>
+        <span class="plat-name">${p.name}</span>
+        <span class="plat-qty">${Math.round(p.qty)} vtes</span>
+        <span class="plat-ca">${Math.round(p.ca).toLocaleString('fr-FR')} €</span>
+      </div>`).join('');
+  }
+  if (boisEl && bois.length) {
+    boisEl.innerHTML = bois.map((p,i) => `
+      <div class="plat">
+        <span class="plat-num">${i+1}</span>
+        <span class="plat-name">${p.name}</span>
+        <span class="plat-qty">${Math.round(p.qty)} vtes</span>
+        <span class="plat-ca">${Math.round(p.ca).toLocaleString('fr-FR')} €</span>
+      </div>`).join('');
+  }
+  // Top 5 overview
+  const top5El = document.getElementById('bloc-6');
+  if (top5El && food.length) {
+    const top5 = food.slice(0,5);
+    const platsEl = top5El.querySelector('.plats');
+    if (platsEl) platsEl.innerHTML = top5.map((p,i) => `
+      <div class="plat">
+        <span class="plat-num">${i+1}</span>
+        <span class="plat-name">${p.name}</span>
+        <span class="plat-qty">${Math.round(p.qty)} ventes</span>
+        <span class="plat-ca">${Math.round(p.ca).toLocaleString('fr-FR')} €</span>
+      </div>`).join('');
+  }
+}
+
+// Lance le chargement après initialisation des graphes
+window.addEventListener('load', () => setTimeout(loadLiveData, 500));
+
+
 /* ════════════ DONNÉES ════════════ */
 const S13 = [
   { lbl:'Lun 23', midi:965,  soir:3055, total:4020 },
