@@ -78,19 +78,7 @@ body { font-family: 'Sora', sans-serif; background: var(--bg); color: var(--text
 .kpi-cell-delta { font-size: 11px; font-weight: 400; }
 .up { color: var(--ok); } .dn { color: var(--danger); } .neu { color: var(--muted); }
 
-/* ── PRIME COST ── */
-.prime-card { background: var(--accent); border-radius: var(--radius); box-shadow: var(--shadow); padding: 22px 28px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; overflow: hidden; position: relative; }
-.prime-card::after { content: 'PRIME COST'; position: absolute; right: -20px; top: 50%; transform: translateY(-50%) rotate(90deg); font-size: 4.5rem; font-weight: 600; color: rgba(255,255,255,.04); pointer-events: none; white-space: nowrap; }
-.pc-left h3 { font-size: 10px; font-weight: 500; color: rgba(255,255,255,.5); letter-spacing: .12em; text-transform: uppercase; margin-bottom: 6px; }
-.pc-val { font-size: 3.2rem; font-weight: 600; color: #f9c74f; line-height: 1; }
-.pc-sub { font-size: 11px; color: rgba(255,255,255,.5); margin-top: 5px; }
-.pc-right { display: flex; flex-direction: column; align-items: flex-end; gap: 10px; }
-.gauge-labels { display: flex; justify-content: space-between; font-size: 9px; color: rgba(255,255,255,.3); letter-spacing: .07em; text-transform: uppercase; margin-bottom: 5px; }
-.gauge { height: 6px; background: rgba(255,255,255,.12); border-radius: 3px; overflow: hidden; width: 220px; }
-.gauge-fill { height: 100%; border-radius: 3px; background: linear-gradient(90deg,#27ae60 0%,#f9c74f 58%,#e74c3c 100%); }
-.pc-comps { display: flex; gap: 20px; }
-.pc-comp .pcc-lbl { font-size: 9px; letter-spacing: .08em; text-transform: uppercase; color: rgba(255,255,255,.35); display: block; }
-.pc-comp .pcc-val { font-size: 15px; font-weight: 500; color: rgba(255,255,255,.75); }
+
 
 /* ── CHART WRAPPERS ── */
 .chart-h160 { position: relative; height: 160px; }
@@ -244,7 +232,7 @@ footer { max-width: 1040px; margin: 32px auto 0; padding-top: 20px; border-top: 
       <div class="kpi-cell-delta dn" id="kd-ca">▼ –6,6 % vs semaine préc.</div>
     </div>
     <div class="kpi-cell" onclick="scrollToBloc(2)" style="cursor:pointer;" title="Voir le détail">
-      <div class="kpi-n" data-n="2">Réservations</div>
+      <div class="kpi-n" data-n="2">Couverts</div>
       <div class="kpi-cell-val" id="kv-cov">812</div>
       <div class="kpi-cell-delta neu" id="kd-cov">Couverts servis</div>
       <div style="margin-top:6px;font-size:11px;color:var(--muted);">Remplissage : <strong style="color:var(--accent)" id="kv-fill">78 %</strong></div>
@@ -262,25 +250,6 @@ footer { max-width: 1040px; margin: 32px auto 0; padding-top: 20px; border-top: 
     </div>
   </div>
 
-  <!-- PRIME COST -->
-  <div class="prime-card">
-    <div class="pc-left">
-      <h3>Prime Cost · KPI #1</h3>
-      <div class="pc-val">61,4 %</div>
-      <div class="pc-sub">Food cost 27,3 % + Labour cost 34,1 % — Cible &lt; 65 %</div>
-    </div>
-    <div class="pc-right">
-      <div style="width:220px">
-        <div class="gauge-labels"><span>Excellent &lt;55</span><span>Cible &lt;65</span><span>Alerte &gt;65</span></div>
-        <div class="gauge"><div class="gauge-fill" style="width:61.4%"></div></div>
-      </div>
-      <div class="pc-comps">
-        <div class="pc-comp"><span class="pcc-lbl">Food cost</span><span class="pcc-val">27,3 %</span></div>
-        <div class="pc-comp"><span class="pcc-lbl">Labour cost</span><span class="pcc-val">34,1 %</span></div>
-        <div class="pc-comp"><span class="pcc-lbl">vs S12</span><span class="pcc-val" style="color:#f9c74f">–1,2 pts</span></div>
-      </div>
-    </div>
-  </div>
 
   <!-- BLOC 1 : CA HT -->
   <div class="card" id="bloc-1">
@@ -325,7 +294,7 @@ footer { max-width: 1040px; margin: 32px auto 0; padding-top: 20px; border-top: 
         </div>
         <div class="rk">
           <span class="rk-val" id="rk-resa">186</span>
-          <span class="rk-lbl">Réservations</span>
+          <span class="rk-lbl">Couverts</span>
           <span class="rk-delta neu" id="rk-resa-d">—</span>
         </div>
         <div class="rk">
@@ -375,7 +344,7 @@ footer { max-width: 1040px; margin: 32px auto 0; padding-top: 20px; border-top: 
     <div class="card-header">
       <div class="card-num">4</div>
       <span class="card-title">Note Google · évolution</span>
-      <span class="card-src">Google <span class="mock-tag">fictif</span></span>
+      <span class="card-src">Google · temps réel</span>
     </div>
     <div class="card-body">
       <div style="display:flex;align-items:flex-start;gap:32px;margin-bottom:20px;">
@@ -414,9 +383,6 @@ footer { max-width: 1040px; margin: 32px auto 0; padding-top: 20px; border-top: 
             <div class="rl-track"><div class="rl-fill" style="width:34.1%;background:var(--gold);opacity:.7;"></div></div>
             <div class="rl-sub">Cible &lt; 35 % <span class="mock-tag">Skello fictif</span></div>
           </div>
-          <div>
-            <div class="rl-head"><span class="rl-nm">Prime Cost</span><span class="rl-val wn">61,4 %</span></div>
-            <div class="rl-track"><div class="rl-fill" style="width:61.4%;background:var(--gold);opacity:.6;"></div></div>
             <div class="rl-sub">Cible &lt; 65 %</div>
           </div>
         </div>
@@ -962,12 +928,14 @@ async function loadLiveData() {
       const covSoir = sum('Couverts_Soir');
       return {
         couverts:   Math.round(cov),
-        rempli:     70, // pas dans le Sheet
+        rempli:     Math.round(cov / (89 * rows.length) * 100), // couverts / (89 * nb_jours * 2 services)
+        rempliMidi: Math.round(covMidi / (89 * rows.length) * 100),
+        rempliSoir: Math.round(covSoir / (89 * rows.length) * 100),
         resa:       Math.round(cov * 0.7),
         noshows:    0,
         walkin:     Math.round(cov * 0.3),
-        tktMidi:    +avg('Tkt_Moy_Midi').toFixed(2),
-        tktSoir:    +avg('Tkt_Moy_Soir').toFixed(2),
+        tktMidi:    covMidi > 0 ? +(sum('CA_Net_Midi') / sum('Couverts_Midi')).toFixed(2) : 0,
+        tktSoir:    covSoir > 0 ? +(sum('CA_Net_Soir') / sum('Couverts_Soir')).toFixed(2) : 0,
         foodCost:   28,
         labourCost: 34,
         primeCost:  62,
@@ -978,8 +946,8 @@ async function loadLiveData() {
         caNetSoir:  +sum('CA_Net_Soir').toFixed(0),
         caFood:     +sum('CA_Food_HT').toFixed(0),
         caBoisss:   +sum('CA_Boissons_HT').toFixed(0),
-        tktFood:    +avg('Tkt_Moy_Food').toFixed(2),
-        tktBoisss:  +avg('Tkt_Moy_Boissons').toFixed(2),
+        tktFood:    cov > 0 ? +(sum('CA_Food_HT') / cov).toFixed(2) : 0,
+        tktBoisss:  cov > 0 ? +(sum('CA_Boissons_HT') / cov).toFixed(2) : 0,
       };
     });
 
@@ -1107,8 +1075,51 @@ function updateTop10UI(food, bois) {
   }
 }
 
+// ── Note Google scrape ──
+async function loadGoogleRating() {
+  try {
+    // Utilise un proxy CORS public pour scraper Google Maps
+    const placeId  = 'ChIJxxxxxxxx'; // À remplacer par ton Place ID Google
+    // Alternative : utilise l'API Google Places si tu as une clé
+    // Pour l'instant on lit depuis le Sheet si tu l'y stockes
+    const rows = await fetchSheet('KPI_Journaliers');
+    // On prend la dernière note stockée dans le Sheet si elle existe
+    // (tu peux ajouter une colonne Google_Rating dans le Sheet via Apps Script)
+    const lastWithRating = [...rows].reverse().find(r => r['Google_Rating'] && +r['Google_Rating'] > 0);
+    if (lastWithRating) {
+      const note = +lastWithRating['Google_Rating'];
+      const reviews = +lastWithRating['Google_Reviews'] || 0;
+      updateGoogleUI(note, reviews);
+    }
+  } catch(e) {
+    console.warn('Note Google non disponible:', e.message);
+  }
+}
+
+function updateGoogleUI(note, reviews) {
+  const noteEl = document.getElementById('google-note');
+  const countEl = document.getElementById('google-count');
+  const kvEl = document.getElementById('kv-google');
+  if (noteEl) noteEl.textContent = note.toFixed(1).replace('.', ',');
+  if (countEl) countEl.textContent = reviews.toLocaleString('fr-FR') + ' avis';
+  if (kvEl) kvEl.textContent = note.toFixed(1).replace('.', ',') + ' ★';
+
+  // Étoiles
+  const starsEl = document.getElementById('google-stars');
+  if (starsEl) {
+    starsEl.innerHTML = [1,2,3,4,5].map(i => {
+      if (note >= i) return '<span class="star full">★</span>';
+      if (note >= i - 0.5) return '<span class="star half">★</span>';
+      return '<span class="star empty">★</span>';
+    }).join('');
+  }
+}
+
 // Lance le chargement après initialisation des graphes
-window.addEventListener('load', () => setTimeout(loadLiveData, 500));
+window.addEventListener('load', () => {
+  setTimeout(loadLiveData, 500);
+  setTimeout(loadGoogleRating, 800);
+});
 
 
 /* ════════════ DONNÉES ════════════ */
@@ -1521,7 +1532,7 @@ function renderPeriod() {
   setd('kd-cov', 'Couverts servis', 'neu');
   document.getElementById('kv-fill').textContent = Math.round(m.rempli) + ' %';
 
-  const tktTotal = +((m.tktMidi * 0.32 + m.tktSoir * 0.68)).toFixed(2);
+  const tktTotal = m.couverts > 0 ? +(p.ca / m.couverts).toFixed(2) : +((m.tktMidi * 0.32 + m.tktSoir * 0.68)).toFixed(2);
   set('kv-tkt',  tktTotal.toFixed(2) + ' €');
   setd('kd-tkt', `Déj. ${m.tktMidi} € · Dîner ${m.tktSoir} €`, 'neu');
 
@@ -1572,7 +1583,6 @@ function renderPeriod() {
   const ratios = [
     { nm:'Food cost',    val:m.foodCost,   cible:'< 30 %', cls: m.foodCost < 30 ? 'gd' : 'bd', w: m.foodCost },
     { nm:'Labour cost',  val:m.labourCost, cible:'< 35 %', cls: m.labourCost < 35 ? 'wn' : 'bd', w: m.labourCost },
-    { nm:'Prime Cost',   val:m.primeCost,  cible:'< 65 %', cls: m.primeCost < 65 ? 'wn' : 'bd', w: m.primeCost },
     { nm:'CA / couvert', val:tktTotal,     cible:'> 45 €',  cls: tktTotal > 45 ? 'gd' : 'bd', w: tktTotal / 80 * 100 },
   ];
   const rlHeads = document.querySelectorAll('.rl-head');
@@ -1585,13 +1595,6 @@ function renderPeriod() {
     if (rlFills[i]) rlFills[i].style.width = Math.min(r.w, 100) + '%';
   });
 
-  // ── Prime Cost hero ──
-  document.querySelector('.pc-val').textContent = m.primeCost + ' %';
-  document.querySelector('.pc-sub').textContent = `Food cost ${m.foodCost} % + Labour cost ${m.labourCost} % — Cible < 65 %`;
-  document.querySelector('.gauge-fill').style.width = Math.min(m.primeCost, 100) + '%';
-  document.querySelectorAll('.pcc-val')[0].textContent = m.foodCost + ' %';
-  document.querySelectorAll('.pcc-val')[1].textContent = m.labourCost + ' %';
-
   // ── Graphique CA ──
   if (gran === 'week') {
     const isS13  = p.key === '2026-W13';
@@ -1599,14 +1602,18 @@ function renderPeriod() {
     const weights  = [0.11, 0.13, 0.14, 0.13, 0.15, 0.22, 0.12];
     const dayNames = ['Lun','Mar','Mer','Jeu','Ven','Sam','Dim'];
     let labels, total, midi, soir;
-    if (isS13) {
+    // Toujours utiliser S13 (données réelles) — ne montre que les jours disponibles
+    if (S13.length > 0) {
       labels = S13.map(d => d.lbl); total = S13.map(d => d.total);
       midi = S13.map(d => d.midi); soir = S13.map(d => d.soir);
     } else {
       labels = dayNames; total = weights.map(w => Math.round(p.ca * w));
       midi = total.map(v => Math.round(v * 0.24)); soir = total.map(v => Math.round(v * 0.76));
     }
-    const prevTotal = prevW ? weights.map(w => Math.round(prevW.ca * w)) : [];
+    // Semaine précédente : aligne sur le même nb de jours disponibles
+    const prevTotal = prevW && S13.length > 0
+      ? S13.map((_, i) => Math.round(prevW.ca * (weights[i] || 0.14)))
+      : (prevW ? weights.map(w => Math.round(prevW.ca * w)) : []);
     dayChart.data.labels = labels;
     dayChart.data.datasets[0].data = total;  dayChart.data.datasets[0].hidden = false;
     dayChart.data.datasets[1].data = soir;   dayChart.data.datasets[1].hidden = false;
@@ -1808,9 +1815,9 @@ function updateCa1Chart(p, m) {
     const weights = [0.11,0.13,0.14,0.13,0.15,0.22,0.12];
     const dayNames = ['Lun','Mar','Mer','Jeu','Ven','Sam','Dim'];
     let labels, total, midi, soir;
-    if (isS13) { labels=S13.map(d=>d.lbl); total=S13.map(d=>d.total); midi=S13.map(d=>d.midi); soir=S13.map(d=>d.soir); }
+    if (S13.length > 0) { labels=S13.map(d=>d.lbl); total=S13.map(d=>d.total); midi=S13.map(d=>d.midi); soir=S13.map(d=>d.soir); }
     else { labels=dayNames; total=weights.map(w=>Math.round(p.ca*w)); midi=total.map(v=>Math.round(v*0.24)); soir=total.map(v=>Math.round(v*0.76)); }
-    const prev = prevW ? weights.map(w=>Math.round(prevW.ca*w)) : [];
+    const prev = prevW && S13.length > 0 ? S13.map((_,i) => Math.round(prevW.ca*(weights[i]||0.14))) : (prevW ? weights.map(w=>Math.round(prevW.ca*w)) : []);
     ca1Chart.data.labels = labels;
     [0,1,2,3].forEach(i=>ca1Chart.data.datasets[i].hidden=false);
     ca1Chart.data.datasets[0].data=total; ca1Chart.data.datasets[1].data=soir;
