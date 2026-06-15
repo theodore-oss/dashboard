@@ -408,7 +408,7 @@ footer { max-width: 1040px; margin: 32px auto 0; padding-top: 20px; border-top: 
     </div>
   </div>
 
-    <!-- BLOC CA-1 : CA & HISTORIQUE -->
+    <!-- BLOC CA-1 : CA PAR JOUR + HISTORIQUE -->
   <div class="card" id="bloc-ca-1">
     <div class="card-header">
       <div class="card-num">1</div>
@@ -423,13 +423,13 @@ footer { max-width: 1040px; margin: 32px auto 0; padding-top: 20px; border-top: 
         <div class="cleg-item"><span class="cleg-dashed" style="border-color:#C8963C;"></span>Déjeuner</div>
         <div class="cleg-item"><span class="cleg-dashed" style="border-color:rgba(140,136,130,0.55);"></span>Période préc.</div>
       </div>
-      <div class="chart-h160" style="margin-bottom:24px;"><canvas id="ca1Chart"></canvas></div>
+      <div class="chart-h160" style="margin-bottom:28px;"><canvas id="ca1Chart"></canvas></div>
       <div class="section-sep">CA net · historique 6 semaines</div>
       <div class="chart-h160"><canvas id="caHistChart"></canvas></div>
     </div>
   </div>
 
-  <!-- BLOC CA-2 : CA & TICKET MOYEN -->
+  <!-- BLOC CA-2 : CA + TICKET MOYEN -->
   <div class="card" id="bloc-ca-2">
     <div class="card-header">
       <div class="card-num">2</div>
@@ -437,8 +437,9 @@ footer { max-width: 1040px; margin: 32px auto 0; padding-top: 20px; border-top: 
       <span class="card-src">Lightspeed · données réelles</span>
     </div>
     <div class="card-body">
+
+      <!-- CA Déjeuner vs Dîner -->
       <div class="section-sep">CA Déjeuner vs Dîner</div>
-      <div class="section-sep">Déjeuner vs Dîner</div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px;">
         <div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:14px 16px;display:flex;align-items:center;gap:14px;">
           <div style="font-size:26px;line-height:1;flex-shrink:0;">☀️</div>
@@ -455,10 +456,33 @@ footer { max-width: 1040px; margin: 32px auto 0; padding-top: 20px; border-top: 
             <div style="font-size:20px;font-weight:600;color:var(--accent);" id="din-ca-val">—</div>
             <div style="font-size:10px;color:var(--muted);margin-top:2px;" id="din-ca-sub">—</div>
           </div>
-      <div class="section-sep" style="margin-top:16px;">CA Cuisine vs Boissons</div>
-      
-      <div class="section-sep" style="margin-top:20px;">Ticket moyen · Déjeuner &amp; Dîner</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px;">
+        </div>
+      </div>
+
+      <!-- CA Cuisine vs Boissons -->
+      <div class="section-sep">CA Cuisine vs Boissons</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:28px;">
+        <div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:14px 16px;display:flex;align-items:center;gap:14px;">
+          <div style="font-size:26px;line-height:1;flex-shrink:0;">🍽️</div>
+          <div>
+            <div style="font-size:9px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px;">Cuisine &amp; Tapas</div>
+            <div style="font-size:20px;font-weight:600;color:var(--accent);" id="fb-food-val">—</div>
+            <div style="font-size:10px;color:var(--muted);margin-top:2px;" id="fb-food-sub">—</div>
+          </div>
+        </div>
+        <div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:14px 16px;display:flex;align-items:center;gap:14px;">
+          <div style="font-size:26px;line-height:1;flex-shrink:0;">🍷</div>
+          <div>
+            <div style="font-size:9px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px;">Boissons &amp; Bouteilles</div>
+            <div style="font-size:20px;font-weight:600;color:var(--accent);" id="fb-bev-val">—</div>
+            <div style="font-size:10px;color:var(--muted);margin-top:2px;" id="fb-bev-sub">—</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Ticket moyen Déjeuner / Dîner -->
+      <div class="section-sep">Ticket moyen · Déjeuner &amp; Dîner</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;">
         <div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:14px 16px;display:flex;align-items:center;gap:14px;">
           <div style="font-size:26px;line-height:1;flex-shrink:0;">☀️</div>
           <div>
@@ -474,8 +498,18 @@ footer { max-width: 1040px; margin: 32px auto 0; padding-top: 20px; border-top: 
             <div style="font-size:22px;font-weight:600;color:var(--accent);" id="ca2-tkt-soir">—</div>
             <div style="font-size:10px;color:var(--muted);margin-top:2px;">par couvert</div>
           </div>
-      <div class="section-sep" style="margin-top:20px;">Ticket moyen · Cuisine &amp; Boissons</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px;">
+        </div>
+      </div>
+      <div class="section-sep">Évolution ticket moyen déjeuner / dîner · 6 périodes</div>
+      <div class="cleg">
+        <div class="cleg-item"><span style="width:12px;height:12px;border-radius:2px;background:rgba(139,26,26,0.75);display:inline-block;"></span>Dîner</div>
+        <div class="cleg-item"><span style="width:12px;height:12px;border-radius:2px;background:rgba(200,150,60,0.75);display:inline-block;"></span>Déjeuner</div>
+      </div>
+      <div class="chart-h160" style="margin-bottom:28px;"><canvas id="tktMidiHistChart"></canvas></div>
+
+      <!-- Ticket moyen Cuisine / Boissons -->
+      <div class="section-sep">Ticket moyen · Cuisine &amp; Boissons</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;">
         <div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:14px 16px;display:flex;align-items:center;gap:14px;">
           <div style="font-size:26px;line-height:1;flex-shrink:0;">🍽️</div>
           <div>
@@ -491,10 +525,19 @@ footer { max-width: 1040px; margin: 32px auto 0; padding-top: 20px; border-top: 
             <div style="font-size:22px;font-weight:600;color:var(--accent);" id="ca2-tkt-bev">—</div>
             <div style="font-size:10px;color:var(--muted);margin-top:2px;">par couvert</div>
           </div>
+        </div>
+      </div>
+      <div class="section-sep">Évolution ticket moyen cuisine / boissons · 6 périodes</div>
+      <div class="cleg">
+        <div class="cleg-item"><span style="width:12px;height:12px;border-radius:2px;background:rgba(139,26,26,0.75);display:inline-block;"></span>Cuisine</div>
+        <div class="cleg-item"><span style="width:12px;height:12px;border-radius:2px;background:rgba(200,150,60,0.75);display:inline-block;"></span>Boissons</div>
+      </div>
+      <div class="chart-h160"><canvas id="fbTktChart"></canvas></div>
+
     </div>
   </div>
 
-  <!-- BLOC CA-3 : TOP PRODUITS -->
+  <!-- BLOC CA-3 : TOP 10 PRODUITS -->
   <div class="card" id="bloc-ca-3">
     <div class="card-header">
       <div class="card-num">3</div>
@@ -510,6 +553,8 @@ footer { max-width: 1040px; margin: 32px auto 0; padding-top: 20px; border-top: 
         <div>
           <div class="section-sep">🍷 Boissons &amp; Bouteilles — top 10</div>
           <div class="plats" id="top10-bev-list"><div style="color:var(--muted);font-size:12px;padding:8px;">Chargement en cours…</div></div>
+        </div>
+      </div>
     </div>
   </div>
 
