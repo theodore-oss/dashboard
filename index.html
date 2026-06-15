@@ -783,6 +783,7 @@ footer { max-width: 1040px; margin: 32px auto 0; padding-top: 20px; border-top: 
 </div><!-- /wrap -->
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+
 <script>
 
 // ════════════════════════════════════════════════════════════════
@@ -1179,6 +1180,100 @@ const FNB_M = [];
 
 /* ════════════ INITIALISATIONS GRAPHES ════════════ */
 
+
+// ── Plugin : valeurs + flèches d'évolution sur les graphes barres ──
+const rosarioBarPlugin = {
+  id: 'rosarioBar',
+  afterDatasetsDraw(chart) {
+    const { ctx, data } = chart;
+    if (!data.labels || data.labels.length < 2) return;
+
+    ctx.save();
+
+    // ── 1. Valeur totale au-dessus de chaque barre ──
+    const nbBars = data.labels.length;
+    const totals = [];
+    for (let i = 0; i < nbBars; i++) {
+      let t = 0;
+      data.datasets.forEach((ds, di) => {
+        if (!chart.getDatasetMeta(di).hidden) t += (ds.data[i] || 0);
+      });
+      totals.push(t);
+    }
+
+    // Y minimum par barre (sommet de la pile)
+    const topY = [];
+    for (let i = 0; i < nbBars; i++) {
+      let minY = Infinity;
+      data.datasets.forEach((ds, di) => {
+        const m = chart.getDatasetMeta(di);
+        if (!m.hidden && m.data[i]) minY = Math.min(minY, m.data[i].y);
+      });
+      topY.push(minY === Infinity ? null : minY);
+    }
+
+    ctx.font = '600 10px Sora, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'bottom';
+    ctx.fillStyle = '#1a1916';
+
+    for (let i = 0; i < nbBars; i++) {
+      if (!totals[i] || topY[i] === null) continue;
+      const bar = chart.getDatasetMeta(0).data[i];
+      if (!bar) continue;
+      const fmt = v => v >= 1000 ? (v/1000).toFixed(0)+'k €' : Math.round(v)+' €';
+      ctx.fillText(fmt(totals[i]), bar.x, topY[i] - 5);
+    }
+
+    // ── 2. Flèches d'évolution entre barres ──
+    for (let i = 1; i < nbBars; i++) {
+      if (!totals[i] || !totals[i-1] || topY[i] === null || topY[i-1] === null) continue;
+      const bar0 = chart.getDatasetMeta(0).data[i-1];
+      const bar1 = chart.getDatasetMeta(0).data[i];
+      if (!bar0 || !bar1) continue;
+
+      const pct = ((totals[i] - totals[i-1]) / totals[i-1] * 100);
+      const isUp = pct >= 0;
+      const pctStr = (isUp ? '+' : '') + pct.toFixed(0) + '%';
+      const color = isUp ? 'rgba(30,132,73,0.7)' : 'rgba(192,57,43,0.7)';
+
+      const x1 = bar0.x, y1 = topY[i-1] - 22;
+      const x2 = bar1.x, y2 = topY[i]   - 22;
+      const mx = (x1+x2)/2, my = Math.min(y1,y2) - 10;
+
+      // Courbe
+      ctx.beginPath();
+      ctx.moveTo(x1, y1);
+      ctx.quadraticCurveTo(mx, my, x2, y2);
+      ctx.strokeStyle = color;
+      ctx.lineWidth = 1.5;
+      ctx.setLineDash([3, 2]);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      // Flèche
+      const angle = Math.atan2(y2 - my, x2 - mx);
+      ctx.beginPath();
+      ctx.moveTo(x2, y2);
+      ctx.lineTo(x2 - 7*Math.cos(angle-0.4), y2 - 7*Math.sin(angle-0.4));
+      ctx.lineTo(x2 - 7*Math.cos(angle+0.4), y2 - 7*Math.sin(angle+0.4));
+      ctx.closePath();
+      ctx.fillStyle = color;
+      ctx.fill();
+
+      // Label
+      ctx.font = '600 9px Sora, sans-serif';
+      ctx.fillStyle = isUp ? '#1e8449' : '#c0392b';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'bottom';
+      ctx.fillText(pctStr, mx, my - 1);
+    }
+
+    ctx.restore();
+  }
+};
+Chart.register(rosarioBarPlugin);
+
 function makeChart(id, type, datasets, opts) {
   const el = document.getElementById(id);
   if (!el) return null;
@@ -1186,6 +1281,8 @@ function makeChart(id, type, datasets, opts) {
     type,
     data: { labels: [], datasets },
     options: { responsive: true, maintainAspectRatio: false,
+      barPercentage: 0.55,
+      categoryPercentage: 0.7,
       plugins: { legend: { display: false },
         tooltip: { backgroundColor:'#fff', borderColor:'#e4e1d9', borderWidth:1,
           titleColor:'#1a1916', bodyColor:'#8a8680', padding:10 } },
@@ -1207,7 +1304,7 @@ const dayChart = new Chart(document.getElementById('dayChart'), {
     { label:'Préc.',   type:'line', borderColor:'rgba(140,136,130,0.4)', borderWidth:1, borderDash:[4,4], pointRadius:0, tension:0.3, fill:false, order:1, data:[] },
     { label:'Mensuel', type:'bar',  backgroundColor:[], borderColor:'#8B1A1A', borderWidth:1, borderRadius:4, hidden:true, order:2, data:[] },
   ]},
-  options:{ responsive:true, maintainAspectRatio:false, interaction:{mode:'index',intersect:false},
+  options:{ responsive:true, maintainAspectRatio:false, barPercentage:0.55, categoryPercentage:0.7, interaction:{mode:'index',intersect:false},
     plugins:{ legend:{display:false}, tooltip:{ backgroundColor:'#fff', borderColor:'#e4e1d9', borderWidth:1, titleColor:'#1a1916', bodyColor:'#8a8680', padding:10,
       callbacks:{label:c=>`  ${c.dataset.label} : ${Math.round(c.parsed.y).toLocaleString('fr-FR')} €`} } },
     scales:{ x:{offset:true,grid:{display:false},ticks:{font:{family:'Sora',size:10}}}, y:{grid:{color:'rgba(0,0,0,.05)'},ticks:{font:{family:'Sora',size:10},callback:v=>Math.round(v/1000)+'k€'}} } }
