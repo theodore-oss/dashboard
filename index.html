@@ -176,6 +176,18 @@ footer { max-width: 1040px; margin: 32px auto 0; padding-top: 20px; border-top: 
   .kpi-strip,.resa-kpis{ grid-template-columns: repeat(2,1fr); }
   .grid-2,.grid-3 { grid-template-columns: 1fr; }
 }
+
+  /* ── LOADER ── */
+  #loader {
+    position: fixed; inset: 0; background: #f7f6f3;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    z-index: 9999; gap: 16px;
+  }
+  .loader-logo { font-size: 28px; font-style: italic; font-family: Georgia, serif; color: var(--accent); font-weight: bold; }
+  .loader-bar  { width: 200px; height: 3px; background: var(--border); border-radius: 2px; overflow: hidden; }
+  .loader-fill { height: 100%; background: var(--accent); border-radius: 2px; animation: load 1.5s ease-in-out infinite; }
+  @keyframes load { 0%{width:0%} 60%{width:80%} 100%{width:100%} }
+  .loader-txt  { font-size: 12px; color: var(--muted); }
 </style>
 </head>
 <body>
@@ -1027,10 +1039,17 @@ async function loadLiveData() {
     // Met à jour le top 10 dans l'onglet CA
     updateTop10UI(liveTop10Food, liveTop10Bois);
 
+    // Masque le loader
+    const loader = document.getElementById('loader');
+    if (loader) loader.style.display = 'none';
+
     console.log('✅ Données live chargées:', liveWEEKS.length, 'semaines,', kpiRows.length, 'jours');
 
   } catch(e) {
-    console.warn('⚠️ Erreur chargement données live, données fictives conservées:', e.message);
+    console.warn('⚠️ Erreur chargement données live:', e.message, e.stack);
+    // Masque le loader même en cas d'erreur
+    const loader = document.getElementById('loader');
+    if (loader) loader.style.display = 'none';
   }
 }
 
@@ -1129,398 +1148,33 @@ function updateGoogleChart(dateLabels, notes) {
 
 // Lance le chargement après initialisation des graphes
 window.addEventListener('load', () => {
-  setTimeout(loadLiveData, 500);
-  setTimeout(loadGoogleRating, 800);
-});
-
-
-/* ════════════ DONNÉES ════════════ */
-const S13 = [
-  { lbl:'Lun 23', midi:965,  soir:3055, total:4020 },
-  { lbl:'Mar 24', midi:1244, soir:3937, total:5181 },
-  { lbl:'Mer 25', midi:1323, soir:4189, total:5512 },
-  { lbl:'Jeu 26', midi:1044, soir:3306, total:4350 },
-  { lbl:'Ven 27', midi:1386, soir:4391, total:5777 },
-  { lbl:'Sam 28', midi:2072, soir:6557, total:8629 },
-  { lbl:'Dim 29', midi:847,  soir:2267, total:3114 },
-];
-const S12 = [3820, 4950, 5260, 4150, 5510, 8230, 3230]; // S12 totaux pour comparaison
-
-const WEEKS = [
-  { key:'2025-W42', lbl:'S42 · 13–19 oct 2025',   ca:10739, prev_ca:null },
-  { key:'2025-W44', lbl:'S44 · 27 oct–2 nov 2025', ca:14200, prev_ca:10739 },
-  { key:'2025-W45', lbl:'S45 · 3–9 nov 2025',      ca:26800, prev_ca:14200 },
-  { key:'2025-W46', lbl:'S46 · 10–16 nov 2025',    ca:28400, prev_ca:26800 },
-  { key:'2025-W47', lbl:'S47 · 17–23 nov 2025',    ca:30100, prev_ca:28400 },
-  { key:'2025-W48', lbl:'S48 · 24–30 nov 2025',    ca:31200, prev_ca:30100 },
-  { key:'2025-W49', lbl:'S49 · 1–7 déc 2025',      ca:29800, prev_ca:31200 },
-  { key:'2025-W50', lbl:'S50 · 8–14 déc 2025',     ca:32100, prev_ca:29800 },
-  { key:'2025-W51', lbl:'S51 · 15–21 déc 2025',    ca:34500, prev_ca:32100 },
-  { key:'2025-W52', lbl:'S52 · 22–28 déc 2025',    ca:18200, prev_ca:34500 },
-  { key:'2026-W01', lbl:'S1 · 29 déc–4 jan 2026',  ca:21000, prev_ca:18200 },
-  { key:'2026-W02', lbl:'S2 · 5–11 jan 2026',      ca:30400, prev_ca:21000 },
-  { key:'2026-W03', lbl:'S3 · 12–18 jan 2026',     ca:33200, prev_ca:30400 },
-  { key:'2026-W04', lbl:'S4 · 19–25 jan 2026',     ca:34600, prev_ca:33200 },
-  { key:'2026-W05', lbl:'S5 · 26 jan–1 fév 2026',  ca:35800, prev_ca:34600 },
-  { key:'2026-W06', lbl:'S6 · 2–8 fév 2026',       ca:38200, prev_ca:35800 },
-  { key:'2026-W07', lbl:'S7 · 9–15 fév 2026',      ca:41500, prev_ca:38200 },
-  { key:'2026-W08', lbl:'S8 · 16–22 fév 2026',     ca:43100, prev_ca:41500 },
-  { key:'2026-W09', lbl:'S9 · 23 fév–1 mar 2026',   ca:56565, prev_ca:43100 },
-  { key:'2026-W10', lbl:'S10 · 2–8 mar 2026',        ca:37414, prev_ca:56565 },
-  { key:'2026-W11', lbl:'S11 · 9–15 mar 2026',       ca:38803, prev_ca:37414 },
-  { key:'2026-W12', lbl:'S12 · 16–22 mar 2026',      ca:39151, prev_ca:38803 },
-  { key:'2026-W13', lbl:'S13 · 23–29 mar 2026',      ca:36583, prev_ca:39151 },
-];
-const MONTHS = [
-  { key:'2025-11', lbl:'Novembre 2025',  ca:119773, prev_ca:null },
-  { key:'2025-12', lbl:'Décembre 2025',  ca:128871, prev_ca:119773 },
-  { key:'2026-01', lbl:'Janvier 2026',   ca:130200, prev_ca:128871 },
-  { key:'2026-02', lbl:'Février 2026',   ca:177345, prev_ca:130200 },
-  { key:'2026-03', lbl:'Mars 2026',      ca:159709, prev_ca:177345 },
-];
-
-// Ticket moyen fictif par semaine (déj / dîner)
-const TKT_WEEKS = WEEKS.map((w,i) => ({
-  lbl: w.lbl.split(' · ')[0],
-  dej:  31 + i * 0.18,
-  soir: 46 + i * 0.22,
-}));
-
-// Note Google fictive par semaine (stable autour de 4.8)
-const GOOGLE_WEEKS = WEEKS.map((w,i) => ({
-  lbl: w.lbl.split(' · ')[0],
-  note: +(4.6 + Math.min(0.35, i * 0.015)).toFixed(1),
-}));
-
-// Métriques fictives par semaine (couverts, remplissage, réservations, etc.)
-const METRICS_W = WEEKS.map((w,i) => {
-  const couverts   = Math.round(w.ca / (44 + i * 0.04));
-  const rempli     = 62 + i * 1.5;
-  const resa       = Math.round(couverts * 0.72 / 2.4);
-  const noshows    = Math.max(0, Math.round(resa * 0.045));
-  const walkin     = couverts - resa * 2;
-  const tktMidi    = +(31 + i * 0.18).toFixed(2);
-  const tktSoir    = +(46 + i * 0.22).toFixed(2);
-  const foodCost   = +(28.5 - i * 0.05).toFixed(1);
-  const labourCost = +(35.2 - i * 0.05).toFixed(1);
-  return { couverts, rempli, resa, noshows, walkin, tktMidi, tktSoir, foodCost, labourCost,
-           primeCost: +(foodCost + labourCost).toFixed(1),
-           rempliMidi: Math.round(rempli * 0.87), rempliSoir: Math.round(rempli * 1.05) };
-});
-
-const METRICS_M = MONTHS.map((m,i) => {
-  const couverts   = Math.round(m.ca / 44.5);
-  const rempli     = 70 + i * 5;
-  const resa       = Math.round(couverts * 0.72 / 2.4 * 4.3);
-  const noshows    = Math.max(0, Math.round(resa * 0.043));
-  const tktMidi    = +(32 + i * 0.4).toFixed(2);
-  const tktSoir    = +(47 + i * 0.5).toFixed(2);
-  const foodCost   = +(28 - i * 0.1).toFixed(1);
-  const labourCost = +(34.5 - i * 0.1).toFixed(1);
-  return { couverts, rempli, resa, noshows, tktMidi, tktSoir, foodCost, labourCost,
-           primeCost: +(foodCost + labourCost).toFixed(1),
-           rempliMidi: Math.round(rempli * 0.87), rempliSoir: Math.round(rempli * 1.05) };
-});
-
-/* ════════════ GRAPHIQUE 1 : CA PAR JOUR ════════════ */
-const dayChart = new Chart(document.getElementById('dayChart'), {
-  type: 'line',
-  data: {
-    labels: S13.map(d => d.lbl),
-    datasets: [
-      {
-        label: 'Total',
-        data: S13.map(d => d.total),
-        type: 'line',
-        borderColor: '#8B1A1A', borderWidth: 2.5,
-        pointBackgroundColor: '#8B1A1A', pointRadius: 5, pointHoverRadius: 7,
-        tension: 0.35, fill: true, backgroundColor: 'rgba(139,26,26,0.06)',
-        order: 1,
-      },
-      {
-        label: 'Dîner',
-        data: S13.map(d => d.soir),
-        type: 'line',
-        borderColor: '#8B1A1A', borderWidth: 1.5, borderDash: [5,4],
-        pointBackgroundColor: '#8B1A1A', pointRadius: 3, pointHoverRadius: 5,
-        tension: 0.35, fill: false,
-        order: 1,
-      },
-      {
-        label: 'Déjeuner',
-        data: S13.map(d => d.midi),
-        type: 'line',
-        borderColor: '#C8963C', borderWidth: 1.5, borderDash: [5,4],
-        pointBackgroundColor: '#C8963C', pointRadius: 3, pointHoverRadius: 5,
-        tension: 0.35, fill: false,
-        order: 1,
-      },
-      {
-        label: 'Sem. préc.',
-        data: S12,
-        type: 'line',
-        borderColor: 'rgba(140,136,130,0.4)', borderWidth: 1, borderDash: [4,4],
-        pointRadius: 0, pointHoverRadius: 4,
-        tension: 0.3, fill: false,
-        order: 1,
-      },
-      {
-        label: 'CA mensuel',
-        data: [],
-        type: 'bar',
-        backgroundColor: [], borderColor: '#8B1A1A', borderWidth: 1,
-        borderRadius: 4, hidden: true,
-        order: 2,
-      },
-    ]
-  },
-  options: {
-    responsive: true, maintainAspectRatio: false,
-    interaction: { mode: 'index', intersect: false },
-    plugins: {
-      legend: { display: false },
-      tooltip: {
-        backgroundColor: '#fff', borderColor: '#e4e1d9', borderWidth: 1,
-        titleColor: '#1a1916', bodyColor: '#8a8680', padding: 10,
-        callbacks: { label: c => `  ${c.dataset.label} : ${Math.round(c.parsed.y).toLocaleString('fr-FR')} €` }
-      }
-    },
-    scales: {
-      x: { offset: true, grid: { display: false }, ticks: { font: { family:'Sora', size:10 } } },
-      y: { grid: { color:'rgba(0,0,0,.05)' }, ticks: { font: { family:'Sora', size:10 }, callback: v => Math.round(v/1000) + ' k€' } }
-    }
+  // Chargement automatique si déjà authentifié
+  if (sessionStorage.getItem('rosario_pin_ok') === '1') {
+    setTimeout(loadLiveData, 300);
+    setTimeout(loadGoogleRating, 600);
   }
 });
 
-/* ════════════ GRAPHIQUE 3 : TICKET MOYEN (bar) ════════════ */
-const tktData = TKT_WEEKS.slice(-8);
-const tktChart = new Chart(document.getElementById('tktChart'), {
-  type: 'bar',
-  data: {
-    labels: tktData.map(d => d.lbl),
-    datasets: [
-      {
-        label: 'Dîner',
-        data: tktData.map(d => +d.soir.toFixed(2)),
-        backgroundColor: 'rgba(139,26,26,0.75)',
-        borderRadius: 3, borderSkipped: false,
-      },
-      {
-        label: 'Déjeuner',
-        data: tktData.map(d => +d.dej.toFixed(2)),
-        backgroundColor: 'rgba(200,150,60,0.75)',
-        borderRadius: 3, borderSkipped: false,
-      },
-    ]
-  },
-  options: {
-    responsive: true, maintainAspectRatio: false,
-    interaction: { mode: 'index', intersect: false },
-    layout: { padding: { top: 20 } },
-    plugins: {
-      legend: { display: false },
-      tooltip: {
-        backgroundColor: '#fff', borderColor: '#e4e1d9', borderWidth: 1,
-        titleColor: '#1a1916', bodyColor: '#8a8680', padding: 10,
-        callbacks: { label: c => `  ${c.dataset.label} : ${c.parsed.y.toFixed(2)} €` }
-      }
-    },
-    scales: {
-      x: { grid: { display: false }, ticks: { font: { family:'Sora', size:10 } } },
-      y: {
-        grid: { color:'rgba(0,0,0,.05)' },
-        ticks: { font: { family:'Sora', size:10 }, callback: v => v.toFixed(0) + ' €' },
-        min: 0,
-      }
-    },
-    animation: {
-      onComplete: function() {
-        const chart = this;
-        const ctx = chart.ctx;
-        ctx.save();
-        ctx.font = '500 10px Sora, sans-serif';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'bottom';
-        chart.data.datasets.forEach((dataset, i) => {
-          const meta = chart.getDatasetMeta(i);
-          meta.data.forEach((bar, j) => {
-            const val = dataset.data[j];
-            ctx.fillStyle = i === 0 ? '#8B1A1A' : '#C8963C';
-            ctx.fillText(val.toFixed(0) + ' €', bar.x, bar.y - 3);
-          });
-        });
-        ctx.restore();
-      }
-    }
-  }
-});
 
-/* ════════════ GRAPHIQUE 4 : NOTE GOOGLE ════════════ */
-// Initialisé vide — rempli par loadGoogleRating() depuis le Sheet
-const googleChartEl = document.getElementById('googleChart');
-const googleChart = googleChartEl ? new Chart(googleChartEl, {
-  type: 'line',
-  data: { labels: [], datasets: [{ label:'Note Google', data:[], borderColor:'#f9c74f', borderWidth:2, pointBackgroundColor:'#f9c74f', pointRadius:3, tension:0.35, fill:true, backgroundColor:'rgba(249,199,79,0.08)' }] },
-  options: {
-    responsive:true, maintainAspectRatio:false,
-    plugins:{ legend:{display:false}, tooltip:{ backgroundColor:'#fff', borderColor:'#e4e1d9', borderWidth:1, titleColor:'#1a1916', bodyColor:'#8a8680', padding:8, callbacks:{label:c=>`  Note : ${c.parsed.y.toFixed(1)} / 5`} } },
-    scales:{ x:{grid:{display:false},ticks:{font:{family:'Sora',size:9}}}, y:{min:4,max:5,grid:{color:'rgba(0,0,0,.05)'},ticks:{font:{family:'Sora',size:9},callback:v=>v.toFixed(1)}} }
-  }
-}) : null;
+/* ════════════ DONNÉES — vides au départ, remplies par loadLiveData() ════════════ */
 
-/* ════════════ GRAPHIQUE MENSUEL (fin. tab supprimé) ════════════ */
-// Données F&B fictives par période
-const FNB_W = METRICS_W.map((m, i) => ({
-  foodEur: Math.round(WEEKS[i].ca * m.foodCost / 100 * 0.77),
-  bevEur:  Math.round(WEEKS[i].ca * m.foodCost / 100 * 0.23),
-  foodPct: +(m.foodCost * 0.77).toFixed(1),
-  bevPct:  +(m.foodCost * 0.23).toFixed(1),
-  staffCuisine: Math.round(WEEKS[i].ca * m.labourCost / 100 * 0.58),
-  staffSalle:   Math.round(WEEKS[i].ca * m.labourCost / 100 * 0.42),
-}));
-const FNB_M = (window.LIVE_METRICS_M || METRICS_W).map((m, i) => ({
-  foodEur: Math.round((MONTHS[i]||MONTHS[MONTHS.length-1]||{ca:0}).ca * (m.foodCost||28) / 100 * 0.77),
-  bevEur:  Math.round((MONTHS[i]||MONTHS[MONTHS.length-1]||{ca:0}).ca * (m.foodCost||28) / 100 * 0.23),
-  foodPct: +((m.foodCost||28) * 0.77).toFixed(1),
-  bevPct:  +((m.foodCost||28) * 0.23).toFixed(1),
-  staffCuisine: 0,
-  staffSalle:   0,
-}));
+// Semaine courante (jours)
+let S13 = [];
+let S12 = [];
 
-// ── GRAPHIQUE CA1 (clone du dayChart pour l'onglet Analyse CA) ──
-const ca1Chart = new Chart(document.getElementById('ca1Chart'), {
-  type: 'line',
-  data: {
-    labels: S13.map(d => d.lbl),
-    datasets: [
-      { label:'Total',     data: S13.map(d=>d.total), type:'line', borderColor:'#8B1A1A', borderWidth:2.5, pointBackgroundColor:'#8B1A1A', pointRadius:5, pointHoverRadius:7, tension:0.35, fill:true, backgroundColor:'rgba(139,26,26,0.06)', order:1 },
-      { label:'Dîner',     data: S13.map(d=>d.soir),  type:'line', borderColor:'#8B1A1A', borderWidth:1.5, borderDash:[5,4], pointBackgroundColor:'#8B1A1A', pointRadius:3, pointHoverRadius:5, tension:0.35, fill:false, order:1 },
-      { label:'Déjeuner',  data: S13.map(d=>d.midi),  type:'line', borderColor:'#C8963C', borderWidth:1.5, borderDash:[5,4], pointBackgroundColor:'#C8963C', pointRadius:3, pointHoverRadius:5, tension:0.35, fill:false, order:1 },
-      { label:'Préc.',     data: S12,                  type:'line', borderColor:'rgba(140,136,130,0.4)', borderWidth:1, borderDash:[4,4], pointRadius:0, tension:0.3, fill:false, order:1 },
-      { label:'CA mensuel',data: [],                   type:'bar',  backgroundColor:[], borderColor:'#8B1A1A', borderWidth:1, borderRadius:4, hidden:true, order:2 },
-    ]
-  },
-  options: {
-    responsive:true, maintainAspectRatio:false,
-    interaction:{ mode:'index', intersect:false },
-    plugins:{ legend:{display:false}, tooltip:{ backgroundColor:'#fff', borderColor:'#e4e1d9', borderWidth:1, titleColor:'#1a1916', bodyColor:'#8a8680', padding:10, callbacks:{ label: c=>`  ${c.dataset.label} : ${Math.round(c.parsed.y).toLocaleString('fr-FR')} €` } } },
-    scales:{ x:{ offset:true, grid:{display:false}, ticks:{font:{family:'Sora',size:10}} }, y:{ grid:{color:'rgba(0,0,0,.05)'}, ticks:{font:{family:'Sora',size:10}, callback:v=>Math.round(v/1000)+' k€'} } }
-  }
-});
+// Historique semaines & mois
+let WEEKS    = [];
+let MONTHS   = [];
+let METRICS_W = [];
+let TKT_WEEKS = [];
+let GOOGLE_WEEKS = [];
 
-// ── GRAPHIQUE CA2 : TICKET MOYEN ──
-const ca2Chart = new Chart(document.getElementById('ca2Chart'), {
-  type:'bar',
-  data:{
-    labels: METRICS_W.slice(-6).map((_,i)=>WEEKS[WEEKS.length-6+i].lbl.split(' · ')[0]),
-    datasets:[
-      { label:'Dîner',    data: METRICS_W.slice(-6).map(m=>+m.tktSoir.toFixed(2)), backgroundColor:'rgba(139,26,26,0.75)', borderRadius:3, borderSkipped:false },
-      { label:'Déjeuner', data: METRICS_W.slice(-6).map(m=>+m.tktMidi.toFixed(2)), backgroundColor:'rgba(200,150,60,0.75)', borderRadius:3, borderSkipped:false },
-    ]
-  },
-  options:{
-    responsive:true, maintainAspectRatio:false, layout:{padding:{top:20}},
-    interaction:{mode:'index',intersect:false},
-    plugins:{ legend:{display:false}, tooltip:{ backgroundColor:'#fff', borderColor:'#e4e1d9', borderWidth:1, titleColor:'#1a1916', bodyColor:'#8a8680', padding:10, callbacks:{label:c=>`  ${c.dataset.label} : ${c.parsed.y.toFixed(2)} €`} } },
-    scales:{ x:{grid:{display:false},ticks:{font:{family:'Sora',size:10}}}, y:{grid:{color:'rgba(0,0,0,.05)'},ticks:{font:{family:'Sora',size:10},callback:v=>v.toFixed(0)+' €'},min:0} },
-    animation:{ onComplete:function(){ const ch=this,ctx=ch.ctx; ctx.save(); ctx.font='500 10px Sora,sans-serif'; ctx.textAlign='center'; ctx.textBaseline='bottom'; ch.data.datasets.forEach((ds,i)=>{ const meta=ch.getDatasetMeta(i); meta.data.forEach((bar,j)=>{ ctx.fillStyle=i===0?'#8B1A1A':'#C8963C'; ctx.fillText(ds.data[j].toFixed(0)+' €',bar.x,bar.y-3); }); }); ctx.restore(); } }
-  }
-});
+// FNB (non utilisé pour l'instant)
+const FNB_W = [];
+const FNB_M = [];
 
-// ── GRAPHIQUE FNB2 : FOOD COST (bar + ligne %) ──
-const fnb2Chart = new Chart(document.getElementById('fnb2Chart'), {
-  type:'bar',
-  data:{
-    labels: FNB_W.slice(-6).map((_,i)=>WEEKS[WEEKS.length-6+i].lbl.split(' · ')[0]),
-    datasets:[
-      { label:'Food cost €', data:FNB_W.slice(-6).map(f=>f.foodEur), backgroundColor:'rgba(139,26,26,0.75)', borderRadius:3, yAxisID:'y', order:2 },
-      { label:'% CA',        data:FNB_W.slice(-6).map(f=>f.foodPct), type:'line', borderColor:'#C8963C', borderWidth:2, pointBackgroundColor:'#C8963C', pointRadius:4, tension:0.35, fill:false, yAxisID:'y2', order:1 },
-    ]
-  },
-  options:{
-    responsive:true, maintainAspectRatio:false,
-    interaction:{mode:'index',intersect:false},
-    plugins:{ legend:{display:false}, tooltip:{ backgroundColor:'#fff', borderColor:'#e4e1d9', borderWidth:1, titleColor:'#1a1916', bodyColor:'#8a8680', padding:10, callbacks:{label:c=>c.datasetIndex===0?`  Food cost : ${Math.round(c.parsed.y).toLocaleString('fr-FR')} €`:`  % CA : ${c.parsed.y.toFixed(1)} %`} } },
-    scales:{
-      x:{ grid:{display:false}, ticks:{font:{family:'Sora',size:10}} },
-      y:{ grid:{color:'rgba(0,0,0,.05)'}, ticks:{font:{family:'Sora',size:10},callback:v=>Math.round(v/1000)+' k€'}, position:'left' },
-      y2:{ min:0, max:40, grid:{display:false}, ticks:{font:{family:'Sora',size:10},callback:v=>v+'%'}, position:'right' }
-    }
-  }
-});
-
-// ── GRAPHIQUE FNB3 : BEVERAGE COST ──
-const fnb3Chart = new Chart(document.getElementById('fnb3Chart'), {
-  type:'bar',
-  data:{
-    labels: FNB_W.slice(-6).map((_,i)=>WEEKS[WEEKS.length-6+i].lbl.split(' · ')[0]),
-    datasets:[
-      { label:'Bev cost €', data:FNB_W.slice(-6).map(f=>f.bevEur), backgroundColor:'rgba(139,26,26,0.4)', borderRadius:3, yAxisID:'y', order:2 },
-      { label:'% CA',       data:FNB_W.slice(-6).map(f=>f.bevPct), type:'line', borderColor:'#C8963C', borderWidth:2, pointBackgroundColor:'#C8963C', pointRadius:4, tension:0.35, fill:false, yAxisID:'y2', order:1 },
-    ]
-  },
-  options:{
-    responsive:true, maintainAspectRatio:false,
-    interaction:{mode:'index',intersect:false},
-    plugins:{ legend:{display:false}, tooltip:{ backgroundColor:'#fff', borderColor:'#e4e1d9', borderWidth:1, titleColor:'#1a1916', bodyColor:'#8a8680', padding:10, callbacks:{label:c=>c.datasetIndex===0?`  Bev cost : ${Math.round(c.parsed.y).toLocaleString('fr-FR')} €`:`  % CA : ${c.parsed.y.toFixed(1)} %`} } },
-    scales:{
-      x:{ grid:{display:false}, ticks:{font:{family:'Sora',size:10}} },
-      y:{ grid:{color:'rgba(0,0,0,.05)'}, ticks:{font:{family:'Sora',size:10},callback:v=>Math.round(v/1000)+' k€'}, position:'left' },
-      y2:{ min:0, max:15, grid:{display:false}, ticks:{font:{family:'Sora',size:10},callback:v=>v+'%'}, position:'right' }
-    }
-  }
-});
-
-// ── GRAPHIQUES HISTORIQUE (initialisés vides, remplis par renderPeriod) ──
-const histChartEl = document.getElementById('histChart');
-const histChart = histChartEl ? new Chart(histChartEl, {
-  type:'bar', data:{labels:[],datasets:[{label:'CA net',data:[],backgroundColor:'rgba(139,26,26,0.75)',borderRadius:4}]},
-  options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
-    scales:{x:{grid:{display:false},ticks:{font:{family:'Sora',size:10}}},y:{ticks:{font:{family:'Sora',size:10},callback:v=>(v/1000).toFixed(0)+'k €'}}}}
-}) : null;
-
-const caHistChartEl = document.getElementById('caHistChart');
-const caHistChart = caHistChartEl ? new Chart(caHistChartEl, {
-  type:'bar', data:{labels:[],datasets:[{label:'CA net',data:[],backgroundColor:'rgba(139,26,26,0.75)',borderRadius:4}]},
-  options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
-    scales:{x:{grid:{display:false},ticks:{font:{family:'Sora',size:10}}},y:{ticks:{font:{family:'Sora',size:10},callback:v=>(v/1000).toFixed(0)+'k €'}}}}
-}) : null;
-
-const covChartEl = document.getElementById('covChart');
-const covChart = covChartEl ? new Chart(covChartEl, {
-  type:'bar', data:{labels:[],datasets:[{label:'Couverts',data:[],backgroundColor:'rgba(139,26,26,0.55)',borderRadius:4}]},
-  options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
-    scales:{x:{grid:{display:false},ticks:{font:{family:'Sora',size:10}}},y:{ticks:{font:{family:'Sora',size:10}}}}}
-}) : null;
-
-const fbTktChartEl = document.getElementById('fbTktChart');
-const fbTktChart = fbTktChartEl ? new Chart(fbTktChartEl, {
-  type:'bar',
-  data:{labels:[],datasets:[
-    {label:'Cuisine',  data:[],backgroundColor:'rgba(139,26,26,0.75)',borderRadius:3,borderSkipped:false},
-    {label:'Boissons', data:[],backgroundColor:'rgba(200,150,60,0.75)',borderRadius:3,borderSkipped:false},
-  ]},
-  options:{responsive:true,maintainAspectRatio:false,layout:{padding:{top:20}},plugins:{legend:{display:false}},
-    scales:{x:{grid:{display:false},ticks:{font:{family:'Sora',size:10}}},y:{min:0,ticks:{font:{family:'Sora',size:10},callback:v=>v.toFixed(0)+' €'}}},
-    animation:{onComplete:function(){const ch=this,ctx=ch.ctx;ctx.save();ctx.font='500 10px Sora,sans-serif';ctx.textAlign='center';ctx.textBaseline='bottom';
-      ch.data.datasets.forEach((ds,i)=>{const meta=ch.getDatasetMeta(i);meta.data.forEach((bar,j)=>{if(ds.data[j]){ctx.fillStyle=i===0?'#8B1A1A':'#C8963C';ctx.fillText(ds.data[j].toFixed(0)+' €',bar.x,bar.y-3);}});});ctx.restore();}}
-  }
-}) : null;
-
-const tktMidiHistEl = document.getElementById('tktMidiHistChart');
-const tktMidiHistChart = tktMidiHistEl ? new Chart(tktMidiHistEl, {
-  type:'bar',
-  data:{labels:[],datasets:[
-    {label:'Dîner',    data:[],backgroundColor:'rgba(139,26,26,0.75)',borderRadius:3,borderSkipped:false},
-    {label:'Déjeuner', data:[],backgroundColor:'rgba(200,150,60,0.75)',borderRadius:3,borderSkipped:false},
-  ]},
-  options:{responsive:true,maintainAspectRatio:false,layout:{padding:{top:20}},plugins:{legend:{display:false}},
-    scales:{x:{grid:{display:false},ticks:{font:{family:'Sora',size:10}}},y:{min:0,ticks:{font:{family:'Sora',size:10},callback:v=>v.toFixed(0)+' €'}}},
-    animation:{onComplete:function(){const ch=this,ctx=ch.ctx;ctx.save();ctx.font='500 10px Sora,sans-serif';ctx.textAlign='center';ctx.textBaseline='bottom';
-      ch.data.datasets.forEach((ds,i)=>{const meta=ch.getDatasetMeta(i);meta.data.forEach((bar,j)=>{if(ds.data[j]){ctx.fillStyle=i===0?'#8B1A1A':'#C8963C';ctx.fillText(ds.data[j].toFixed(0)+' €',bar.x,bar.y-3);}});});ctx.restore();}}
-  }
-}) : null;
-
+// Métriques mensuelles (remplies par loadLiveData)
+// window.LIVE_METRICS_M = [];
 
 /* ════════════ PERIOD PICKER ════════════ */
 let gran = 'week', idx = WEEKS.length - 1;
@@ -1528,6 +1182,7 @@ function currentList() { return gran === 'week' ? WEEKS : MONTHS; }
 
 function renderPeriod() {
   const list = currentList();
+  if (!list || list.length === 0) return; // attendre les données
   const p    = list[idx];
   const pi   = idx > 0 ? list[idx - 1] : null;
   const m    = gran === 'week' ? METRICS_W[idx] : (window.LIVE_METRICS_M || METRICS_W)[idx] || METRICS_W[Math.min(idx, METRICS_W.length-1)];
@@ -1836,7 +1491,7 @@ function showTab(id, el) {
   el.classList.add('on');
 }
 
-renderPeriod();
+// renderPeriod() appelé par loadLiveData() après chargement
 </script>
 </body>
 </html>
