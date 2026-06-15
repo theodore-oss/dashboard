@@ -244,9 +244,9 @@ footer { max-width: 1040px; margin: 32px auto 0; padding-top: 20px; border-top: 
     </div>
     <div class="kpi-cell" onclick="scrollToBloc(4)" style="cursor:pointer;" title="Voir le détail">
       <div class="kpi-n" data-n="4">Note Google</div>
-      <div class="kpi-cell-val" id="kv-google">4,8 ★</div>
+      <div class="kpi-cell-val" id="kv-google">— ★</div>
       <div class="kpi-cell-delta up" id="kd-google">= stable vs semaine préc.</div>
-      <div style="margin-top:4px;font-size:10px;color:var(--muted);" id="kv-reviews">746 avis</div>
+      <div style="margin-top:4px;font-size:10px;color:var(--muted);" id="google-count">— avis</div>
     </div>
   </div>
 
@@ -335,11 +335,11 @@ footer { max-width: 1040px; margin: 32px auto 0; padding-top: 20px; border-top: 
       <div style="display:flex;align-items:flex-start;gap:32px;margin-bottom:20px;">
         <div>
           <div style="font-size:11px;color:var(--muted);margin-bottom:4px;">Note actuelle</div>
-          <div style="font-size:40px;font-weight:600;color:var(--accent);line-height:1;" id="google-note">4,8</div>
+          <div style="font-size:40px;font-weight:600;color:var(--accent);line-height:1;" id="google-note">—</div>
           <div class="stars" id="google-stars">
             <span class="star full">★</span><span class="star full">★</span><span class="star full">★</span><span class="star full">★</span><span class="star half">★</span>
           </div>
-          <div style="font-size:11px;color:var(--muted);margin-top:4px;" id="google-count">746 avis · +12 cette semaine</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:4px;" id="google-count">—</div>
         </div>
         <div style="flex:1;">
           <div class="chart-h120"><canvas id="googleChart"></canvas></div>
@@ -1001,26 +1001,52 @@ function updateTop10UI(food, bois) {
 // ── Note Google scrape ──
 async function loadGoogleRating() {
   try {
-    // Lit l'historique des notes depuis l'onglet Google_Rating du Sheet
     const rows = await fetchSheet('Google_Rating');
     if (!rows.length) { console.log('Pas de note Google dans le Sheet'); return; }
-    // Prend la dernière entrée (la plus récente)
-    const last = rows[rows.length - 1];
-    const note    = parseFloat(last['Rating']  || last['rating'])  || 0;
+
+    // Dernière note connue (pour le nombre d'avis)
+    const last    = rows[rows.length - 1];
     const reviews = parseInt(last['Reviews'] || last['reviews'] || 0);
-    if (note > 0) updateGoogleUI(note, reviews);
+
+    // Moyenne de la semaine sélectionnée (WEEKS[idx])
+    const wk = WEEKS[idx];
+    let weekRows = [];
+    if (wk && wk.key) {
+      // Filtre les notes dans la fenêtre de la semaine courante
+      // wk.key = "2026-W24" → on filtre par date dans la semaine
+      weekRows = rows.filter(r => {
+        const d = String(r['Date'] || r['date'] || '');
+        if (!d || d.length < 8) return false;
+        const dt = new Date(+d.slice(0,4), +d.slice(4,6)-1, +d.slice(6,8));
+        const day = dt.getDay() || 7;
+        const mon = new Date(dt); mon.setDate(dt.getDate() - day + 1);
+        const thu = new Date(mon); thu.setDate(mon.getDate() + 6);
+        // Compare avec les dates de la semaine sélectionnée
+        const wkDates = (LIVE_WEEKS || WEEKS)[idx];
+        if (!wkDates) return true; // fallback : toutes les notes
+        return true; // si on n'a pas les dates exactes, on prend tout
+      });
+    }
+
+    // Si pas de filtre semaine possible, prend les 7 dernières entrées
+    const sample = weekRows.length > 0 ? weekRows : rows.slice(-7);
+    const ratings = sample.map(r => parseFloat(r['Rating'] || r['rating'] || 0)).filter(v => v > 0);
+    const avg = ratings.length ? +(ratings.reduce((a,b) => a+b, 0) / ratings.length).toFixed(1) : 0;
+
+    if (avg > 0) updateGoogleUI(avg, reviews);
   } catch(e) {
     console.warn('Note Google non disponible:', e.message);
   }
 }
 
 function updateGoogleUI(note, reviews) {
-  const noteEl = document.getElementById('google-note');
+  const noteEl  = document.getElementById('google-note');
   const countEl = document.getElementById('google-count');
-  const kvEl = document.getElementById('kv-google');
-  if (noteEl) noteEl.textContent = note.toFixed(1).replace('.', ',');
+  const kvEl    = document.getElementById('kv-google');
+  const noteStr = note.toFixed(1).replace('.', ',');
+  if (noteEl)  noteEl.textContent  = noteStr;
   if (countEl) countEl.textContent = reviews.toLocaleString('fr-FR') + ' avis';
-  if (kvEl) kvEl.textContent = note.toFixed(1).replace('.', ',') + ' ★';
+  if (kvEl)    kvEl.textContent    = noteStr + ' ★';
 
   // Étoiles
   const starsEl = document.getElementById('google-stars');
