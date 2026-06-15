@@ -1095,6 +1095,7 @@ function updateTop10UI(food, bois) {
 // ── Note Google scrape ──
 async function loadGoogleRating() {
   try {
+    if (!googleChart) { console.log('googleChart not initialized yet'); }
     const rows = await fetchSheet('Google_Rating');
     if (!rows.length) { console.log('Pas de note Google dans le Sheet'); return; }
 
@@ -1347,11 +1348,13 @@ function renderPeriod() {
   });
   const histVals = histSlice.map(w => w.ca);
 
+  try { // ── Chart updates (guarded) ──
   if (histChart)   { histChart.data.labels = histLbls; histChart.data.datasets[0].data = histVals; histChart.update(); }
   if (caHistChart) { caHistChart.data.labels = histLbls; caHistChart.data.datasets[0].data = histVals; caHistChart.update(); }
   if (covChart)    { covChart.data.labels = histLbls; covChart.data.datasets[0].data = histM.map(mm => mm?.couverts || 0); covChart.update(); }
 
   // ── GRAPHE CA PAR JOUR (dayChart) ──
+  if (!dayChart) { console.warn('dayChart not found'); return; }
   if (gran === 'week') {
     const prevW = idx > 0 ? WEEKS[idx-1] : null;
     const weights  = [0.11, 0.13, 0.14, 0.13, 0.15, 0.22, 0.12];
@@ -1393,6 +1396,8 @@ function renderPeriod() {
   tktChart.data.datasets[0].data = histM.map(mm => +(mm?.tktSoir||0).toFixed(2));
   tktChart.data.datasets[1].data = histM.map(mm => +(mm?.tktMidi||0).toFixed(2));
   tktChart.update('active'); }
+
+  } catch(chartErr) { console.warn('Chart update error:', chartErr.message, chartErr.stack?.split('\n')[1]); }
 
   // ── ANALYSE CA ──
   // CA kpi strip
@@ -1532,6 +1537,7 @@ function updateSecondaryTabs(p, m, pi, f, fi) {
 }
 
 function updateCa1Chart(p, m) {
+  if (!ca1Chart) return;
   if (gran === 'week') {
     const isS13 = p.key === '2026-W13';
     const prevW = idx > 0 ? WEEKS[idx-1] : null;
