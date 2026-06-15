@@ -220,7 +220,7 @@ footer { max-width: 1040px; margin: 32px auto 0; padding-top: 20px; border-top: 
     </div>
     <div class="ann-badge">
       <span class="ann-dot"></span>
-      CA annualisé · <strong id="ann-val" style="color:#f9c74f;margin-left:4px;">∼ 1,88 M€</strong>
+      CA annualisé · <strong id="ann-val" style="color:#f9c74f;margin-left:4px;">—</strong>
     </div>
   </div>
 </div>
@@ -240,19 +240,19 @@ footer { max-width: 1040px; margin: 32px auto 0; padding-top: 20px; border-top: 
   <div class="kpi-strip">
     <div class="kpi-cell" onclick="scrollToBloc(1)" style="cursor:pointer;" title="Voir le détail">
       <div class="kpi-n" data-n="1">CA HT</div>
-      <div class="kpi-cell-val" id="kv-ca">36 583 €</div>
+      <div class="kpi-cell-val" id="kv-ca">— €</div>
       <div class="kpi-cell-delta dn" id="kd-ca">▼ –6,6 % vs semaine préc.</div>
     </div>
     <div class="kpi-cell" onclick="scrollToBloc(2)" style="cursor:pointer;" title="Voir le détail">
       <div class="kpi-n" data-n="2">Couverts</div>
-      <div class="kpi-cell-val" id="kv-cov">812</div>
-      <div class="kpi-cell-delta neu" id="kd-cov">Couverts servis</div>
+      <div class="kpi-cell-val" id="kv-cov">—</div>
+      <div class="kpi-cell-delta neu" id="kd-cov">—</div>
       <div style="margin-top:6px;font-size:11px;color:var(--muted);">Remplissage : <strong style="color:var(--accent)" id="kv-fill">78 %</strong></div>
     </div>
     <div class="kpi-cell" onclick="scrollToBloc(3)" style="cursor:pointer;" title="Voir le détail">
       <div class="kpi-n" data-n="3">Ticket moyen</div>
-      <div class="kpi-cell-val" id="kv-tkt">45,06 €</div>
-      <div class="kpi-cell-delta neu" id="kd-tkt">Déj. 34,15 € · Dîner 50,17 €</div>
+      <div class="kpi-cell-val" id="kv-tkt">— €</div>
+      <div class="kpi-cell-delta neu" id="kd-tkt">—</div>
     </div>
     <div class="kpi-cell" onclick="scrollToBloc(4)" style="cursor:pointer;" title="Voir le détail">
       <div class="kpi-n" data-n="4">Note Google</div>
@@ -279,8 +279,8 @@ footer { max-width: 1040px; margin: 32px auto 0; padding-top: 20px; border-top: 
       </div>
       <div class="chart-h160"><canvas id="dayChart"></canvas></div>
       <div class="svc-split">
-        <div class="svc"><span class="svc-lbl">Déjeuner · 24 %</span><div class="svc-val">8 879 €</div><div class="svc-sub">260 couverts · 34,15 € / cvt</div></div>
-        <div class="svc"><span class="svc-lbl">Dîner · 76 %</span><div class="svc-val">27 691 €</div><div class="svc-sub">552 couverts · 50,17 € / cvt</div></div>
+        <div class="svc"><span class="svc-lbl">Déjeuner</span><div class="svc-val">— €</div><div class="svc-sub">—</div></div>
+        <div class="svc"><span class="svc-lbl">Dîner</span><div class="svc-val">— €</div><div class="svc-sub">—</div></div>
       </div>
     </div>
   </div>
@@ -382,13 +382,13 @@ footer { max-width: 1040px; margin: 32px auto 0; padding-top: 20px; border-top: 
   <div class="kpi-strip" style="margin-bottom:16px;">
     <div class="kpi-cell" onclick="scrollToBloc('ca-1')" style="cursor:pointer;">
       <div class="kpi-n" data-n="1">CA total</div>
-      <div class="kpi-cell-val" id="ca-kv1">36 583 €</div>
+      <div class="kpi-cell-val" id="ca-kv1">— €</div>
       <div class="kpi-cell-delta dn" id="ca-kd1">▼ –6,6 % vs période préc.</div>
     </div>
     <div class="kpi-cell" onclick="scrollToBloc('ca-2')" style="cursor:pointer;">
       <div class="kpi-n" data-n="2">Ticket moyen</div>
-      <div class="kpi-cell-val" id="ca-kv2">45,06 €</div>
-      <div class="kpi-cell-delta neu" id="ca-kd2">Déj. 34,15 € · Dîner 50,17 €</div>
+      <div class="kpi-cell-val" id="ca-kv2">— €</div>
+      <div class="kpi-cell-delta neu" id="ca-kd2">—</div>
     </div>
     <div class="kpi-cell" onclick="scrollToBloc('ca-3')" style="cursor:pointer;">
       <div class="kpi-n" data-n="3">Top cuisine</div>
@@ -1148,11 +1148,9 @@ function updateGoogleChart(dateLabels, notes) {
 
 // Lance le chargement après initialisation des graphes
 window.addEventListener('load', () => {
-  // Chargement automatique si déjà authentifié
-  if (sessionStorage.getItem('rosario_pin_ok') === '1') {
-    setTimeout(loadLiveData, 300);
-    setTimeout(loadGoogleRating, 600);
-  }
+  // Toujours tenter le chargement - loadLiveData gère l'auth
+  setTimeout(loadLiveData, 300);
+  setTimeout(loadGoogleRating, 600);
 });
 
 
