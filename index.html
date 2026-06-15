@@ -217,8 +217,8 @@ footer { max-width: 1040px; margin: 32px auto 0; padding-top: 20px; border-top: 
 <div class="tabs">
   <button class="tab on" onclick="showTab('overview',this)">Vue d'ensemble</button>
   <button class="tab" onclick="showTab('ca',this)">Analyse CA</button>
-  <button class="tab" onclick="showTab('fnb',this)">F&B Cost</button>
-  <button class="tab" onclick="showTab('staff',this)">Staff Cost</button>
+  
+  
 </div>
 
 <!-- ══════════════════════════════════════════ VUE D'ENSEMBLE -->
@@ -362,20 +362,6 @@ footer { max-width: 1040px; margin: 32px auto 0; padding-top: 20px; border-top: 
       </div>
     </div>
   </div>
-
-  <!-- BLOC 5 : RATIOS -->
-  <div class="card" id="bloc-5">
-    <div class="card-header">
-      <div class="card-num">5</div>
-      <span class="card-title">Ratios de gestion</span>
-      <span class="card-src">Multi-sources</span>
-    </div>
-    <div class="card-body">
-      <div class="grid-2">
-        <div class="ratio-list">
-          <div>
-            <div class="rl-head"><span class="rl-nm">Food cost</span><span class="rl-val gd">27,3 %</span></div>
-            <div class="rl-track"><div class="rl-fill" style="width:27.3%;background:var(--ok);opacity:.7;"></div></div>
             <div class="rl-sub">Cible &lt; 30 % <span class="mock-tag">Pennylane fictif</span></div>
           </div>
           <div>
@@ -910,9 +896,9 @@ async function loadLiveData() {
       const covSoir = sum('Couverts_Soir');
       return {
         couverts:   Math.round(cov),
-        rempli:     Math.round(cov / (89 * rows.length) * 100), // couverts / (89 * nb_jours * 2 services)
-        rempliMidi: Math.round(covMidi / (89 * rows.length) * 100),
-        rempliSoir: Math.round(covSoir / (89 * rows.length) * 100),
+        rempli:     Math.round(cov / (178 * rows.length) * 100), // couverts / (178 par jour = 89 dej + 89 diner)
+        rempliMidi: Math.round(covMidi / (89 * rows.length) * 100), // 89 couverts dej
+        rempliSoir: Math.round(covSoir / (89 * rows.length) * 100), // 89 couverts diner
         resa:       Math.round(cov * 0.7),
         noshows:    0,
         walkin:     Math.round(cov * 0.3),
@@ -1062,19 +1048,14 @@ function updateTop10UI(food, bois) {
 // ── Note Google scrape ──
 async function loadGoogleRating() {
   try {
-    // Utilise un proxy CORS public pour scraper Google Maps
-    const placeId  = 'ChIJxxxxxxxx'; // À remplacer par ton Place ID Google
-    // Alternative : utilise l'API Google Places si tu as une clé
-    // Pour l'instant on lit depuis le Sheet si tu l'y stockes
-    const rows = await fetchSheet('KPI_Journaliers');
-    // On prend la dernière note stockée dans le Sheet si elle existe
-    // (tu peux ajouter une colonne Google_Rating dans le Sheet via Apps Script)
-    const lastWithRating = [...rows].reverse().find(r => r['Google_Rating'] && +r['Google_Rating'] > 0);
-    if (lastWithRating) {
-      const note = +lastWithRating['Google_Rating'];
-      const reviews = +lastWithRating['Google_Reviews'] || 0;
-      updateGoogleUI(note, reviews);
-    }
+    // Lit l'historique des notes depuis l'onglet Google_Rating du Sheet
+    const rows = await fetchSheet('Google_Rating');
+    if (!rows.length) { console.log('Pas de note Google dans le Sheet'); return; }
+    // Prend la dernière entrée (la plus récente)
+    const last = rows[rows.length - 1];
+    const note    = parseFloat(last['Rating']  || last['rating'])  || 0;
+    const reviews = parseInt(last['Reviews'] || last['reviews'] || 0);
+    if (note > 0) updateGoogleUI(note, reviews);
   } catch(e) {
     console.warn('Note Google non disponible:', e.message);
   }
