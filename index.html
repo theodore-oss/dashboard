@@ -1226,42 +1226,26 @@ const rosarioBarPlugin = {
       ? (v >= 1000 ? (v/1000).toFixed(1)+'k' : Math.round(v).toString())
       : (v >= 1000 ? (v/1000).toFixed(0)+'k €' : Math.round(v)+' €');
 
-    // ── 1. Valeur totale au-dessus de chaque barre ──
-    const nbBars = data.labels.length;
-    const totals = [];
-    for (let i = 0; i < nbBars; i++) {
-      let t = 0;
-      data.datasets.forEach((ds, di) => {
-        if (!chart.getDatasetMeta(di).hidden) t += (ds.data[i] || 0);
-      });
-      totals.push(t);
-    }
+    // ── Trouver le dataset "Total" (label=Total ou index 0) ──
+    let totalDsIdx = 0;
+    data.datasets.forEach((ds, i) => { if (ds.label === 'Total') totalDsIdx = i; });
+    const totalDs   = data.datasets[totalDsIdx];
+    const totalMeta = chart.getDatasetMeta(totalDsIdx);
+    const nbBars    = data.labels.length;
 
-    // Y minimum par barre (sommet de la pile)
-    const topY = [];
-    for (let i = 0; i < nbBars; i++) {
-      let minY = Infinity;
-      data.datasets.forEach((ds, di) => {
-        const m = chart.getDatasetMeta(di);
-        if (!m.hidden && m.data[i]) minY = Math.min(minY, m.data[i].y);
-      });
-      topY.push(minY === Infinity ? null : minY);
-    }
-
+    // ── Afficher la valeur du dataset Total au-dessus de chaque point ──
     ctx.font = '600 10px Sora, sans-serif';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'bottom';
     ctx.fillStyle = '#1a1916';
 
     for (let i = 0; i < nbBars; i++) {
-      if (!totals[i] || topY[i] === null) continue;
-      const bar = chart.getDatasetMeta(0).data[i];
-      if (!bar) continue;
-
-      ctx.fillText(fmt(totals[i]), bar.x, topY[i] - 5);
+      const val = totalDs?.data[i];
+      if (!val) continue;
+      const pt = totalMeta?.data[i];
+      if (!pt) continue;
+      ctx.fillText(fmt(val), pt.x, pt.y - 6);
     }
-
-    // Flèches supprimées
 
     ctx.restore();
   }
