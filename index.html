@@ -1,0 +1,1707 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rosario · Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #f7f6f3; --surface: #ffffff; --border: #e4e1d9;
+  --text: #1a1916; --muted: #8a8680;
+  --accent: #8B1A1A; --accent-l: #f5e8e8;
+  --gold: #C8963C; --gold-l: #fdf3e3;
+  --ok: #27ae60; --ok-l: #eafaf1;
+  --danger: #c0392b; --danger-l: #fdedec;
+  --radius: 10px;
+  --shadow: 0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.04);
+}
+body { font-family: 'Sora', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; padding: 40px 24px 80px; }
+.wrap { max-width: 1040px; margin: 0 auto; }
+
+/* ── HEADER ── */
+.header { display: flex; align-items: flex-end; justify-content: space-between; padding-bottom: 24px; margin-bottom: 28px; border-bottom: 1px solid var(--border); }
+.header-left h1 { font-size: 22px; font-weight: 600; letter-spacing: -.3px; margin-bottom: 4px; }
+.header-left p  { font-size: 12px; color: var(--muted); font-weight: 300; }
+.header-right   { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; }
+
+.period-picker { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; }
+.period-granularity { display: flex; background: var(--surface); border: 1px solid var(--border); border-radius: 100px; overflow: hidden; }
+.pgran { padding: 5px 14px; font-size: 11px; font-weight: 500; border: none; background: transparent; color: var(--muted); cursor: pointer; font-family: 'Sora', sans-serif; transition: all .2s; }
+.pgran:hover { color: var(--accent); }
+.pgran.on { background: var(--accent); color: #fff; border-radius: 100px; }
+.period-nav { display: flex; align-items: center; gap: 8px; }
+.pnav-btn { width: 28px; height: 28px; border-radius: 50%; border: 1px solid var(--border); background: var(--surface); color: var(--muted); font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-family: 'Sora', sans-serif; transition: all .2s; flex-shrink: 0; }
+.pnav-btn:hover { border-color: var(--accent); color: var(--accent); }
+.pnav-lbl { font-size: 12px; font-weight: 500; color: var(--text); min-width: 200px; text-align: center; padding: 4px 10px; border-radius: 6px; border: 1px solid transparent; white-space: nowrap; }
+.period-custom { display: none; align-items: center; gap: 8px; }
+.period-custom.show { display: flex; }
+.period-custom input[type="date"] { font-family: 'Sora', sans-serif; font-size: 11px; color: var(--text); background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 5px 10px; outline: none; }
+.period-custom input[type="date"]:focus { border-color: var(--accent); }
+.period-custom span { font-size: 11px; color: var(--muted); }
+.period-custom button { padding: 5px 12px; font-size: 11px; font-weight: 500; background: var(--accent); color: #fff; border: none; border-radius: 6px; cursor: pointer; font-family: 'Sora', sans-serif; }
+
+.ann-badge { display: inline-flex; align-items: center; gap: 8px; background: var(--accent); color: #fff; padding: 6px 16px; border-radius: 100px; font-size: 12px; font-weight: 500; }
+.ann-dot { width: 6px; height: 6px; border-radius: 50%; background: #f9c74f; animation: pulse 2s infinite; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
+
+/* ── TABS ── */
+.tabs { display: flex; gap: 4px; margin-bottom: 24px; border-bottom: 1px solid var(--border); }
+.tab { padding: 8px 18px 10px; font-size: 12px; font-weight: 500; border: none; background: transparent; color: var(--muted); cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -1px; transition: all .2s; font-family: 'Sora', sans-serif; }
+.tab:hover { color: var(--accent); }
+.tab.on { color: var(--accent); border-bottom-color: var(--accent); }
+.view { display: none; } .view.on { display: block; }
+
+/* ── CARD ── */
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; margin-bottom: 16px; }
+.card-header { display: flex; align-items: center; gap: 10px; padding: 14px 20px; border-bottom: 1px solid var(--border); background: #fafaf8; }
+.card-num { width: 22px; height: 22px; border-radius: 50%; background: var(--accent); color: #fff; font-size: 10px; font-weight: 600; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.card-title { font-size: 13px; font-weight: 600; flex: 1; }
+.card-src { font-size: 10px; color: var(--muted); }
+.card-body { padding: 20px; }
+.mock-tag { font-size: 10px; padding: 1px 6px; background: var(--gold-l); border: 1px solid #e8c97a; border-radius: 4px; color: var(--gold); margin-left: 6px; }
+
+/* ── GRIDS ── */
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+
+/* ── KPI STRIP ── */
+.kpi-strip { display: grid; grid-template-columns: repeat(4,1fr); gap: 1px; background: var(--border); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; margin-bottom: 16px; box-shadow: var(--shadow); }
+.kpi-cell { background: var(--surface); padding: 16px 18px; cursor: default; transition: background .15s; }
+.kpi-cell[onclick]:hover { background: #f0ece4; }
+.kpi-cell.active { background: var(--accent-l); }
+.kpi-n { font-size: 9px; font-weight: 600; color: var(--accent); letter-spacing: .06em; text-transform: uppercase; margin-bottom: 4px; display: flex; align-items: center; gap: 5px; }
+.kpi-n::before { content: attr(data-n); width: 16px; height: 16px; border-radius: 50%; background: var(--accent); color: #fff; font-size: 9px; display: flex; align-items: center; justify-content: center; font-weight: 600; flex-shrink: 0; }
+.kpi-cell-lbl { font-size: 10px; font-weight: 500; color: var(--muted); text-transform: uppercase; letter-spacing: .07em; margin-bottom: 5px; }
+.kpi-cell-val { font-size: 24px; font-weight: 600; color: var(--accent); line-height: 1; margin-bottom: 4px; }
+.kpi-cell-delta { font-size: 11px; font-weight: 400; }
+.up { color: var(--ok); } .dn { color: var(--danger); } .neu { color: var(--muted); }
+
+
+
+/* ── CHART WRAPPERS ── */
+.chart-h160 { position: relative; height: 160px; }
+.chart-h140 { position: relative; height: 140px; }
+.chart-h120 { position: relative; height: 120px; }
+
+/* ── SVC SPLIT ── */
+.svc-split { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 16px; }
+.svc { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 12px 14px; }
+.svc-lbl { font-size: 10px; font-weight: 500; color: var(--muted); text-transform: uppercase; letter-spacing: .07em; display: block; margin-bottom: 5px; }
+.svc-val { font-size: 18px; font-weight: 600; color: var(--accent); }
+.svc-sub { font-size: 11px; color: var(--muted); margin-top: 2px; }
+
+/* ── RESA KPIS ── */
+.resa-kpis { display: grid; grid-template-columns: repeat(4,1fr); gap: 10px; margin-bottom: 20px; }
+.rk { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 12px; text-align: center; }
+.rk-val { font-size: 20px; font-weight: 600; color: var(--accent); display: block; line-height: 1; }
+.rk-val.ok { color: var(--ok); } .rk-val.bad { color: var(--danger); }
+.rk-lbl { font-size: 9px; font-weight: 500; color: var(--muted); text-transform: uppercase; letter-spacing: .07em; display: block; margin-top: 3px; }
+.rk-delta { font-size: 9px; display: block; margin-top: 3px; font-weight: 400; }
+
+/* ── SECTION DIVIDER (inside card) ── */
+.section-sep { font-size: 10px; font-weight: 500; color: var(--muted); text-transform: uppercase; letter-spacing: .1em; margin: 18px 0 12px; padding-top: 16px; border-top: 1px solid var(--border); }
+
+/* ── BAR ROWS ── */
+.bar-rows { display: flex; flex-direction: column; gap: 10px; }
+.br { display: grid; grid-template-columns: 130px 1fr 58px; align-items: center; gap: 10px; }
+.br-lbl { font-size: 11px; color: var(--muted); text-align: left; }
+.br-track { height: 5px; background: var(--bg); border-radius: 3px; overflow: hidden; border: 1px solid var(--border); }
+.br-fill { height: 100%; border-radius: 3px; background: var(--accent); opacity: .65; }
+.br-fill.g { background: var(--gold); opacity: .8; }
+.br-val { font-size: 11px; color: var(--text); text-align: right; font-weight: 500; }
+
+/* ── RATIO LIST ── */
+.ratio-list { display: flex; flex-direction: column; gap: 13px; }
+.rl-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 4px; }
+.rl-nm { font-size: 12px; color: var(--text); }
+.rl-val { font-size: 14px; font-weight: 600; }
+.rl-val.gd { color: var(--ok); } .rl-val.wn { color: var(--gold); } .rl-val.bd { color: var(--danger); }
+.rl-sub { font-size: 10px; color: var(--muted); text-align: right; margin-top: 2px; }
+.rl-track { height: 4px; background: var(--bg); border-radius: 2px; overflow: hidden; border: 1px solid var(--border); }
+.rl-fill { height: 100%; border-radius: 2px; }
+
+/* ── TOP PLATS ── */
+.plats { display: flex; flex-direction: column; }
+.plat { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--border); }
+.plat:last-child { border-bottom: none; }
+.plat:hover { background: var(--bg); margin: 0 -20px; padding: 10px 20px; border-radius: 6px; }
+.plat-num { font-size: 11px; font-weight: 600; color: var(--accent); width: 16px; flex-shrink: 0; }
+.plat-name { flex: 1; font-size: 13px; }
+.plat-qty { font-size: 11px; color: var(--muted); width: 65px; text-align: right; }
+.plat-ca { font-size: 13px; font-weight: 600; color: var(--accent); width: 64px; text-align: right; }
+
+/* ── STAFF TABLE ── */
+.staff-tbl { width: 100%; border-collapse: collapse; }
+.staff-tbl th { font-size: 10px; font-weight: 500; color: var(--muted); text-transform: uppercase; letter-spacing: .07em; text-align: left; padding: 0 0 10px; border-bottom: 1px solid var(--border); }
+.staff-tbl th:last-child { text-align: right; }
+.staff-tbl td { padding: 10px 0; font-size: 12px; border-bottom: 1px solid var(--border); }
+.staff-tbl tr:last-child td { border-bottom: none; font-weight: 600; color: var(--accent); }
+.staff-tbl td:last-child { text-align: right; font-weight: 500; }
+.ot-tag { font-size: 10px; color: var(--danger); margin-left: 5px; }
+
+/* ── FIN ROWS ── */
+.fin-rows { display: flex; flex-direction: column; }
+.fin-row { display: flex; justify-content: space-between; align-items: baseline; padding: 9px 0; border-bottom: 1px solid var(--border); font-size: 12px; }
+.fin-row:last-child { border-bottom: none; }
+.fn-lbl { color: var(--muted); }
+.fn-val { font-size: 14px; font-weight: 600; }
+.fn-val.acc { color: var(--accent); } .fn-val.ok2 { color: var(--ok); } .fn-val.bad2 { color: var(--danger); }
+
+/* ── INFO BOX ── */
+.info-box { padding: 10px 14px; background: var(--gold-l); border: 1px solid #e8c97a; border-radius: 8px; font-size: 11px; color: #7a5c1a; line-height: 1.6; margin-top: 12px; }
+
+/* ── CHART LEGEND ── */
+.cleg { display: flex; gap: 16px; justify-content: flex-end; margin-bottom: 10px; }
+.cleg-item { display: flex; align-items: center; gap: 5px; font-size: 10px; color: var(--muted); }
+.cleg-line { width: 18px; height: 2px; border-radius: 1px; }
+.cleg-dashed { width: 18px; height: 0; border-top: 2px dashed; }
+
+/* ── STAR RATING ── */
+.stars { display: flex; gap: 2px; margin: 4px 0; }
+.star { font-size: 16px; }
+.star.full { color: #f9c74f; }
+.star.half { color: #f9c74f; opacity: .5; }
+.star.empty { color: var(--border); }
+
+/* ── FOOTER ── */
+footer { max-width: 1040px; margin: 32px auto 0; padding-top: 20px; border-top: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; font-size: 11px; color: var(--muted); }
+.src-list { display: flex; gap: 14px; }
+.src-i { display: flex; align-items: center; gap: 4px; font-size: 10px; }
+.src-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); }
+.src-dot.mock { background: var(--gold); }
+
+@media(max-width:900px){
+  .kpi-strip,.resa-kpis{ grid-template-columns: repeat(2,1fr); }
+  .grid-2,.grid-3 { grid-template-columns: 1fr; }
+}
+
+  /* ── LOADER ── */
+  #loader {
+    position: fixed; inset: 0; background: #f7f6f3;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    z-index: 9999; gap: 16px;
+  }
+  .loader-logo { font-size: 28px; font-style: italic; font-family: Georgia, serif; color: var(--accent); font-weight: bold; }
+  .loader-bar  { width: 200px; height: 3px; background: var(--border); border-radius: 2px; overflow: hidden; }
+  .loader-fill { height: 100%; background: var(--accent); border-radius: 2px; animation: load 1.5s ease-in-out infinite; }
+  @keyframes load { 0%{width:0%} 60%{width:80%} 100%{width:100%} }
+  .loader-txt  { font-size: 12px; color: var(--muted); }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<!-- HEADER -->
+<div class="header">
+  <div class="header-left">
+    <h1>Rosario · Dashboard</h1>
+    <p id="hdr-sub">—</p>
+  </div>
+  <div class="header-right">
+    <div class="period-picker">
+      <div class="period-granularity">
+        <button class="pgran on" onclick="setGran('week',this)">Semaine</button>
+        <button class="pgran"    onclick="setGran('month',this)">Mois</button>
+        <button class="pgran"    onclick="setGran('custom',this)">Période libre</button>
+      </div>
+      <div class="period-nav">
+        <button class="pnav-btn" onclick="navPeriod(-1)">‹</button>
+        <span class="pnav-lbl" id="pnav-lbl">—</span>
+        <button class="pnav-btn" onclick="navPeriod(+1)">›</button>
+      </div>
+      <div class="period-custom" id="period-custom">
+        <input type="date" id="date-from" value="2025-10-17">
+        <span>→</span>
+        <input type="date" id="date-to" value="2026-03-29">
+        <button onclick="applyCustom()">Appliquer</button>
+      </div>
+    </div>
+    <div class="ann-badge">
+      <span class="ann-dot"></span>
+      CA annualisé · <strong id="ann-val" style="color:#f9c74f;margin-left:4px;">—</strong>
+    </div>
+  </div>
+</div>
+
+<!-- TABS -->
+<div class="tabs">
+  <button class="tab on" onclick="showTab('overview',this)">Vue d'ensemble</button>
+  <button class="tab" onclick="showTab('ca',this)">Analyse CA</button>
+  
+  
+</div>
+
+<!-- ══════════════════════════════════════════ VUE D'ENSEMBLE -->
+<div id="overview" class="view on">
+
+  <!-- KPI STRIP -->
+  <div class="kpi-strip">
+    <div class="kpi-cell" onclick="scrollToBloc(1)" style="cursor:pointer;" title="Voir le détail">
+      <div class="kpi-n" data-n="1">CA HT</div>
+      <div class="kpi-cell-val" id="kv-ca">— €</div>
+      <div class="kpi-cell-delta dn" id="kd-ca">—</div>
+    </div>
+    <div class="kpi-cell" onclick="scrollToBloc(2)" style="cursor:pointer;" title="Voir le détail">
+      <div class="kpi-n" data-n="2">Couverts</div>
+      <div class="kpi-cell-val" id="kv-cov">—</div>
+      <div class="kpi-cell-delta neu" id="kd-cov">—</div>
+      <div style="margin-top:6px;font-size:11px;color:var(--muted);">Remplissage : <strong style="color:var(--accent)" id="kv-fill">—</strong></div>
+    </div>
+    <div class="kpi-cell" onclick="scrollToBloc(3)" style="cursor:pointer;" title="Voir le détail">
+      <div class="kpi-n" data-n="3">Ticket moyen</div>
+      <div class="kpi-cell-val" id="kv-tkt">— €</div>
+      <div class="kpi-cell-delta neu" id="kd-tkt">—</div>
+    </div>
+    <div class="kpi-cell" onclick="scrollToBloc(4)" style="cursor:pointer;" title="Voir le détail">
+      <div class="kpi-n" data-n="4">Note Google</div>
+      <div class="kpi-cell-val" id="kv-google">—</div>
+      <div class="kpi-cell-delta up" id="kd-google">—</div>
+      <div style="margin-top:4px;font-size:10px;color:var(--muted);" id="google-count">—</div>
+    </div>
+  </div>
+
+
+  <!-- BLOC 1 : CA HT -->
+  <div class="card" id="bloc-1">
+    <div class="card-header">
+      <div class="card-num">1</div>
+      <span class="card-title" id="day-chart-title">Chiffre d'affaires HT · par jour</span>
+      <span class="card-src">Lightspeed · données réelles</span>
+    </div>
+    <div class="card-body">
+      <div class="cleg">
+        <div class="cleg-item"><span class="cleg-line" style="background:#8B1A1A;height:2.5px;"></span>Total</div>
+        <div class="cleg-item"><span class="cleg-dashed" style="border-color:#8B1A1A;"></span>Dîner</div>
+        <div class="cleg-item"><span class="cleg-dashed" style="border-color:#C8963C;"></span>Déjeuner</div>
+        <div class="cleg-item"><span class="cleg-dashed" style="border-color:rgba(140,136,130,0.55);"></span>Sem. préc.</div>
+      </div>
+      <div class="chart-h160"><canvas id="dayChart"></canvas></div>
+      <div class="svc-split">
+        <div class="svc"><span class="svc-lbl">Déjeuner</span><div class="svc-val">— €</div><div class="svc-sub">—</div></div>
+        <div class="svc"><span class="svc-lbl">Dîner</span><div class="svc-val">— €</div><div class="svc-sub">—</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- BLOC 1b : HISTORIQUE CA 6 SEMAINES -->
+  <div class="card" id="bloc-hist">
+    <div class="card-header">
+      <div class="card-num">2</div>
+      <span class="card-title">CA net · historique 6 semaines</span>
+      <span class="card-src">Lightspeed · données réelles</span>
+    </div>
+    <div class="card-body">
+      <div class="chart-h160"><canvas id="histChart"></canvas></div>
+    </div>
+  </div>
+
+  <!-- BLOC 2 : COUVERTS & REMPLISSAGE -->
+  <div class="card" id="bloc-2">
+    <div class="card-header">
+      <div class="card-num">2</div>
+      <span class="card-title">Couverts &amp; remplissage</span>
+      <span class="card-src">Lightspeed · à jour</span>
+    </div>
+    <div class="card-body">
+      <!-- Graphe historique couverts -->
+      <div class="chart-h120" style="margin-bottom:20px;"><canvas id="covChart"></canvas></div>
+      <!-- Stats en ligne -->
+      <div style="display:flex;gap:0;border:1px solid var(--border);border-radius:8px;overflow:hidden;">
+        <div style="flex:1;padding:14px 16px;border-right:1px solid var(--border);text-align:center;">
+          <div style="font-size:9px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px;">Couverts</div>
+          <div style="font-size:24px;font-weight:600;color:var(--accent);" id="rk-cov">—</div>
+          <div style="font-size:10px;color:var(--muted);margin-top:2px;" id="rk-cov-d">—</div>
+        </div>
+        <div style="flex:1;padding:14px 16px;border-right:1px solid var(--border);text-align:center;">
+          <div style="font-size:9px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px;">Remplissage</div>
+          <div style="font-size:24px;font-weight:600;color:var(--accent);" id="rk-fill">—</div>
+          <div style="font-size:10px;color:var(--muted);margin-top:2px;" id="rk-fill-d">—</div>
+        </div>
+        <div style="flex:1;padding:14px 16px;border-right:1px solid var(--border);text-align:center;">
+          <div style="font-size:9px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px;">Déjeuner</div>
+          <div style="font-size:24px;font-weight:600;color:var(--accent);" id="fill-midi-val">—</div>
+          <div style="font-size:10px;color:var(--muted);margin-top:2px;">taux remplissage</div>
+        </div>
+        <div style="flex:1;padding:14px 16px;text-align:center;">
+          <div style="font-size:9px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px;">Dîner</div>
+          <div style="font-size:24px;font-weight:600;color:var(--accent);" id="fill-soir-val">—</div>
+          <div style="font-size:10px;color:var(--muted);margin-top:2px;">taux remplissage</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- BLOC 3 : TICKET MOYEN -->
+  <div class="card" id="bloc-3">
+    <div class="card-header">
+      <div class="card-num">3</div>
+      <span class="card-title">Ticket moyen · Déjeuner & Dîner</span>
+      <span class="card-src">Lightspeed · données réelles</span>
+    </div>
+    <div class="card-body">
+      <div class="cleg">
+        <div class="cleg-item"><span style="width:12px;height:12px;border-radius:2px;background:rgba(139,26,26,0.75);display:inline-block;"></span>Dîner</div>
+        <div class="cleg-item"><span style="width:12px;height:12px;border-radius:2px;background:rgba(200,150,60,0.75);display:inline-block;"></span>Déjeuner</div>
+      </div>
+      <div class="chart-h160"><canvas id="tktChart"></canvas></div>
+    </div>
+  </div>
+
+  <!-- BLOC 4 : NOTE GOOGLE -->
+  <div class="card" id="bloc-4">
+    <div class="card-header">
+      <div class="card-num">5</div>
+      <span class="card-title">Note Google · évolution</span>
+      <span class="card-src">Google · temps réel</span>
+    </div>
+    <div class="card-body">
+      <!-- Note actuelle + nb avis -->
+      <div style="display:flex;align-items:center;gap:24px;margin-bottom:20px;">
+        <div>
+          <div style="font-size:11px;color:var(--muted);margin-bottom:4px;">Note actuelle</div>
+          <div style="font-size:40px;font-weight:600;color:var(--accent);line-height:1;" id="google-note">—</div>
+          <div class="stars" id="google-stars">
+            <span class="star full">★</span><span class="star full">★</span><span class="star full">★</span><span class="star full">★</span><span class="star half">★</span>
+          </div>
+          <div style="font-size:11px;color:var(--muted);margin-top:4px;" id="google-count">—</div>
+        </div>
+      </div>
+      <!-- Graphe 1 : évolution historique de la note -->
+      <div class="section-sep">Évolution de la note</div>
+      <div class="chart-h120" style="margin-bottom:20px;"><canvas id="googleChart"></canvas></div>
+      <!-- Graphe 2 : note par jour de la semaine sélectionnée -->
+      <div class="section-sep">Note par jour · semaine en cours</div>
+      <div class="chart-h120"><canvas id="googleDayChart"></canvas></div>
+    </div>
+  </div>
+
+</div><!-- /overview -->
+
+<!-- ══════════════════════════════════════════ ONGLET : ANALYSE CA -->
+<div id="ca" class="view">
+
+  <!-- KPI strip CA — 4 cases -->
+  <div class="kpi-strip" style="margin-bottom:16px;">
+    <div class="kpi-cell" onclick="scrollToBloc('ca-1')" style="cursor:pointer;">
+      <div class="kpi-n" data-n="1">CA total</div>
+      <div class="kpi-cell-val" id="ca-kv1">— €</div>
+      <div class="kpi-cell-delta dn" id="ca-kd1">—</div>
+    </div>
+    <div class="kpi-cell" onclick="scrollToBloc('ca-2')" style="cursor:pointer;">
+      <div class="kpi-n" data-n="2">Ticket moyen</div>
+      <div class="kpi-cell-val" id="ca-kv2">— €</div>
+      <div class="kpi-cell-delta neu" id="ca-kd2">—</div>
+    </div>
+    <div class="kpi-cell" onclick="scrollToBloc('ca-3')" style="cursor:pointer;">
+      <div class="kpi-n" data-n="3">Top cuisine</div>
+      <div id="kpi-top-food" style="margin-top:6px;display:flex;flex-direction:column;gap:3px;">
+        <div style="font-size:11px;color:var(--muted);">Chargement…</div>
+      </div>
+    </div>
+    <div class="kpi-cell" onclick="scrollToBloc('ca-3')" style="cursor:pointer;">
+      <div class="kpi-n" data-n="4">Top boissons</div>
+      <div id="kpi-top-bois" style="margin-top:6px;display:flex;flex-direction:column;gap:3px;">
+        <div style="font-size:11px;color:var(--muted);">Chargement…</div>
+      </div>
+    </div>
+  </div>
+
+    <!-- BLOC CA-1 : CA PAR JOUR + HISTORIQUE -->
+  <div class="card" id="bloc-ca-1">
+    <div class="card-header">
+      <div class="card-num">1</div>
+      <span class="card-title">CA · par jour &amp; historique</span>
+      <span class="card-src">Lightspeed · données réelles</span>
+    </div>
+    <div class="card-body">
+      <div class="section-sep"><span id="ca1-title">CA HT · par jour</span></div>
+      <div class="cleg">
+        <div class="cleg-item"><span class="cleg-line" style="background:#8B1A1A;height:2.5px;"></span>Total</div>
+        <div class="cleg-item"><span class="cleg-dashed" style="border-color:#8B1A1A;"></span>Dîner</div>
+        <div class="cleg-item"><span class="cleg-dashed" style="border-color:#C8963C;"></span>Déjeuner</div>
+        <div class="cleg-item"><span class="cleg-dashed" style="border-color:rgba(140,136,130,0.55);"></span>Période préc.</div>
+      </div>
+      <div class="chart-h160" style="margin-bottom:28px;"><canvas id="ca1Chart"></canvas></div>
+      <div class="section-sep">CA net · historique 6 semaines</div>
+      <div class="chart-h160"><canvas id="caHistChart"></canvas></div>
+    </div>
+  </div>
+
+  <!-- BLOC CA-2 : CA + TICKET MOYEN -->
+  <div class="card" id="bloc-ca-2">
+    <div class="card-header">
+      <div class="card-num">2</div>
+      <span class="card-title">CA &amp; Ticket moyen · Déjeuner / Dîner / Cuisine / Boissons</span>
+      <span class="card-src">Lightspeed · données réelles</span>
+    </div>
+    <div class="card-body">
+
+      <!-- CA Déjeuner vs Dîner -->
+      <div class="section-sep">CA Déjeuner vs Dîner</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px;">
+        <div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:14px 16px;display:flex;align-items:center;gap:14px;">
+          <div style="font-size:26px;line-height:1;flex-shrink:0;">☀️</div>
+          <div>
+            <div style="font-size:9px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px;">Déjeuner</div>
+            <div style="font-size:20px;font-weight:600;color:var(--accent);" id="dej-ca-val">—</div>
+            <div style="font-size:10px;color:var(--muted);margin-top:2px;" id="dej-ca-sub">—</div>
+          </div>
+        </div>
+        <div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:14px 16px;display:flex;align-items:center;gap:14px;">
+          <div style="font-size:26px;line-height:1;flex-shrink:0;">🌙</div>
+          <div>
+            <div style="font-size:9px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px;">Dîner</div>
+            <div style="font-size:20px;font-weight:600;color:var(--accent);" id="din-ca-val">—</div>
+            <div style="font-size:10px;color:var(--muted);margin-top:2px;" id="din-ca-sub">—</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- CA Cuisine vs Boissons -->
+      <div class="section-sep">CA Cuisine vs Boissons</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:28px;">
+        <div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:14px 16px;display:flex;align-items:center;gap:14px;">
+          <div style="font-size:26px;line-height:1;flex-shrink:0;">🍽️</div>
+          <div>
+            <div style="font-size:9px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px;">Cuisine &amp; Tapas</div>
+            <div style="font-size:20px;font-weight:600;color:var(--accent);" id="fb-food-val">—</div>
+            <div style="font-size:10px;color:var(--muted);margin-top:2px;" id="fb-food-sub">—</div>
+          </div>
+        </div>
+        <div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:14px 16px;display:flex;align-items:center;gap:14px;">
+          <div style="font-size:26px;line-height:1;flex-shrink:0;">🍷</div>
+          <div>
+            <div style="font-size:9px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px;">Boissons &amp; Bouteilles</div>
+            <div style="font-size:20px;font-weight:600;color:var(--accent);" id="fb-bev-val">—</div>
+            <div style="font-size:10px;color:var(--muted);margin-top:2px;" id="fb-bev-sub">—</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Ticket moyen Déjeuner / Dîner -->
+      <div class="section-sep">Ticket moyen · Déjeuner &amp; Dîner</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;">
+        <div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:14px 16px;display:flex;align-items:center;gap:14px;">
+          <div style="font-size:26px;line-height:1;flex-shrink:0;">☀️</div>
+          <div>
+            <div style="font-size:9px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px;">Déjeuner</div>
+            <div style="font-size:22px;font-weight:600;color:var(--accent);" id="ca2-tkt-midi">—</div>
+            <div style="font-size:10px;color:var(--muted);margin-top:2px;">par couvert</div>
+          </div>
+        </div>
+        <div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:14px 16px;display:flex;align-items:center;gap:14px;">
+          <div style="font-size:26px;line-height:1;flex-shrink:0;">🌙</div>
+          <div>
+            <div style="font-size:9px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px;">Dîner</div>
+            <div style="font-size:22px;font-weight:600;color:var(--accent);" id="ca2-tkt-soir">—</div>
+            <div style="font-size:10px;color:var(--muted);margin-top:2px;">par couvert</div>
+          </div>
+        </div>
+      </div>
+      <div class="section-sep">Évolution ticket moyen déjeuner / dîner · 6 périodes</div>
+      <div class="cleg">
+        <div class="cleg-item"><span style="width:12px;height:12px;border-radius:2px;background:rgba(139,26,26,0.75);display:inline-block;"></span>Dîner</div>
+        <div class="cleg-item"><span style="width:12px;height:12px;border-radius:2px;background:rgba(200,150,60,0.75);display:inline-block;"></span>Déjeuner</div>
+      </div>
+      <div class="chart-h160" style="margin-bottom:28px;"><canvas id="tktMidiHistChart"></canvas></div>
+
+      <!-- Ticket moyen Cuisine / Boissons -->
+      <div class="section-sep">Ticket moyen · Cuisine &amp; Boissons</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;">
+        <div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:14px 16px;display:flex;align-items:center;gap:14px;">
+          <div style="font-size:26px;line-height:1;flex-shrink:0;">🍽️</div>
+          <div>
+            <div style="font-size:9px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px;">Cuisine</div>
+            <div style="font-size:22px;font-weight:600;color:var(--accent);" id="ca2-tkt-food">—</div>
+            <div style="font-size:10px;color:var(--muted);margin-top:2px;">par couvert</div>
+          </div>
+        </div>
+        <div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:14px 16px;display:flex;align-items:center;gap:14px;">
+          <div style="font-size:26px;line-height:1;flex-shrink:0;">🍷</div>
+          <div>
+            <div style="font-size:9px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px;">Boissons</div>
+            <div style="font-size:22px;font-weight:600;color:var(--accent);" id="ca2-tkt-bev">—</div>
+            <div style="font-size:10px;color:var(--muted);margin-top:2px;">par couvert</div>
+          </div>
+        </div>
+      </div>
+      <div class="section-sep">Évolution ticket moyen cuisine / boissons · 6 périodes</div>
+      <div class="cleg">
+        <div class="cleg-item"><span style="width:12px;height:12px;border-radius:2px;background:rgba(139,26,26,0.75);display:inline-block;"></span>Cuisine</div>
+        <div class="cleg-item"><span style="width:12px;height:12px;border-radius:2px;background:rgba(200,150,60,0.75);display:inline-block;"></span>Boissons</div>
+      </div>
+      <div class="chart-h160"><canvas id="fbTktChart"></canvas></div>
+
+    </div>
+  </div>
+
+  <!-- BLOC CA-3 : TOP 10 PRODUITS -->
+  <div class="card" id="bloc-ca-3">
+    <div class="card-header">
+      <div class="card-num">3</div>
+      <span class="card-title">Top produits · par chiffre d'affaires</span>
+      <span class="card-src">Lightspeed · données réelles</span>
+    </div>
+    <div class="card-body">
+      <div class="grid-2">
+        <div>
+          <div class="section-sep">🍽️ Cuisine &amp; Tapas — top 10</div>
+          <div class="plats" id="top10-food-list"><div style="color:var(--muted);font-size:12px;padding:8px;">Chargement en cours…</div></div>
+        </div>
+        <div>
+          <div class="section-sep">🍷 Boissons &amp; Bouteilles — top 10</div>
+          <div class="plats" id="top10-bev-list"><div style="color:var(--muted);font-size:12px;padding:8px;">Chargement en cours…</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /ca -->
+
+<!-- ══════════════════════════════════════════ ONGLET : F&B COST -->
+<div id="fnb" class="view">
+
+  <!-- KPI strip F&B -->
+  <div class="kpi-strip" style="margin-bottom:16px;">
+    <div class="kpi-cell" onclick="scrollToBloc('fnb-1')" style="cursor:pointer;">
+      <div class="kpi-n" data-n="1">F&B Cost total</div>
+      <div class="kpi-cell-val" id="fnb-kv1">—</div>
+      <div class="kpi-cell-delta neu" id="fnb-kd1">—</div>
+    </div>
+    <div class="kpi-cell" onclick="scrollToBloc('fnb-2')" style="cursor:pointer;">
+      <div class="kpi-n" data-n="2">Food cost</div>
+      <div class="kpi-cell-val" id="fnb-kv2">—</div>
+      <div class="kpi-cell-delta neu" id="fnb-kd2">—</div>
+    </div>
+    <div class="kpi-cell" onclick="scrollToBloc('fnb-3')" style="cursor:pointer;">
+      <div class="kpi-n" data-n="3">Beverage cost</div>
+      <div class="kpi-cell-val" id="fnb-kv3">—</div>
+      <div class="kpi-cell-delta neu" id="fnb-kd3">—</div>
+    </div>
+    <div class="kpi-cell" onclick="scrollToBloc('fnb-4')" style="cursor:pointer;">
+      <div class="kpi-n" data-n="4">Top fournisseur</div>
+      <div class="kpi-cell-val" style="font-size:1.05rem;line-height:1.3;">Fournisseur A</div>
+      <div class="kpi-cell-delta neu">—</div>
+    </div>
+  </div>
+
+  <!-- BLOC FNB-1 : F&B TOTAL -->
+  <div class="card" id="bloc-fnb-1">
+    <div class="card-header">
+      <div class="card-num">1</div>
+      <span class="card-title">F&B Cost total</span>
+      <span class="card-src">Pennylane </span>
+    </div>
+    <div class="card-body">
+      <div class="grid-2" style="margin-bottom:16px;">
+        <div class="svc"><span class="svc-lbl">F&B Cost €</span><div class="svc-val" id="fnb1-eur">—</div><div class="svc-sub" id="fnb1-eur-d">—</div></div>
+        <div class="svc"><span class="svc-lbl">F&B Cost % CA</span><div class="svc-val" id="fnb1-pct">—</div><div class="svc-sub" id="fnb1-pct-d">—</div></div>
+      </div>
+      <div class="bar-rows">
+        <div class="br"><span class="br-lbl">Food cost</span><div class="br-track"><div class="br-fill" style="width:83%"></div></div><span class="br-val" id="fnb1-food-val">—</span></div>
+        <div class="br"><span class="br-lbl">Beverage cost</span><div class="br-track"><div class="br-fill g" style="width:17%"></div></div><span class="br-val" id="fnb1-bev-val">—</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- BLOC FNB-2 : FOOD COST -->
+  <div class="card" id="bloc-fnb-2">
+    <div class="card-header">
+      <div class="card-num">2</div>
+      <span class="card-title">Food cost · évolution sur 6 périodes</span>
+      <span class="card-src">Pennylane </span>
+    </div>
+    <div class="card-body">
+      <div class="cleg">
+        <div class="cleg-item"><span style="width:12px;height:12px;border-radius:2px;background:rgba(139,26,26,0.75);display:inline-block;"></span>Food cost €</div>
+        <div class="cleg-item"><span class="cleg-line" style="background:#C8963C;height:2px;"></span>% du CA</div>
+      </div>
+      <div class="chart-h160"><canvas id="fnb2Chart"></canvas></div>
+    </div>
+  </div>
+
+  <!-- BLOC FNB-3 : BEVERAGE COST -->
+  <div class="card" id="bloc-fnb-3">
+    <div class="card-header">
+      <div class="card-num">3</div>
+      <span class="card-title">Beverage cost · évolution sur 6 périodes</span>
+      <span class="card-src">Pennylane </span>
+    </div>
+    <div class="card-body">
+      <div class="cleg">
+        <div class="cleg-item"><span style="width:12px;height:12px;border-radius:2px;background:rgba(139,26,26,0.4);display:inline-block;"></span>Bev cost €</div>
+        <div class="cleg-item"><span class="cleg-line" style="background:#C8963C;height:2px;"></span>% du CA</div>
+      </div>
+      <div class="chart-h160"><canvas id="fnb3Chart"></canvas></div>
+    </div>
+  </div>
+
+  <!-- BLOC FNB-4 : TOP 10 FOURNISSEURS -->
+  <div class="card" id="bloc-fnb-4">
+    <div class="card-header">
+      <div class="card-num">4</div>
+      <span class="card-title">Top 10 fournisseurs</span>
+      <span class="card-src">Pennylane </span>
+    </div>
+    <div class="card-body">
+      <div class="plats" id="fnb4-list">
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+      </div>
+    </div>
+  </div>
+
+</div><!-- /fnb -->
+
+<!-- ══════════════════════════════════════════ ONGLET : STAFF COST -->
+<div id="staff" class="view">
+
+  <!-- KPI strip Staff -->
+  <div class="kpi-strip" style="margin-bottom:16px;">
+    <div class="kpi-cell">
+      <div class="kpi-n" data-n="1">Staff cost total</div>
+      <div class="kpi-cell-val" id="st-kv1">—</div>
+      <div class="kpi-cell-delta neu" id="st-kd1">—</div>
+    </div>
+    <div class="kpi-cell">
+      <div class="kpi-n" data-n="2">Staff cost cuisine</div>
+      <div class="kpi-cell-val" id="st-kv2">—</div>
+      <div class="kpi-cell-delta neu" id="st-kd2">—</div>
+    </div>
+    <div class="kpi-cell">
+      <div class="kpi-n" data-n="3">Staff cost salle</div>
+      <div class="kpi-cell-val" id="st-kv3">—</div>
+      <div class="kpi-cell-delta neu" id="st-kd3">—</div>
+    </div>
+  </div>
+
+  <!-- Totaux absolus + % CA -->
+  <div class="grid-2" style="margin-bottom:16px;">
+    <div class="card">
+      <div class="card-header"><div class="card-num" style="background:var(--muted);">€</div><span class="card-title">Coûts en valeur absolue</span></div>
+      <div class="card-body">
+        <div class="fin-rows">
+          <div class="fin-row"><span class="fn-lbl">Staff cost total</span><span class="fn-val acc" id="st-abs-total">—</span></div>
+          <div class="fin-row"><span class="fn-lbl">vs période préc.</span><span class="fn-val neu" id="st-abs-delta">—</span></div>
+          <div class="fin-row"><span class="fn-lbl">Cuisine</span><span class="fn-val" id="st-abs-cuisine">—</span></div>
+          <div class="fin-row"><span class="fn-lbl">vs période préc.</span><span class="fn-val neu" id="st-abs-cuisine-d">—</span></div>
+          <div class="fin-row"><span class="fn-lbl">Salle</span><span class="fn-val" id="st-abs-salle">—</span></div>
+          <div class="fin-row"><span class="fn-lbl">vs période préc.</span><span class="fn-val neu" id="st-abs-salle-d">—</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header"><div class="card-num" style="background:var(--muted);">%</div><span class="card-title">Coûts en % du CA</span></div>
+      <div class="card-body">
+        <div class="fin-rows">
+          <div class="fin-row"><span class="fn-lbl">vs période préc.</span><span class="fn-val neu" id="st-pct-delta">—</span></div>
+          <div class="fin-row"><span class="fn-lbl">% Cuisine</span><span class="fn-val" id="st-pct-cuisine">—</span></div>
+          <div class="fin-row"><span class="fn-lbl">vs période préc.</span><span class="fn-val neu" id="st-pct-cuisine-d">—</span></div>
+          <div class="fin-row"><span class="fn-lbl">% Salle</span><span class="fn-val" id="st-pct-salle">—</span></div>
+          <div class="fin-row"><span class="fn-lbl">vs période préc.</span><span class="fn-val neu" id="st-pct-salle-d">—</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Détail par équipe -->
+  <div class="card">
+    <div class="card-header"><div class="card-num">4</div><span class="card-title">Détail par équipe</span><span class="card-src">Skello </span></div>
+    <div class="card-body">
+      <table class="staff-tbl">
+        <thead><tr><th>Équipe</th><th>Effectif</th><th>Heures</th><th>H. supp.</th><th>Coût</th></tr></thead>
+        <tbody>
+          <tr>
+            <td>Cuisine</td>
+            <td id="st-cuisine-eff">—</td>
+            <td id="st-cuisine-h">—</td>
+            <td><span class="ot-tag" id="st-cuisine-ot">—</span></td>
+            <td id="st-cuisine-cost">—</td>
+          </tr>
+          <tr>
+            <td>Salle</td>
+            <td id="st-salle-eff">—</td>
+            <td id="st-salle-h">—</td>
+            <td><span class="ot-tag" id="st-salle-ot">—</span></td>
+            <td id="st-salle-cost">—</td>
+          </tr>
+          <tr>
+            <td>Total</td>
+            <td id="st-total-eff">—</td>
+            <td id="st-total-h">—</td>
+            <td><span class="ot-tag" id="st-total-ot">—</span></td>
+            <td id="st-total-cost">—</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div><!-- /staff -->
+
+<footer>
+  <span id="footer-lbl">Rosario · Dashboard · S13 · 23–29 mars 2026</span>
+  <div class="src-list">
+    <span class="src-i"><span class="src-dot"></span>Lightspeed (réel)</span>
+    <span class="src-i"><span class="src-dot mock"></span>Zenchef (à connecter)</span>
+    <span class="src-i"><span class="src-dot mock"></span>Skello (à connecter)</span>
+    <span class="src-i"><span class="src-dot mock"></span>Pennylane (à connecter)</span>
+    <span class="src-i"><span class="src-dot mock"></span>Google (à connecter)</span>
+  </div>
+</footer>
+
+</div><!-- /wrap -->
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+
+<script>
+
+// ════════════════════════════════════════════════════════════════
+// ROSARIO LIVE DATA — chargement depuis Google Sheet
+// ════════════════════════════════════════════════════════════════
+const SHEET_ID = '1IKHeZaPg2Hc-XExx_namZzH9ylIoUAmPjr3QtnShT2Q';
+const CSV_BASE = 'https://docs.google.com/spreadsheets/d/' + SHEET_ID + '/gviz/tq?tqx=out:csv&sheet=';
+
+// Fetch CSV and parse to array of objects
+async function fetchSheet(tabName) {
+  const url = CSV_BASE + encodeURIComponent(tabName);
+  const r = await fetch(url);
+  const text = await r.text();
+  const lines = text.trim().split('\n');
+  const headers = parseCSVLine(lines[0]);
+  return lines.slice(1).map(line => {
+    const vals = parseCSVLine(line);
+    const obj = {};
+    headers.forEach((h, i) => obj[h] = vals[i] || '');
+    return obj;
+  });
+}
+
+function parseCSVLine(line) {
+  const result = [];
+  let cur = '', inQ = false;
+  for (let i = 0; i < line.length; i++) {
+    const c = line[i];
+    if (c === '"') { inQ = !inQ; }
+    else if (c === ',' && !inQ) { result.push(cur.trim()); cur = ''; }
+    else { cur += c; }
+  }
+  result.push(cur.trim());
+  return result;
+}
+
+function n(v) { return parseFloat(String(v).replace(',','.')) || 0; }
+
+// ── Grouper les lignes par semaine ISO (lun→dim) ──
+function getWeekKey(dateStr) {
+  // dateStr = "20260613"
+  const y = +dateStr.slice(0,4), m = +dateStr.slice(4,6)-1, d = +dateStr.slice(6,8);
+  const dt = new Date(y, m, d);
+  const day = dt.getDay() || 7; // 1=lun, 7=dim
+  const monday = new Date(dt); monday.setDate(dt.getDate() - day + 1);
+  const yy = monday.getFullYear();
+  const start = new Date(yy, 0, 1);
+  const week = Math.ceil(((monday - start) / 86400000 + start.getDay() + 1) / 7);
+  return yy + '-W' + String(week).padStart(2,'0');
+}
+
+function weekLabel(rows) {
+  // rows = array of KPI rows for a week
+  const dates = rows.map(r => r['Date']).sort();
+  const first = dates[0], last = dates[dates.length-1];
+  const fmt = s => s.slice(6,8)+'/'+s.slice(4,6);
+  return fmt(first) + ' – ' + fmt(last);
+}
+
+// ── Construction des structures WEEKS, METRICS_W, TKT_WEEKS depuis le Sheet ──
+async function loadLiveData() {
+  try {
+    console.log('🔄 Chargement données Lightspeed...');
+    const [kpiRows, top10Rows] = await Promise.all([
+      fetchSheet('KPI_Journaliers'),
+      fetchSheet('Top10_Journaliers'),
+    ]);
+    console.log('📊 Données reçues:', kpiRows.length, 'jours,', top10Rows.length, 'produits');
+
+    if (!kpiRows.length) { console.log('Sheet vide, données fictives conservées'); return; }
+
+    // Groupe par semaine
+    const byWeek = {};
+    kpiRows.forEach(row => {
+      const wk = getWeekKey(row['Date']);
+      if (!byWeek[wk]) byWeek[wk] = [];
+      byWeek[wk].push(row);
+    });
+
+    const weekKeys = Object.keys(byWeek).sort();
+
+    // Rebuild WEEKS array
+    const liveWEEKS = weekKeys.map((wk, i) => {
+      const rows = byWeek[wk];
+      const ca = rows.reduce((s,r) => s + n(r['CA_Net_Total']), 0);
+      const prev_ca = i > 0 ? weekKeys.slice(0,i).reduce((s,k) =>
+        s + byWeek[k].reduce((ss,r) => ss + n(r['CA_Net_Total']), 0), 0) / i : null;
+      const prevWk = i > 0 ? weekKeys[i-1] : null;
+      const prev_ca_week = prevWk ? byWeek[prevWk].reduce((s,r) => s + n(r['CA_Net_Total']), 0) : null;
+      return { key: wk, lbl: wk + ' · ' + weekLabel(rows), ca: Math.round(ca), prev_ca: Math.round(prev_ca_week || 0) || null };
+    });
+
+    // Rebuild METRICS_W
+    const liveMETRICS_W = weekKeys.map(wk => {
+      const rows = byWeek[wk];
+      const sum = (col) => rows.reduce((s,r) => s + n(r[col]), 0);
+      const avg = (col) => rows.length ? sum(col)/rows.length : 0;
+      const caNet   = sum('CA_Net_Total');
+      const cov     = sum('Couverts_Total');
+      const covMidi = sum('Couverts_Midi');
+      const covSoir = sum('Couverts_Soir');
+      return {
+        couverts:   Math.round(cov),
+        rempli:     Math.round(cov / (178 * rows.length) * 100),
+        rempliMidi: Math.round(covMidi > 0 ? covMidi / (89 * rows.length) * 100 : 0),
+        rempliSoir: Math.round(covSoir > 0 ? covSoir / (89 * rows.length) * 100 : 0),
+        tktMidi:    covMidi > 0 ? +(sum('CA_Net_Midi') / covMidi).toFixed(2) : 0,
+        tktSoir:    covSoir > 0 ? +(sum('CA_Net_Soir') / covSoir).toFixed(2) : 0,
+        foodCost:   28,
+        primeCost:  62,
+        caNet:      +sum('CA_Net_Total').toFixed(0),
+        caNetMidi:  +sum('CA_Net_Midi').toFixed(0),
+        caNetSoir:  +sum('CA_Net_Soir').toFixed(0),
+        caFood:     +sum('CA_Food_HT').toFixed(0),
+        caBoisss:   +sum('CA_Boissons_HT').toFixed(0),
+        tktFood:    cov > 0 ? +(sum('CA_Food_HT') / cov).toFixed(2) : 0,
+        tktBoisss:  cov > 0 ? +(sum('CA_Boissons_HT') / cov).toFixed(2) : 0,
+      };
+    });
+
+    // Rebuild TKT_WEEKS
+    const liveTKT_WEEKS = weekKeys.map((wk, i) => {
+      const m = liveMETRICS_W[i];
+      return { lbl: wk, dej: m.tktMidi, soir: m.tktSoir };
+    });
+
+    // Rebuild day-by-day for current week (last week in data)
+    const lastWk = weekKeys[weekKeys.length - 1];
+    const lastWkRows = byWeek[lastWk].sort((a,b) => a['Date'].localeCompare(b['Date']));
+    const DAY_NAMES = ['Dim','Lun','Mar','Mer','Jeu','Ven','Sam'];
+    const liveCURRENT = lastWkRows.map(row => {
+      const d = row['Date'];
+      const dt = new Date(+d.slice(0,4), +d.slice(4,6)-1, +d.slice(6,8));
+      return {
+        lbl:   DAY_NAMES[dt.getDay()] + ' ' + d.slice(6,8),
+        midi:  n(row['CA_Net_Midi']),
+        soir:  n(row['CA_Net_Soir']),
+        total: n(row['CA_Net_Total']),
+        date:  d,
+      };
+    });
+
+    // Previous week for comparison
+    const prevWkKey = weekKeys.length > 1 ? weekKeys[weekKeys.length-2] : null;
+    const livePREV = prevWkKey
+      ? byWeek[prevWkKey].sort((a,b) => a['Date'].localeCompare(b['Date']))
+          .map(r => n(r['CA_Net_Total']))
+      : [];
+
+    // Top10 for current week
+    const lastDate = lastWkRows[lastWkRows.length-1]?.['Date'];
+    const wkTop10 = top10Rows.filter(r => {
+      const d = r['Date']; return d >= lastWk.replace('W','') && byWeek[lastWk]?.some(kr => kr['Date'] === d);
+    });
+    // Aggregate by article
+    const foodAgg = {}, boissAgg = {};
+    top10Rows.filter(r => byWeek[lastWk]?.some(kr => kr['Date'] === r['Date'])).forEach(r => {
+      const key = r['Article'], ca = n(r['CA']), qty = n(r['Quantite']);
+      if (r['Categorie'] === 'Food') {
+        foodAgg[key] = foodAgg[key] || {name:key, ca:0, qty:0};
+        foodAgg[key].ca += ca; foodAgg[key].qty += qty;
+      } else {
+        boissAgg[key] = boissAgg[key] || {name:key, ca:0, qty:0};
+        boissAgg[key].ca += ca; boissAgg[key].qty += qty;
+      }
+    });
+    const liveTop10Food  = Object.values(foodAgg).sort((a,b)=>b.ca-a.ca).slice(0,10);
+    const liveTop10Bois  = Object.values(boissAgg).sort((a,b)=>b.ca-a.ca).slice(0,10);
+
+    // ── Override des constantes globales ──
+    WEEKS.length = 0;
+    liveWEEKS.forEach(w => WEEKS.push(w));
+
+    METRICS_W.length = 0;
+    liveMETRICS_W.forEach(m => METRICS_W.push(m));
+
+    TKT_WEEKS.length = 0;
+    liveTKT_WEEKS.forEach(t => TKT_WEEKS.push(t));
+
+    // ── Rebuild MONTHS par mois calendaire (évite le problème de chevauchement) ──
+    const byMonth = {};
+    kpiRows.forEach(row => {
+      const d = String(row['Date'] || '');
+      if (d.length < 6) return;
+      const mk = d.slice(0,4) + '-' + d.slice(4,6); // "2026-02"
+      if (!byMonth[mk]) byMonth[mk] = [];
+      byMonth[mk].push(row);
+    });
+    const monthKeys = Object.keys(byMonth).sort();
+    const liveMonthNames = {
+      '01':'Janvier','02':'Février','03':'Mars','04':'Avril','05':'Mai',
+      '06':'Juin','07':'Juillet','08':'Août','09':'Septembre',
+      '10':'Octobre','11':'Novembre','12':'Décembre'
+    };
+    const liveMONTHS = monthKeys.map((mk, i) => {
+      const rows = byMonth[mk];
+      const ca = rows.reduce((s,r) => s + n(r['CA_Net_Total']), 0);
+      const prevMk = i > 0 ? monthKeys[i-1] : null;
+      const prev_ca = prevMk ? byMonth[prevMk].reduce((s,r) => s + n(r['CA_Net_Total']), 0) : null;
+      const [y, m] = mk.split('-');
+      return { key: mk, lbl: liveMonthNames[m] + ' ' + y, ca: Math.round(ca), prev_ca: prev_ca ? Math.round(prev_ca) : null };
+    });
+
+    // Rebuild METRICS_M par mois
+    const liveMETRICS_M = monthKeys.map(mk => {
+      const rows = byMonth[mk];
+      const sum = (col) => rows.reduce((s,r) => s + n(r[col]), 0);
+      const cov = sum('Couverts_Total');
+      const covMidi = sum('Couverts_Midi');
+      const covSoir = sum('Couverts_Soir');
+      return {
+        couverts:   Math.round(cov),
+        rempli:     Math.round(cov / (178 * rows.length) * 100),
+        rempliMidi: Math.round(covMidi > 0 ? covMidi / (89 * rows.length) * 100 : 0),
+        rempliSoir: Math.round(covSoir > 0 ? covSoir / (89 * rows.length) * 100 : 0),
+        tktMidi:    covMidi > 0 ? +(sum('CA_Net_Midi') / covMidi).toFixed(2) : 0,
+        tktSoir:    covSoir > 0 ? +(sum('CA_Net_Soir') / covSoir).toFixed(2) : 0,
+        foodCost:   28, primeCost: 62,
+        caNet:      +sum('CA_Net_Total').toFixed(0),
+        caNetMidi:  +sum('CA_Net_Midi').toFixed(0),
+        caNetSoir:  +sum('CA_Net_Soir').toFixed(0),
+        caFood:     +sum('CA_Food_HT').toFixed(0),
+        caBoisss:   +sum('CA_Boissons_HT').toFixed(0),
+        tktFood:    cov > 0 ? +(sum('CA_Food_HT') / cov).toFixed(2) : 0,
+        tktBoisss:  cov > 0 ? +(sum('CA_Boissons_HT') / cov).toFixed(2) : 0,
+      };
+    });
+
+    MONTHS.length = 0;
+    liveMONTHS.forEach(m => MONTHS.push(m));
+    if (typeof METRICS_M !== 'undefined') {
+      METRICS_M.length = 0;
+      liveMETRICS_M.forEach(m => METRICS_M.push(m));
+    } else {
+      window.LIVE_METRICS_M = liveMETRICS_M;
+    }
+
+    // Override S13 (semaine courante)
+    S13.length = 0;
+    liveCURRENT.forEach(d => S13.push(d));
+
+    // Override S12 (semaine précédente)
+    S12.length = 0;
+    livePREV.forEach(v => S12.push(v));
+
+    // Stocke byWeek globalement pour renderPeriod
+    window.LIVE_BY_WEEK = byWeek;
+    window.LIVE_DAY_NAMES = DAY_NAMES;
+
+    // Stocke top10 globalement
+    window.LIVE_TOP10_FOOD  = liveTop10Food;
+    window.LIVE_TOP10_BOIS  = liveTop10Bois;
+    window.LIVE_METRICS     = liveMETRICS_W;
+    window.LIVE_WEEKS       = liveWEEKS;
+
+    // Rafraîchit l'affichage
+    idx = WEEKS.length - 1;
+    renderPeriod();
+
+    // Met à jour le top 10 dans l'onglet CA
+    updateTop10UI(liveTop10Food, liveTop10Bois);
+
+    // Masque le loader
+    const loader = document.getElementById('loader');
+    if (loader) loader.style.display = 'none';
+
+    console.log('✅ Données live chargées:', liveWEEKS.length, 'semaines,', kpiRows.length, 'jours');
+
+  } catch(e) {
+    console.warn('⚠️ Erreur chargement données live:', e.message, e.stack);
+    // Masque le loader même en cas d'erreur
+    const loader = document.getElementById('loader');
+    if (loader) loader.style.display = 'none';
+  }
+}
+
+function updateTop10UI(food, bois) {
+  // Met à jour le top 10 food
+  const foodEl = document.getElementById('top10-food-list') || document.querySelectorAll('#bloc-ca-4 .plats')[0];
+  const boisEl = document.getElementById('top10-bev-list')  || document.querySelectorAll('#bloc-ca-4 .plats')[1];
+  if (foodEl && food.length) {
+    foodEl.innerHTML = food.map((p,i) => `
+      <div class="plat">
+        <span class="plat-num">${i+1}</span>
+        <span class="plat-name">${p.name}</span>
+        <span class="plat-qty">${Math.round(p.qty)} vtes</span>
+        <span class="plat-ca">${Math.round(p.ca).toLocaleString('fr-FR')} €</span>
+      </div>`).join('');
+  }
+  if (boisEl && bois.length) {
+    boisEl.innerHTML = bois.map((p,i) => `
+      <div class="plat">
+        <span class="plat-num">${i+1}</span>
+        <span class="plat-name">${p.name}</span>
+        <span class="plat-qty">${Math.round(p.qty)} vtes</span>
+        <span class="plat-ca">${Math.round(p.ca).toLocaleString('fr-FR')} €</span>
+      </div>`).join('');
+  }
+
+  // Mise à jour cartouche KPI strip
+  const kpiFood = document.getElementById('kpi-top-food');
+  if (kpiFood && food.length) {
+    const styles = ['font-weight:500;color:var(--text)', 'color:var(--text)', 'color:var(--muted)'];
+    kpiFood.innerHTML = food.slice(0,3).map((p,i) =>
+      `<div style="font-size:11px;${styles[i]}">${i+1}. ${p.name}</div>`
+    ).join('');
+  }
+  const kpiBois = document.getElementById('kpi-top-bois');
+  if (kpiBois && bois.length) {
+    const styles = ['font-weight:500;color:var(--text)', 'color:var(--text)', 'color:var(--muted)'];
+    kpiBois.innerHTML = bois.slice(0,3).map((p,i) =>
+      `<div style="font-size:11px;${styles[i]}">${i+1}. ${p.name}</div>`
+    ).join('');
+  }
+  // Top 5 overview
+  const top5El = document.getElementById('bloc-6');
+  if (top5El && food.length) {
+    const top5 = food.slice(0,5);
+    const platsEl = top5El.querySelector('.plats');
+    if (platsEl) platsEl.innerHTML = top5.map((p,i) => `
+      <div class="plat">
+        <span class="plat-num">${i+1}</span>
+        <span class="plat-name">${p.name}</span>
+        <span class="plat-qty">${Math.round(p.qty)} ventes</span>
+        <span class="plat-ca">${Math.round(p.ca).toLocaleString('fr-FR')} €</span>
+      </div>`).join('');
+  }
+}
+
+// ── Note Google scrape ──
+async function loadGoogleRating() {
+  try {
+    if (!googleChart) { console.log('googleChart not initialized yet'); }
+    const rows = await fetchSheet('Google_Rating');
+    if (!rows.length) { console.log('Pas de note Google dans le Sheet'); return; }
+
+    // Dernière note = note actuelle
+    const last    = rows[rows.length - 1];
+    const reviews = parseInt(String(last['Reviews'] || last['reviews'] || '0').replace(/\D/g,'')) || 0;
+    const lastNote = parseFloat(String(last['Rating'] || last['rating'] || '0').replace(',','.')) || 0;
+
+    // Moyenne de la semaine : les 7 dernières entrées max
+    const sample  = rows.slice(-7);
+    const ratings = sample.map(r => parseFloat(String(r['Rating']||r['rating']||'0').replace(',','.')) || 0).filter(v => v > 0);
+    const avg     = ratings.length ? +(ratings.reduce((a,b)=>a+b,0)/ratings.length).toFixed(1) : lastNote;
+
+    if (avg > 0) {
+      updateGoogleUI(avg, reviews);
+      // Alimente le graphe avec l'historique réel
+      const dateLabels = rows.map(r => String(r['Date']||'').slice(6,8)+'/'+String(r['Date']||'').slice(4,6));
+      const notes = rows.map(r => parseFloat(String(r['Rating']||r['rating']||'0').replace(',','.')) || null);
+      const validPairs = dateLabels.map((l,i) => ({l, n:notes[i]})).filter(x => x.n > 0);
+      updateGoogleChart(validPairs.map(x=>x.l), validPairs.map(x=>x.n));
+
+      // Graphe 2 : note par jour de la semaine courante
+      // Filtre les notes de la semaine ISO courante (WEEKS[idx])
+      const currWk = WEEKS.length > 0 ? WEEKS[WEEKS.length-1] : null;
+      if (currWk && googleDayChart) {
+        const DAY_NAMES = ['Dim','Lun','Mar','Mer','Jeu','Ven','Sam'];
+        const wkNotes = rows.filter(r => {
+          const d = String(r['Date']||'');
+          if (d.length < 8) return false;
+          const dt = new Date(+d.slice(0,4), +d.slice(4,6)-1, +d.slice(6,8));
+          const wk = getWeekKey(d);
+          return wk === currWk.key;
+        });
+        if (wkNotes.length > 0) {
+          const dayLbls = wkNotes.map(r => {
+            const d = String(r['Date']||'');
+            const dt = new Date(+d.slice(0,4), +d.slice(4,6)-1, +d.slice(6,8));
+            return DAY_NAMES[dt.getDay()] + ' ' + d.slice(6,8);
+          });
+          const dayNts = wkNotes.map(r => parseFloat(String(r['Rating']||r['rating']||'0').replace(',','.')) || null);
+          updateGoogleDayChart(dayLbls, dayNts);
+        }
+      }
+    }
+  } catch(e) {
+    console.warn('Note Google non disponible:', e.message);
+  }
+}
+
+function updateGoogleUI(note, reviews) {
+  const noteEl  = document.getElementById('google-note');
+  const countEl = document.getElementById('google-count');
+  const kvEl    = document.getElementById('kv-google');
+  const noteStr = note.toFixed(1).replace('.', ',');
+  if (noteEl)  noteEl.textContent  = noteStr;
+  if (countEl) countEl.textContent = reviews.toLocaleString('fr-FR') + ' avis';
+  if (kvEl)    kvEl.textContent    = noteStr + ' ★';
+
+  // Étoiles
+  const starsEl = document.getElementById('google-stars');
+  if (starsEl) {
+    starsEl.innerHTML = [1,2,3,4,5].map(i => {
+      if (note >= i) return '<span class="star full">★</span>';
+      if (note >= i - 0.5) return '<span class="star half">★</span>';
+      return '<span class="star empty">★</span>';
+    }).join('');
+  }
+}
+
+function updateGoogleChart(dateLabels, notes) {
+  if (!googleChart || !dateLabels.length) return;
+  googleChart.data.labels = dateLabels;
+  googleChart.data.datasets[0].data = notes;
+  googleChart.update();
+}
+
+function updateGoogleDayChart(dayLabels, dayNotes) {
+  if (!googleDayChart || !dayLabels.length) return;
+  googleDayChart.data.labels = dayLabels;
+  googleDayChart.data.datasets[0].data = dayNotes;
+  googleDayChart.update();
+}
+
+// Lance le chargement après initialisation des graphes
+window.addEventListener('load', () => {
+  // Toujours tenter le chargement - loadLiveData gère l'auth
+  setTimeout(loadLiveData, 300);
+  setTimeout(loadGoogleRating, 600);
+});
+
+
+/* ════════════ DONNÉES — vides au départ, remplies par loadLiveData() ════════════ */
+
+// Semaine courante (jours)
+let S13 = [];
+let S12 = [];
+
+// Historique semaines & mois
+let WEEKS    = [];
+let MONTHS   = [];
+let METRICS_W = [];
+let TKT_WEEKS = [];
+let GOOGLE_WEEKS = [];
+
+// FNB (non utilisé pour l'instant)
+const FNB_W = [];
+const FNB_M = [];
+
+// Métriques mensuelles (remplies par loadLiveData)
+// window.LIVE_METRICS_M = [];
+
+/* ════════════ INITIALISATIONS GRAPHES ════════════ */
+
+
+// ── Plugin : valeurs + flèches d'évolution sur les graphes barres ──
+const rosarioBarPlugin = {
+  id: 'rosarioBar',
+  afterDatasetsDraw(chart) {
+    const { ctx, data } = chart;
+    if (!data.labels || data.labels.length < 2) return;
+
+    ctx.save();
+
+    // Format helpers
+    const isCov = chart.canvas?.id === 'covChart';
+    const fmt = v => isCov
+      ? (v >= 1000 ? (v/1000).toFixed(1)+'k' : Math.round(v).toString())
+      : (v >= 1000 ? (v/1000).toFixed(0)+'k €' : Math.round(v)+' €');
+
+    // ── 1. Valeur totale au-dessus de chaque barre ──
+    const nbBars = data.labels.length;
+    const totals = [];
+    for (let i = 0; i < nbBars; i++) {
+      let t = 0;
+      data.datasets.forEach((ds, di) => {
+        if (!chart.getDatasetMeta(di).hidden) t += (ds.data[i] || 0);
+      });
+      totals.push(t);
+    }
+
+    // Y minimum par barre (sommet de la pile)
+    const topY = [];
+    for (let i = 0; i < nbBars; i++) {
+      let minY = Infinity;
+      data.datasets.forEach((ds, di) => {
+        const m = chart.getDatasetMeta(di);
+        if (!m.hidden && m.data[i]) minY = Math.min(minY, m.data[i].y);
+      });
+      topY.push(minY === Infinity ? null : minY);
+    }
+
+    ctx.font = '600 10px Sora, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'bottom';
+    ctx.fillStyle = '#1a1916';
+
+    for (let i = 0; i < nbBars; i++) {
+      if (!totals[i] || topY[i] === null) continue;
+      const bar = chart.getDatasetMeta(0).data[i];
+      if (!bar) continue;
+
+      ctx.fillText(fmt(totals[i]), bar.x, topY[i] - 5);
+    }
+
+    // Flèches supprimées
+
+    ctx.restore();
+  }
+};
+Chart.register(rosarioBarPlugin);
+
+function makeChart(id, type, datasets, opts) {
+  const el = document.getElementById(id);
+  if (!el) return null;
+  return new Chart(el, {
+    type,
+    data: { labels: [], datasets },
+    options: { responsive: true, maintainAspectRatio: false,
+      barPercentage: 0.55,
+      categoryPercentage: 0.7,
+      layout: { padding: { top: 28 } },
+      plugins: { legend: { display: false },
+        tooltip: { backgroundColor:'#fff', borderColor:'#e4e1d9', borderWidth:1,
+          titleColor:'#1a1916', bodyColor:'#8a8680', padding:10 } },
+      ...opts }
+  });
+}
+
+const barOpts = (yCb) => ({
+  scales: { x: { grid:{display:false}, ticks:{font:{family:'Sora',size:10}} },
+    y: { grid:{color:'rgba(0,0,0,.05)'}, ticks:{font:{family:'Sora',size:10}, callback: yCb} } }
+});
+
+const dayChart = new Chart(document.getElementById('dayChart'), {
+  type:'line',
+  data:{ labels:[], datasets:[
+    { label:'Total',    type:'line', borderColor:'#8B1A1A', borderWidth:2.5, pointBackgroundColor:'#8B1A1A', pointRadius:5, pointHoverRadius:7, tension:0.35, fill:true, backgroundColor:'rgba(139,26,26,0.06)', order:1, data:[] },
+    { label:'Dîner',   type:'line', borderColor:'#8B1A1A', borderWidth:1.5, borderDash:[5,4], pointBackgroundColor:'#8B1A1A', pointRadius:3, tension:0.35, fill:false, order:1, data:[] },
+    { label:'Déjeuner',type:'line', borderColor:'#C8963C', borderWidth:1.5, borderDash:[5,4], pointBackgroundColor:'#C8963C', pointRadius:3, tension:0.35, fill:false, order:1, data:[] },
+    { label:'Préc.',   type:'line', borderColor:'rgba(140,136,130,0.4)', borderWidth:1, borderDash:[4,4], pointRadius:0, tension:0.3, fill:false, order:1, data:[] },
+    { label:'Mensuel', type:'bar',  backgroundColor:[], borderColor:'#8B1A1A', borderWidth:1, borderRadius:4, hidden:true, order:2, data:[] },
+  ]},
+  options:{ responsive:true, maintainAspectRatio:false, barPercentage:0.55, categoryPercentage:0.7, layout:{padding:{top:28}}, interaction:{mode:'index',intersect:false},
+    plugins:{ legend:{display:false}, tooltip:{ backgroundColor:'#fff', borderColor:'#e4e1d9', borderWidth:1, titleColor:'#1a1916', bodyColor:'#8a8680', padding:10,
+      callbacks:{label:c=>`  ${c.dataset.label} : ${Math.round(c.parsed.y).toLocaleString('fr-FR')} €`} } },
+    scales:{ x:{offset:true,grid:{display:false},ticks:{font:{family:'Sora',size:10}}}, y:{grid:{color:'rgba(0,0,0,.05)'},ticks:{font:{family:'Sora',size:10},callback:v=>Math.round(v/1000)+'k€'}} } }
+});
+
+const tktChart   = makeChart('tktChart', 'bar',
+  [{label:'Dîner',data:[],backgroundColor:'rgba(139,26,26,0.75)',borderRadius:3,borderSkipped:false},{label:'Déjeuner',data:[],backgroundColor:'rgba(200,150,60,0.75)',borderRadius:3,borderSkipped:false}],
+  { ...barOpts(v=>v.toFixed(0)+' €'), scales:{ x:{grid:{display:false},ticks:{font:{family:'Sora',size:10}}}, y:{min:0,grid:{color:'rgba(0,0,0,.05)'},ticks:{font:{family:'Sora',size:10},callback:v=>v.toFixed(0)+' €'}} } }
+);
+
+const histChart  = makeChart('histChart','bar', [{label:'CA net',data:[],backgroundColor:'rgba(139,26,26,0.75)',borderRadius:4}],
+  barOpts(v=>(v/1000).toFixed(0)+'k €'));
+
+const caHistChart= makeChart('caHistChart','bar',[{label:'CA net',data:[],backgroundColor:'rgba(139,26,26,0.75)',borderRadius:4}],
+  barOpts(v=>(v/1000).toFixed(0)+'k €'));
+
+const covChart   = makeChart('covChart','bar',[{label:'Couverts',data:[],backgroundColor:'rgba(139,26,26,0.55)',borderRadius:4}],
+  barOpts(v=>v.toString()));
+
+const ca1Chart   = new Chart(document.getElementById('ca1Chart'), {
+  type:'line',
+  data:{labels:[],datasets:[
+    {label:'Total',   type:'line',borderColor:'#8B1A1A',borderWidth:2.5,pointBackgroundColor:'#8B1A1A',pointRadius:5,tension:0.35,fill:true,backgroundColor:'rgba(139,26,26,0.06)',order:1,data:[]},
+    {label:'Dîner',  type:'line',borderColor:'#8B1A1A',borderWidth:1.5,borderDash:[5,4],pointBackgroundColor:'#8B1A1A',pointRadius:3,tension:0.35,fill:false,order:1,data:[]},
+    {label:'Déjeuner',type:'line',borderColor:'#C8963C',borderWidth:1.5,borderDash:[5,4],pointBackgroundColor:'#C8963C',pointRadius:3,tension:0.35,fill:false,order:1,data:[]},
+    {label:'Préc.',  type:'line',borderColor:'rgba(140,136,130,0.4)',borderWidth:1,borderDash:[4,4],pointRadius:0,tension:0.3,fill:false,order:1,data:[]},
+    {label:'Mensuel',type:'bar', backgroundColor:[],borderColor:'#8B1A1A',borderWidth:1,borderRadius:4,hidden:true,order:2,data:[]},
+  ]},
+  options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},
+    plugins:{legend:{display:false},tooltip:{backgroundColor:'#fff',borderColor:'#e4e1d9',borderWidth:1,titleColor:'#1a1916',bodyColor:'#8a8680',padding:10,callbacks:{label:c=>`  ${c.dataset.label} : ${Math.round(c.parsed.y).toLocaleString('fr-FR')} €`}}},
+    scales:{x:{offset:true,grid:{display:false},ticks:{font:{family:'Sora',size:10}}},y:{grid:{color:'rgba(0,0,0,.05)'},ticks:{font:{family:'Sora',size:10},callback:v=>Math.round(v/1000)+'k€'}}}}
+});
+
+const ca2Chart   = makeChart('ca2Chart','bar',
+  [{label:'Dîner',data:[],backgroundColor:'rgba(139,26,26,0.75)',borderRadius:3,borderSkipped:false},{label:'Déjeuner',data:[],backgroundColor:'rgba(200,150,60,0.75)',borderRadius:3,borderSkipped:false}],
+  barOpts(v=>v.toFixed(0)+' €'));
+
+const tktMidiHistChart = makeChart('tktMidiHistChart','bar',
+  [{label:'Dîner',data:[],backgroundColor:'rgba(139,26,26,0.75)',borderRadius:3,borderSkipped:false},{label:'Déjeuner',data:[],backgroundColor:'rgba(200,150,60,0.75)',borderRadius:3,borderSkipped:false}],
+  barOpts(v=>v.toFixed(0)+' €'));
+
+const fbTktChart = makeChart('fbTktChart','bar',
+  [{label:'Cuisine',data:[],backgroundColor:'rgba(139,26,26,0.75)',borderRadius:3,borderSkipped:false},{label:'Boissons',data:[],backgroundColor:'rgba(200,150,60,0.75)',borderRadius:3,borderSkipped:false}],
+  barOpts(v=>v.toFixed(0)+' €'));
+
+const googleChart= makeChart('googleChart','line',
+  [{label:'Note Google',data:[],borderColor:'#f9c74f',borderWidth:2,pointBackgroundColor:'#f9c74f',pointRadius:3,tension:0.35,fill:true,backgroundColor:'rgba(249,199,79,0.08)'}],
+  {scales:{x:{grid:{display:false},ticks:{font:{family:'Sora',size:9}}},y:{min:4,max:5,grid:{color:'rgba(0,0,0,.05)'},ticks:{font:{family:'Sora',size:9},callback:v=>v.toFixed(1)}}}});
+
+const googleDayChart = makeChart('googleDayChart','bar',
+  [{label:'Note',data:[],backgroundColor:'rgba(249,199,79,0.75)',borderRadius:3,borderSkipped:false}],
+  {layout:{padding:{top:20}},scales:{x:{grid:{display:false},ticks:{font:{family:'Sora',size:9}}},y:{min:3.5,max:5,grid:{color:'rgba(0,0,0,.05)'},ticks:{font:{family:'Sora',size:9},callback:v=>v.toFixed(1)}}}});
+
+// ca2Chart already handles déj/dîner — alias for compatibility
+const dejChart = null;
+const fbChart  = null;
+const fnb2Chart= makeChart('fnb2Chart','bar',[{label:'Food',data:[],backgroundColor:'rgba(139,26,26,0.75)',borderRadius:3},{label:'%',data:[],type:'line',borderColor:'#C8963C',borderWidth:2,fill:false,yAxisID:'y2'}],{scales:{x:{grid:{display:false}},y:{position:'left'},y2:{min:0,max:40,position:'right',grid:{display:false}}}});
+const fnb3Chart= makeChart('fnb3Chart','bar',[{label:'Bev',data:[],backgroundColor:'rgba(139,26,26,0.4)',borderRadius:3},{label:'%',data:[],type:'line',borderColor:'#C8963C',borderWidth:2,fill:false,yAxisID:'y2'}],{scales:{x:{grid:{display:false}},y:{position:'left'},y2:{min:0,max:15,position:'right',grid:{display:false}}}});
+
+
+
+/* ════════════ PERIOD PICKER ════════════ */
+let gran = 'week', idx = WEEKS.length - 1;
+function currentList() { return gran === 'week' ? WEEKS : MONTHS; }
+
+function renderPeriod() {
+  const list = currentList();
+  if (!list || list.length === 0) return; // attendre les données
+  const p    = list[idx];
+  const pi   = idx > 0 ? list[idx - 1] : null;
+  const m    = gran === 'week' ? METRICS_W[idx] : (window.LIVE_METRICS_M || METRICS_W)[idx] || METRICS_W[Math.min(idx, METRICS_W.length-1)];
+  const mi   = pi && idx > 0 ? (gran === 'week' ? METRICS_W[idx-1] : (window.LIVE_METRICS_M || METRICS_W)[idx-1]) : null;
+  if (!p || !m) return;
+
+  const unit = gran === 'week' ? 'vs S préc.' : 'vs M préc.';
+  const s    = (id, v) => { const e = document.getElementById(id); if (e) e.textContent = v; };
+  const sc   = (id, cls) => { const e = document.getElementById(id); if (e) e.className = cls; };
+  const fmtPct = (val, prev) => {
+    if (!prev) return { txt: '—', cls: 'neu' };
+    const d = ((val - prev) / prev * 100).toFixed(1);
+    return { txt: `${+d>=0?'▲ +':'▼ '}${d} %`, cls: +d>=0?'up':'dn' };
+  };
+  const fmtPts = (val, prev) => {
+    if (!prev && prev !== 0) return { txt: '—', cls: 'neu' };
+    const d = (val - prev).toFixed(1);
+    return { txt: `${+d>=0?'▲ +':'▼ '}${d} pts`, cls: +d>=0?'up':'dn' };
+  };
+  const setDelta = (id, o) => { const e = document.getElementById(id); if (e) { e.textContent = o.txt; e.className = 'rk-delta ' + o.cls; } };
+  const setd = (id, txt, cls) => { s(id, txt); sc(id, 'kpi-cell-delta ' + cls); };
+  const fmt  = v => Math.round(v).toLocaleString('fr-FR');
+
+  // ── NAV ──
+  document.getElementById('pnav-lbl').textContent = p.lbl;
+  document.getElementById('hdr-sub').textContent  = p.lbl + ' · Dashboard Rosario';
+  document.querySelectorAll('.pnav-btn')[0].style.opacity = idx === 0 ? '.3' : '1';
+  document.querySelectorAll('.pnav-btn')[1].style.opacity = idx === list.length-1 ? '.3' : '1';
+
+  // ── KPI STRIP ──
+  const caFmt = fmtPct(p.ca, p.prev_ca);
+  s('kv-ca',   fmt(p.ca) + ' €');
+  setd('kd-ca', caFmt.txt + (p.prev_ca ? ' ' + unit : ''), caFmt.cls);
+
+  s('kv-cov',  fmt(m.couverts));
+  setd('kd-cov', 'Couverts servis', 'neu');
+  s('kv-fill', Math.round(m.rempli) + ' %');
+
+  const caNet    = m.caNet || p.ca;
+  const tktTotal = m.couverts > 0 ? +(caNet / m.couverts).toFixed(2) : +((m.tktMidi||0)*0.32 + (m.tktSoir||0)*0.68).toFixed(2);
+  s('kv-tkt', tktTotal.toFixed(2) + ' €');
+  setd('kd-tkt', `Déj. ${(m.tktMidi||0).toFixed(2)} € · Dîner ${(m.tktSoir||0).toFixed(2)} €`, 'neu');
+
+  const days = gran === 'week' ? 7 : new Date(p.key.slice(0,4), +p.key.slice(5,7), 0).getDate();
+  const ann  = Math.round(p.ca / days * 360 / 10000) / 100;
+  s('ann-val', '∼ ' + ann.toFixed(2).replace('.',',') + ' M€');
+
+  // Note Google (strip)
+  // mis à jour par loadGoogleRating()
+
+  // ── BLOC 2 : Couverts & remplissage ──
+  s('rk-cov',  fmt(m.couverts));
+  s('rk-fill', Math.round(m.rempli) + ' %');
+  setDelta('rk-cov-d',  fmtPct(m.couverts, mi?.couverts));
+  setDelta('rk-fill-d', fmtPts(m.rempli,   mi?.rempli));
+  // Remplissage par service : utilise les données réelles si dispo
+  const fillMidi = m.rempliMidi || 0;
+  const fillSoir = m.rempliSoir || 0;
+  s('fill-midi-val', fillMidi > 0 ? fillMidi + ' %' : '—');
+  s('fill-soir-val', fillSoir > 0 ? fillSoir + ' %' : '—');
+  const barMidi = document.getElementById('fill-midi-bar');
+  const barSoir = document.getElementById('fill-soir-bar');
+  if (barMidi) barMidi.style.width = Math.min(fillMidi, 100) + '%';
+  if (barSoir) barSoir.style.width = Math.min(fillSoir, 100) + '%';
+
+  // ── GRAPHES HISTORIQUE (6 périodes) ──
+  const allList  = gran === 'week' ? WEEKS : MONTHS;
+  const metricsArr = gran === 'week' ? METRICS_W : (window.LIVE_METRICS_M || METRICS_W);
+  const histSlice  = allList.slice(Math.max(0, idx - 5), idx + 1);
+  const histM      = metricsArr.slice(Math.max(0, idx - 5), idx + 1);
+  const histLbls   = histSlice.map(w => {
+    const parts = w.lbl.split(' · ');
+    return parts[0].trim();
+  });
+  const histVals = histSlice.map(w => w.ca);
+
+  try { // ── Chart updates (guarded) ──
+  if (histChart)   { histChart.data.labels = histLbls; histChart.data.datasets[0].data = histVals; histChart.update(); }
+  if (caHistChart) { caHistChart.data.labels = histLbls; caHistChart.data.datasets[0].data = histVals; caHistChart.update(); }
+  if (covChart)    { covChart.data.labels = histLbls; covChart.data.datasets[0].data = histM.map(mm => mm?.couverts || 0); covChart.update(); }
+
+  // ── GRAPHE CA PAR JOUR (dayChart) ──
+  if (!dayChart) { console.warn('dayChart not found'); return; }
+  if (gran === 'week') {
+    const prevW = idx > 0 ? WEEKS[idx-1] : null;
+    const weights  = [0.11, 0.13, 0.14, 0.13, 0.15, 0.22, 0.12];
+    const DN = ['Dim','Lun','Mar','Mer','Jeu','Ven','Sam'];
+    const dayNames = ['Lun','Mar','Mer','Jeu','Ven','Sam','Dim'];
+    let labels, total, midi, soir;
+
+    // Reconstruire les données du jour depuis byWeek selon la semaine sélectionnée
+    const byWeek = window.LIVE_BY_WEEK;
+    const selWkKey = WEEKS[idx]?.key;
+    const selWkRows = byWeek && selWkKey && byWeek[selWkKey]
+      ? byWeek[selWkKey].sort((a,b) => a['Date'].localeCompare(b['Date']))
+      : [];
+
+    if (selWkRows.length > 0) {
+      labels = selWkRows.map(r => { const d=r['Date']; const dt=new Date(+d.slice(0,4),+d.slice(4,6)-1,+d.slice(6,8)); return DN[dt.getDay()]+' '+d.slice(6,8); });
+      total  = selWkRows.map(r => n(r['CA_Net_Total']));
+      midi   = selWkRows.map(r => n(r['CA_Net_Midi']));
+      soir   = selWkRows.map(r => n(r['CA_Net_Soir']));
+    } else {
+      // Pas de données quotidiennes — afficher une seule barre avec le CA total
+      labels = [p.lbl.split(' · ')[0]];
+      total  = [p.ca];
+      midi   = [0];
+      soir   = [0];
+    }
+    const prevTotal = prevW ? labels.map((_, i) => Math.round(prevW.ca * (weights[i] || 0.14))) : [];
+    dayChart.data.labels = labels;
+    dayChart.data.datasets[0].data = total;    dayChart.data.datasets[0].hidden = false;
+    dayChart.data.datasets[1].data = soir;     dayChart.data.datasets[1].hidden = false;
+    dayChart.data.datasets[2].data = midi;     dayChart.data.datasets[2].hidden = false;
+    dayChart.data.datasets[3].data = prevTotal; dayChart.data.datasets[3].hidden = prevTotal.length === 0;
+    dayChart.data.datasets[4].data = [];       dayChart.data.datasets[4].hidden = true;
+    s('day-chart-title', "Chiffre d'affaires HT · par jour");
+  } else {
+    const start = Math.max(0, idx - 5);
+    const slice = MONTHS.slice(start, idx + 1);
+    dayChart.data.labels = slice.map(mm => mm.lbl);
+    [0,1,2,3].forEach(i => { dayChart.data.datasets[i].data = []; dayChart.data.datasets[i].hidden = true; });
+    dayChart.data.datasets[4].data = slice.map(mm => mm.ca);
+    dayChart.data.datasets[4].backgroundColor = slice.map((_, i) => i === slice.length-1 ? '#8B1A1A' : 'rgba(139,26,26,0.25)');
+    dayChart.data.datasets[4].hidden = false;
+    s('day-chart-title', "Chiffre d'affaires HT · 6 derniers mois");
+  }
+  dayChart.update('active');
+
+  // ── GRAPHE TICKET MOYEN (tktChart) — Vue d'ensemble ──
+  if (tktChart) { tktChart.data.labels = histLbls;
+  tktChart.data.datasets[0].data = histM.map(mm => +(mm?.tktSoir||0).toFixed(2));
+  tktChart.data.datasets[1].data = histM.map(mm => +(mm?.tktMidi||0).toFixed(2));
+  tktChart.update('active'); }
+
+  } catch(chartErr) { console.warn('Chart update error:', chartErr.message, chartErr.stack?.split('\n')[1]); }
+
+  // ── ANALYSE CA ──
+  // CA kpi strip
+  s('ca-kv1', fmt(p.ca) + ' €');
+  const caPctCA = p.prev_ca ? ((p.ca-p.prev_ca)/p.prev_ca*100).toFixed(1) : null;
+  setd('ca-kd1', caPctCA ? `${+caPctCA>=0?'▲ +':'▼ '}${caPctCA} % ${unit}` : '—', caPctCA ? (+caPctCA>=0?'up':'dn') : 'neu');
+  s('ca-kv2', tktTotal.toFixed(2) + ' €');
+  setd('ca-kd2', `Déj. ${(m.tktMidi||0).toFixed(2)} € · Dîner ${(m.tktSoir||0).toFixed(2)} €`, 'neu');
+
+  // ca1Chart (par jour / par mois)
+  if (typeof updateCa1Chart === 'function') updateCa1Chart(p, m);
+
+  // Déjeuner vs Dîner
+  const caMidi  = m.caNetMidi || Math.round(caNet * 0.24);
+  const caSoir  = m.caNetSoir || Math.round(caNet * 0.76);
+  const pctMidi = caNet > 0 ? Math.round(caMidi / caNet * 100) : 0;
+  const pctSoir = caNet > 0 ? Math.round(caSoir / caNet * 100) : 0;
+  s('dej-ca-val', fmt(caMidi) + ' €');
+  s('dej-ca-sub', pctMidi + ' % du CA · ' + (m.tktMidi||0).toFixed(2) + ' € / cvt');
+  s('din-ca-val', fmt(caSoir) + ' €');
+  s('din-ca-sub', pctSoir + ' % du CA · ' + (m.tktSoir||0).toFixed(2) + ' € / cvt');
+  s('ca2-tkt-midi', (m.tktMidi||0).toFixed(2) + ' €');
+  s('ca2-tkt-soir', (m.tktSoir||0).toFixed(2) + ' €');
+
+  // Cuisine vs Boissons
+  const caFood = m.caFood || Math.round(caNet * 0.75);
+  const caBev  = m.caBoisss || Math.round(caNet * 0.25);
+  const caFB   = caFood + caBev || 1;
+  s('fb-food-val', fmt(caFood) + ' €');
+  s('fb-food-sub', Math.round(caFood/caFB*100) + ' % du CA');
+  s('fb-bev-val',  fmt(caBev) + ' €');
+  s('fb-bev-sub',  Math.round(caBev/caFB*100) + ' % du CA');
+  s('ca2-tkt-food', (m.tktFood||0).toFixed(2) + ' €');
+  s('ca2-tkt-bev',  (m.tktBoisss||0).toFixed(2) + ' €');
+
+  // ca2Chart : ticket moyen déj/dîner historique
+  // Ticket moyen déj/dîner — seulement si données disponibles (pas d'estimation)
+  const tktMidiHist = histM.map(mm => mm?.tktMidi > 0 ? +(mm.tktMidi).toFixed(2) : null);
+  const tktSoirHist = histM.map(mm => mm?.tktSoir > 0 ? +(mm.tktSoir).toFixed(2) : null);
+  const hasTktData  = tktMidiHist.some(v => v !== null);
+  if (ca2Chart) { ca2Chart.data.labels = histLbls;
+  ca2Chart.data.datasets[0].data = hasTktData ? tktSoirHist : [];
+  ca2Chart.data.datasets[1].data = hasTktData ? tktMidiHist : [];
+  ca2Chart.update('active'); }
+  if (tktMidiHistChart) {
+    tktMidiHistChart.data.labels           = histLbls;
+    tktMidiHistChart.data.datasets[0].data = hasTktData ? tktSoirHist : [];
+    tktMidiHistChart.data.datasets[1].data = hasTktData ? tktMidiHist : [];
+    tktMidiHistChart.update();
+  }
+
+  // fbTktChart : ticket moyen cuisine/boissons historique
+  if (fbTktChart) {
+    fbTktChart.data.labels           = histLbls;
+    fbTktChart.data.datasets[0].data = histM.map(mm => +(mm?.tktFood   || 0).toFixed(2));
+    fbTktChart.data.datasets[1].data = histM.map(mm => +(mm?.tktBoisss || 0).toFixed(2));
+    fbTktChart.update();
+  }
+
+  // dejChart (CA déj/dîner par jour)
+  if (dejChart) {
+    if (gran === 'week' && S13.length > 0) {
+      dejChart.data.labels = S13.map(d => d.lbl);
+      dejChart.data.datasets[0].data = S13.map(d => d.soir);
+      dejChart.data.datasets[1].data = S13.map(d => d.midi);
+    } else {
+      dejChart.data.labels = histLbls;
+      dejChart.data.datasets[0].data = histM.map(mm => mm?.caNetSoir || 0);
+      dejChart.data.datasets[1].data = histM.map(mm => mm?.caNetMidi || 0);
+    }
+    dejChart.update();
+  }
+
+  // fbChart (CA cuisine/boissons)
+  if (fbChart) {
+    const foodDays = gran === 'week' && S13.length > 0
+      ? S13.map(d => caFB > 0 ? Math.round(d.total * caFood / caFB) : 0)
+      : histM.map(mm => mm?.caFood || 0);
+    const bevDays = gran === 'week' && S13.length > 0
+      ? S13.map(d => caFB > 0 ? Math.round(d.total * caBev / caFB) : 0)
+      : histM.map(mm => mm?.caBoisss || 0);
+    fbChart.data.labels = gran === 'week' && S13.length > 0 ? S13.map(d => d.lbl) : histLbls;
+    fbChart.data.datasets[0].data = foodDays;
+    fbChart.data.datasets[1].data = bevDays;
+    fbChart.update();
+  }
+}
+
+function setGran(g, el) {
+  gran = g;
+  document.querySelectorAll('.pgran').forEach(b => b.classList.remove('on'));
+  el.classList.add('on');
+  const custom = document.getElementById('period-custom');
+  if (g === 'custom') { custom.classList.add('show'); return; }
+  custom.classList.remove('show');
+  idx = currentList().length - 1;
+  renderPeriod();
+}
+
+function navPeriod(dir) {
+  if (gran === 'custom') return;
+  idx = Math.max(0, Math.min(currentList().length - 1, idx + dir));
+  renderPeriod();
+}
+
+function applyCustom() {
+  const from = document.getElementById('date-from').value;
+  const to   = document.getElementById('date-to').value;
+  if (!from || !to) return;
+  const fmt = d => new Date(d).toLocaleDateString('fr-FR', { day:'numeric', month:'short', year:'numeric' });
+  const days = Math.round((new Date(to) - new Date(from)) / 86400000) + 1;
+  const approxCA = Math.round(days * 5200);
+  document.getElementById('pnav-lbl').textContent = fmt(from) + ' – ' + fmt(to);
+  document.getElementById('hdr-sub').textContent  = fmt(from) + ' → ' + fmt(to) + ' · Dashboard Rosario';
+  document.getElementById('period-custom').classList.remove('show');
+  document.getElementById('kv-ca').textContent = approxCA.toLocaleString('fr-FR') + ' €';
+  document.getElementById('kd-ca').textContent = days + ' jours sélectionnés';
+  document.getElementById('kd-ca').className   = 'kpi-cell-delta neu';
+  const ann = Math.round(approxCA / days * 360 / 10000) / 100;
+  document.getElementById('ann-val').textContent = '∼ ' + ann.toFixed(2).replace('.',',') + ' M€';
+}
+
+/* ════════════ SCROLL TO BLOC ════════════ */
+function scrollToBloc(n) {
+  const id = typeof n === 'number' ? 'bloc-' + n : 'bloc-' + n;
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  el.style.outline = '2px solid rgba(139,26,26,0.3)';
+  el.style.outlineOffset = '3px';
+  setTimeout(() => { el.style.outline = ''; el.style.outlineOffset = ''; }, 1200);
+}
+
+/* ════════════ UPDATE SECONDARY TABS ════════════ */
+function updateSecondaryTabs(p, m, pi, f, fi) {
+  // Fonction conservée pour compatibilité — logique déplacée dans renderPeriod
+}
+
+function updateCa1Chart(p, m) {
+  if (!ca1Chart) return;
+  if (gran === 'week') {
+    const prevW = idx > 0 ? WEEKS[idx-1] : null;
+    const weights = [0.11,0.13,0.14,0.13,0.15,0.22,0.12];
+    const dayNames = ['Lun','Mar','Mer','Jeu','Ven','Sam','Dim'];
+    const DN2 = ['Dim','Lun','Mar','Mer','Jeu','Ven','Sam'];
+    let labels, total, midi, soir;
+    const byWeek2 = window.LIVE_BY_WEEK;
+    const selKey2 = WEEKS[idx]?.key;
+    const selRows2 = byWeek2 && selKey2 && byWeek2[selKey2]
+      ? byWeek2[selKey2].sort((a,b)=>a['Date'].localeCompare(b['Date'])) : [];
+    if (selRows2.length > 0) {
+      labels=selRows2.map(r=>{const d=r['Date'];const dt=new Date(+d.slice(0,4),+d.slice(4,6)-1,+d.slice(6,8));return DN2[dt.getDay()]+' '+d.slice(6,8);});
+      total=selRows2.map(r=>n(r['CA_Net_Total']));
+      midi=selRows2.map(r=>n(r['CA_Net_Midi']));
+      soir=selRows2.map(r=>n(r['CA_Net_Soir']));
+    } else {
+      labels=[p.lbl.split(' · ')[0]]; total=[p.ca]; midi=[0]; soir=[0];
+    }
+    const prev = prevW && S13.length > 0 ? S13.map((_,i) => Math.round(prevW.ca*(weights[i]||0.14))) : (prevW ? weights.map(w=>Math.round(prevW.ca*w)) : []);
+    ca1Chart.data.labels = labels;
+    [0,1,2,3].forEach(i=>ca1Chart.data.datasets[i].hidden=false);
+    ca1Chart.data.datasets[0].data=total; ca1Chart.data.datasets[1].data=soir;
+    ca1Chart.data.datasets[2].data=midi;  ca1Chart.data.datasets[3].data=prev;
+    ca1Chart.data.datasets[3].hidden = prev.length===0;
+    ca1Chart.data.datasets[4].data=[]; ca1Chart.data.datasets[4].hidden=true;
+    document.getElementById('ca1-title') && (document.getElementById('ca1-title').textContent="CA HT · par jour");
+  } else {
+    const start = Math.max(0,idx-5);
+    const slice = MONTHS.slice(start,idx+1);
+    ca1Chart.data.labels = slice.map(m=>m.lbl);
+    [0,1,2,3].forEach(i=>{ca1Chart.data.datasets[i].data=[]; ca1Chart.data.datasets[i].hidden=true;});
+    ca1Chart.data.datasets[4].data = slice.map(m=>m.ca);
+    ca1Chart.data.datasets[4].backgroundColor = slice.map((_,i)=>i===slice.length-1?'#8B1A1A':'rgba(139,26,26,0.25)');
+    ca1Chart.data.datasets[4].hidden = false;
+    document.getElementById('ca1-title') && (document.getElementById('ca1-title').textContent="CA HT · 6 derniers mois");
+  }
+  ca1Chart.update('active');
+}
+
+/* ════════════ SCROLL TO BLOC ════════════ */
+function scrollToBloc(n) {
+  const el = document.getElementById('bloc-' + n);
+  if (!el) return;
+  el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  el.style.outline = '2px solid rgba(139,26,26,0.3)';
+  el.style.outlineOffset = '3px';
+  setTimeout(() => { el.style.outline = ''; el.style.outlineOffset = ''; }, 1200);
+}
+
+/* ════════════ TABS ════════════ */
+function showTab(id, el) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('on'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('on'));
+  document.getElementById(id).classList.add('on');
+  el.classList.add('on');
+}
+
+// renderPeriod() appelé par loadLiveData() après chargement
+</script>
+</body>
+</html>
