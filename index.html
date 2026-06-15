@@ -1632,7 +1632,7 @@ function renderPeriod() {
     dayChart.data.datasets[2].data = midi;     dayChart.data.datasets[2].hidden = false;
     dayChart.data.datasets[3].data = prevTotal; dayChart.data.datasets[3].hidden = prevTotal.length === 0;
     dayChart.data.datasets[4].data = [];       dayChart.data.datasets[4].hidden = true;
-    s('day-chart-title', 'Chiffre d'affaires HT · par jour');
+    s('day-chart-title', "Chiffre d'affaires HT · par jour");
   } else {
     const start = Math.max(0, idx - 5);
     const slice = MONTHS.slice(start, idx + 1);
@@ -1641,7 +1641,7 @@ function renderPeriod() {
     dayChart.data.datasets[4].data = slice.map(mm => mm.ca);
     dayChart.data.datasets[4].backgroundColor = slice.map((_, i) => i === slice.length-1 ? '#8B1A1A' : 'rgba(139,26,26,0.25)');
     dayChart.data.datasets[4].hidden = false;
-    s('day-chart-title', 'Chiffre d'affaires HT · 6 derniers mois');
+    s('day-chart-title', "Chiffre d'affaires HT · 6 derniers mois");
   }
   dayChart.update('active');
 
@@ -1804,7 +1804,7 @@ function updateCa1Chart(p, m) {
     ca1Chart.data.datasets[2].data=midi;  ca1Chart.data.datasets[3].data=prev;
     ca1Chart.data.datasets[3].hidden = prev.length===0;
     ca1Chart.data.datasets[4].data=[]; ca1Chart.data.datasets[4].hidden=true;
-    document.getElementById('ca1-title') && (document.getElementById('ca1-title').textContent='CA HT · par jour');
+    document.getElementById('ca1-title') && (document.getElementById('ca1-title').textContent="CA HT · par jour");
   } else {
     const start = Math.max(0,idx-5);
     const slice = MONTHS.slice(start,idx+1);
@@ -1813,7 +1813,7 @@ function updateCa1Chart(p, m) {
     ca1Chart.data.datasets[4].data = slice.map(m=>m.ca);
     ca1Chart.data.datasets[4].backgroundColor = slice.map((_,i)=>i===slice.length-1?'#8B1A1A':'rgba(139,26,26,0.25)');
     ca1Chart.data.datasets[4].hidden = false;
-    document.getElementById('ca1-title') && (document.getElementById('ca1-title').textContent='CA HT · 6 derniers mois');
+    document.getElementById('ca1-title') && (document.getElementById('ca1-title').textContent="CA HT · 6 derniers mois");
   }
   ca1Chart.update('active');
 }
