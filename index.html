@@ -288,7 +288,7 @@ footer { max-width: 1040px; margin: 32px auto 0; padding-top: 20px; border-top: 
   <!-- BLOC 1b : HISTORIQUE CA 6 SEMAINES -->
   <div class="card" id="bloc-hist">
     <div class="card-header">
-      <div class="card-num" style="background:var(--accent);">↗</div>
+      <div class="card-num">2</div>
       <span class="card-title">CA net · historique 6 semaines</span>
       <span class="card-src">Lightspeed · données réelles</span>
     </div>
@@ -352,12 +352,13 @@ footer { max-width: 1040px; margin: 32px auto 0; padding-top: 20px; border-top: 
   <!-- BLOC 4 : NOTE GOOGLE -->
   <div class="card" id="bloc-4">
     <div class="card-header">
-      <div class="card-num">4</div>
+      <div class="card-num">5</div>
       <span class="card-title">Note Google · évolution</span>
       <span class="card-src">Google · temps réel</span>
     </div>
     <div class="card-body">
-      <div style="display:flex;align-items:flex-start;gap:32px;margin-bottom:20px;">
+      <!-- Note actuelle + nb avis -->
+      <div style="display:flex;align-items:center;gap:24px;margin-bottom:20px;">
         <div>
           <div style="font-size:11px;color:var(--muted);margin-bottom:4px;">Note actuelle</div>
           <div style="font-size:40px;font-weight:600;color:var(--accent);line-height:1;" id="google-note">—</div>
@@ -366,10 +367,13 @@ footer { max-width: 1040px; margin: 32px auto 0; padding-top: 20px; border-top: 
           </div>
           <div style="font-size:11px;color:var(--muted);margin-top:4px;" id="google-count">—</div>
         </div>
-        <div style="flex:1;">
-          <div class="chart-h120"><canvas id="googleChart"></canvas></div>
-        </div>
       </div>
+      <!-- Graphe 1 : évolution historique de la note -->
+      <div class="section-sep">Évolution de la note</div>
+      <div class="chart-h120" style="margin-bottom:20px;"><canvas id="googleChart"></canvas></div>
+      <!-- Graphe 2 : note par jour de la semaine sélectionnée -->
+      <div class="section-sep">Note par jour · semaine en cours</div>
+      <div class="chart-h120"><canvas id="googleDayChart"></canvas></div>
     </div>
   </div>
 
@@ -1117,6 +1121,29 @@ async function loadGoogleRating() {
       const notes = rows.map(r => parseFloat(String(r['Rating']||r['rating']||'0').replace(',','.')) || null);
       const validPairs = dateLabels.map((l,i) => ({l, n:notes[i]})).filter(x => x.n > 0);
       updateGoogleChart(validPairs.map(x=>x.l), validPairs.map(x=>x.n));
+
+      // Graphe 2 : note par jour de la semaine courante
+      // Filtre les notes de la semaine ISO courante (WEEKS[idx])
+      const currWk = WEEKS.length > 0 ? WEEKS[WEEKS.length-1] : null;
+      if (currWk && googleDayChart) {
+        const DAY_NAMES = ['Dim','Lun','Mar','Mer','Jeu','Ven','Sam'];
+        const wkNotes = rows.filter(r => {
+          const d = String(r['Date']||'');
+          if (d.length < 8) return false;
+          const dt = new Date(+d.slice(0,4), +d.slice(4,6)-1, +d.slice(6,8));
+          const wk = getWeekKey(d);
+          return wk === currWk.key;
+        });
+        if (wkNotes.length > 0) {
+          const dayLbls = wkNotes.map(r => {
+            const d = String(r['Date']||'');
+            const dt = new Date(+d.slice(0,4), +d.slice(4,6)-1, +d.slice(6,8));
+            return DAY_NAMES[dt.getDay()] + ' ' + d.slice(6,8);
+          });
+          const dayNts = wkNotes.map(r => parseFloat(String(r['Rating']||r['rating']||'0').replace(',','.')) || null);
+          updateGoogleDayChart(dayLbls, dayNts);
+        }
+      }
     }
   } catch(e) {
     console.warn('Note Google non disponible:', e.message);
@@ -1148,6 +1175,13 @@ function updateGoogleChart(dateLabels, notes) {
   googleChart.data.labels = dateLabels;
   googleChart.data.datasets[0].data = notes;
   googleChart.update();
+}
+
+function updateGoogleDayChart(dayLabels, dayNotes) {
+  if (!googleDayChart || !dayLabels.length) return;
+  googleDayChart.data.labels = dayLabels;
+  googleDayChart.data.datasets[0].data = dayNotes;
+  googleDayChart.update();
 }
 
 // Lance le chargement après initialisation des graphes
@@ -1221,53 +1255,15 @@ const rosarioBarPlugin = {
       if (!totals[i] || topY[i] === null) continue;
       const bar = chart.getDatasetMeta(0).data[i];
       if (!bar) continue;
-      const fmt = v => v >= 1000 ? (v/1000).toFixed(0)+'k €' : Math.round(v)+' €';
+      // Détecte si c'est un graphe de couverts (pas d'€)
+      const isCov = chart.canvas.id === 'covChart';
+      const fmt = v => isCov
+        ? (v >= 1000 ? (v/1000).toFixed(1)+'k' : Math.round(v).toString())
+        : (v >= 1000 ? (v/1000).toFixed(0)+'k €' : Math.round(v)+' €');
       ctx.fillText(fmt(totals[i]), bar.x, topY[i] - 5);
     }
 
-    // ── 2. Flèches d'évolution entre barres ──
-    for (let i = 1; i < nbBars; i++) {
-      if (!totals[i] || !totals[i-1] || topY[i] === null || topY[i-1] === null) continue;
-      const bar0 = chart.getDatasetMeta(0).data[i-1];
-      const bar1 = chart.getDatasetMeta(0).data[i];
-      if (!bar0 || !bar1) continue;
-
-      const pct = ((totals[i] - totals[i-1]) / totals[i-1] * 100);
-      const isUp = pct >= 0;
-      const pctStr = (isUp ? '+' : '') + pct.toFixed(0) + '%';
-      const color = isUp ? 'rgba(30,132,73,0.7)' : 'rgba(192,57,43,0.7)';
-
-      const x1 = bar0.x, y1 = topY[i-1] - 22;
-      const x2 = bar1.x, y2 = topY[i]   - 22;
-      const mx = (x1+x2)/2, my = Math.min(y1,y2) - 10;
-
-      // Courbe
-      ctx.beginPath();
-      ctx.moveTo(x1, y1);
-      ctx.quadraticCurveTo(mx, my, x2, y2);
-      ctx.strokeStyle = color;
-      ctx.lineWidth = 1.5;
-      ctx.setLineDash([3, 2]);
-      ctx.stroke();
-      ctx.setLineDash([]);
-
-      // Flèche
-      const angle = Math.atan2(y2 - my, x2 - mx);
-      ctx.beginPath();
-      ctx.moveTo(x2, y2);
-      ctx.lineTo(x2 - 7*Math.cos(angle-0.4), y2 - 7*Math.sin(angle-0.4));
-      ctx.lineTo(x2 - 7*Math.cos(angle+0.4), y2 - 7*Math.sin(angle+0.4));
-      ctx.closePath();
-      ctx.fillStyle = color;
-      ctx.fill();
-
-      // Label
-      ctx.font = '600 9px Sora, sans-serif';
-      ctx.fillStyle = isUp ? '#1e8449' : '#c0392b';
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'bottom';
-      ctx.fillText(pctStr, mx, my - 1);
-    }
+    // Flèches supprimées
 
     ctx.restore();
   }
@@ -1283,6 +1279,7 @@ function makeChart(id, type, datasets, opts) {
     options: { responsive: true, maintainAspectRatio: false,
       barPercentage: 0.55,
       categoryPercentage: 0.7,
+      layout: { padding: { top: 28 } },
       plugins: { legend: { display: false },
         tooltip: { backgroundColor:'#fff', borderColor:'#e4e1d9', borderWidth:1,
           titleColor:'#1a1916', bodyColor:'#8a8680', padding:10 } },
@@ -1304,7 +1301,7 @@ const dayChart = new Chart(document.getElementById('dayChart'), {
     { label:'Préc.',   type:'line', borderColor:'rgba(140,136,130,0.4)', borderWidth:1, borderDash:[4,4], pointRadius:0, tension:0.3, fill:false, order:1, data:[] },
     { label:'Mensuel', type:'bar',  backgroundColor:[], borderColor:'#8B1A1A', borderWidth:1, borderRadius:4, hidden:true, order:2, data:[] },
   ]},
-  options:{ responsive:true, maintainAspectRatio:false, barPercentage:0.55, categoryPercentage:0.7, interaction:{mode:'index',intersect:false},
+  options:{ responsive:true, maintainAspectRatio:false, barPercentage:0.55, categoryPercentage:0.7, layout:{padding:{top:28}}, interaction:{mode:'index',intersect:false},
     plugins:{ legend:{display:false}, tooltip:{ backgroundColor:'#fff', borderColor:'#e4e1d9', borderWidth:1, titleColor:'#1a1916', bodyColor:'#8a8680', padding:10,
       callbacks:{label:c=>`  ${c.dataset.label} : ${Math.round(c.parsed.y).toLocaleString('fr-FR')} €`} } },
     scales:{ x:{offset:true,grid:{display:false},ticks:{font:{family:'Sora',size:10}}}, y:{grid:{color:'rgba(0,0,0,.05)'},ticks:{font:{family:'Sora',size:10},callback:v=>Math.round(v/1000)+'k€'}} } }
@@ -1353,6 +1350,10 @@ const fbTktChart = makeChart('fbTktChart','bar',
 const googleChart= makeChart('googleChart','line',
   [{label:'Note Google',data:[],borderColor:'#f9c74f',borderWidth:2,pointBackgroundColor:'#f9c74f',pointRadius:3,tension:0.35,fill:true,backgroundColor:'rgba(249,199,79,0.08)'}],
   {scales:{x:{grid:{display:false},ticks:{font:{family:'Sora',size:9}}},y:{min:4,max:5,grid:{color:'rgba(0,0,0,.05)'},ticks:{font:{family:'Sora',size:9},callback:v=>v.toFixed(1)}}}});
+
+const googleDayChart = makeChart('googleDayChart','bar',
+  [{label:'Note',data:[],backgroundColor:'rgba(249,199,79,0.75)',borderRadius:3,borderSkipped:false}],
+  {layout:{padding:{top:20}},scales:{x:{grid:{display:false},ticks:{font:{family:'Sora',size:9}}},y:{min:3.5,max:5,grid:{color:'rgba(0,0,0,.05)'},ticks:{font:{family:'Sora',size:9},callback:v=>v.toFixed(1)}}}});
 
 // ca2Chart already handles déj/dîner — alias for compatibility
 const dejChart = null;
