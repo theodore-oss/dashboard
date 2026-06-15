@@ -1176,6 +1176,94 @@ const FNB_M = [];
 // Métriques mensuelles (remplies par loadLiveData)
 // window.LIVE_METRICS_M = [];
 
+/* ════════════ INITIALISATIONS GRAPHES ════════════ */
+
+function makeChart(id, type, datasets, opts) {
+  const el = document.getElementById(id);
+  if (!el) return null;
+  return new Chart(el, {
+    type,
+    data: { labels: [], datasets },
+    options: { responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false },
+        tooltip: { backgroundColor:'#fff', borderColor:'#e4e1d9', borderWidth:1,
+          titleColor:'#1a1916', bodyColor:'#8a8680', padding:10 } },
+      ...opts }
+  });
+}
+
+const barOpts = (yCb) => ({
+  scales: { x: { grid:{display:false}, ticks:{font:{family:'Sora',size:10}} },
+    y: { grid:{color:'rgba(0,0,0,.05)'}, ticks:{font:{family:'Sora',size:10}, callback: yCb} } }
+});
+
+const dayChart = new Chart(document.getElementById('dayChart'), {
+  type:'line',
+  data:{ labels:[], datasets:[
+    { label:'Total',    type:'line', borderColor:'#8B1A1A', borderWidth:2.5, pointBackgroundColor:'#8B1A1A', pointRadius:5, pointHoverRadius:7, tension:0.35, fill:true, backgroundColor:'rgba(139,26,26,0.06)', order:1, data:[] },
+    { label:'Dîner',   type:'line', borderColor:'#8B1A1A', borderWidth:1.5, borderDash:[5,4], pointBackgroundColor:'#8B1A1A', pointRadius:3, tension:0.35, fill:false, order:1, data:[] },
+    { label:'Déjeuner',type:'line', borderColor:'#C8963C', borderWidth:1.5, borderDash:[5,4], pointBackgroundColor:'#C8963C', pointRadius:3, tension:0.35, fill:false, order:1, data:[] },
+    { label:'Préc.',   type:'line', borderColor:'rgba(140,136,130,0.4)', borderWidth:1, borderDash:[4,4], pointRadius:0, tension:0.3, fill:false, order:1, data:[] },
+    { label:'Mensuel', type:'bar',  backgroundColor:[], borderColor:'#8B1A1A', borderWidth:1, borderRadius:4, hidden:true, order:2, data:[] },
+  ]},
+  options:{ responsive:true, maintainAspectRatio:false, interaction:{mode:'index',intersect:false},
+    plugins:{ legend:{display:false}, tooltip:{ backgroundColor:'#fff', borderColor:'#e4e1d9', borderWidth:1, titleColor:'#1a1916', bodyColor:'#8a8680', padding:10,
+      callbacks:{label:c=>`  ${c.dataset.label} : ${Math.round(c.parsed.y).toLocaleString('fr-FR')} €`} } },
+    scales:{ x:{offset:true,grid:{display:false},ticks:{font:{family:'Sora',size:10}}}, y:{grid:{color:'rgba(0,0,0,.05)'},ticks:{font:{family:'Sora',size:10},callback:v=>Math.round(v/1000)+'k€'}} } }
+});
+
+const tktChart   = makeChart('tktChart', 'bar',
+  [{label:'Dîner',data:[],backgroundColor:'rgba(139,26,26,0.75)',borderRadius:3,borderSkipped:false},{label:'Déjeuner',data:[],backgroundColor:'rgba(200,150,60,0.75)',borderRadius:3,borderSkipped:false}],
+  { ...barOpts(v=>v.toFixed(0)+' €'), scales:{ x:{grid:{display:false},ticks:{font:{family:'Sora',size:10}}}, y:{min:0,grid:{color:'rgba(0,0,0,.05)'},ticks:{font:{family:'Sora',size:10},callback:v=>v.toFixed(0)+' €'}} } }
+);
+
+const histChart  = makeChart('histChart','bar', [{label:'CA net',data:[],backgroundColor:'rgba(139,26,26,0.75)',borderRadius:4}],
+  barOpts(v=>(v/1000).toFixed(0)+'k €'));
+
+const caHistChart= makeChart('caHistChart','bar',[{label:'CA net',data:[],backgroundColor:'rgba(139,26,26,0.75)',borderRadius:4}],
+  barOpts(v=>(v/1000).toFixed(0)+'k €'));
+
+const covChart   = makeChart('covChart','bar',[{label:'Couverts',data:[],backgroundColor:'rgba(139,26,26,0.55)',borderRadius:4}],
+  barOpts(v=>v.toString()));
+
+const ca1Chart   = new Chart(document.getElementById('ca1Chart'), {
+  type:'line',
+  data:{labels:[],datasets:[
+    {label:'Total',   type:'line',borderColor:'#8B1A1A',borderWidth:2.5,pointBackgroundColor:'#8B1A1A',pointRadius:5,tension:0.35,fill:true,backgroundColor:'rgba(139,26,26,0.06)',order:1,data:[]},
+    {label:'Dîner',  type:'line',borderColor:'#8B1A1A',borderWidth:1.5,borderDash:[5,4],pointBackgroundColor:'#8B1A1A',pointRadius:3,tension:0.35,fill:false,order:1,data:[]},
+    {label:'Déjeuner',type:'line',borderColor:'#C8963C',borderWidth:1.5,borderDash:[5,4],pointBackgroundColor:'#C8963C',pointRadius:3,tension:0.35,fill:false,order:1,data:[]},
+    {label:'Préc.',  type:'line',borderColor:'rgba(140,136,130,0.4)',borderWidth:1,borderDash:[4,4],pointRadius:0,tension:0.3,fill:false,order:1,data:[]},
+    {label:'Mensuel',type:'bar', backgroundColor:[],borderColor:'#8B1A1A',borderWidth:1,borderRadius:4,hidden:true,order:2,data:[]},
+  ]},
+  options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},
+    plugins:{legend:{display:false},tooltip:{backgroundColor:'#fff',borderColor:'#e4e1d9',borderWidth:1,titleColor:'#1a1916',bodyColor:'#8a8680',padding:10,callbacks:{label:c=>`  ${c.dataset.label} : ${Math.round(c.parsed.y).toLocaleString('fr-FR')} €`}}},
+    scales:{x:{offset:true,grid:{display:false},ticks:{font:{family:'Sora',size:10}}},y:{grid:{color:'rgba(0,0,0,.05)'},ticks:{font:{family:'Sora',size:10},callback:v=>Math.round(v/1000)+'k€'}}}}
+});
+
+const ca2Chart   = makeChart('ca2Chart','bar',
+  [{label:'Dîner',data:[],backgroundColor:'rgba(139,26,26,0.75)',borderRadius:3,borderSkipped:false},{label:'Déjeuner',data:[],backgroundColor:'rgba(200,150,60,0.75)',borderRadius:3,borderSkipped:false}],
+  barOpts(v=>v.toFixed(0)+' €'));
+
+const tktMidiHistChart = makeChart('tktMidiHistChart','bar',
+  [{label:'Dîner',data:[],backgroundColor:'rgba(139,26,26,0.75)',borderRadius:3,borderSkipped:false},{label:'Déjeuner',data:[],backgroundColor:'rgba(200,150,60,0.75)',borderRadius:3,borderSkipped:false}],
+  barOpts(v=>v.toFixed(0)+' €'));
+
+const fbTktChart = makeChart('fbTktChart','bar',
+  [{label:'Cuisine',data:[],backgroundColor:'rgba(139,26,26,0.75)',borderRadius:3,borderSkipped:false},{label:'Boissons',data:[],backgroundColor:'rgba(200,150,60,0.75)',borderRadius:3,borderSkipped:false}],
+  barOpts(v=>v.toFixed(0)+' €'));
+
+const googleChart= makeChart('googleChart','line',
+  [{label:'Note Google',data:[],borderColor:'#f9c74f',borderWidth:2,pointBackgroundColor:'#f9c74f',pointRadius:3,tension:0.35,fill:true,backgroundColor:'rgba(249,199,79,0.08)'}],
+  {scales:{x:{grid:{display:false},ticks:{font:{family:'Sora',size:9}}},y:{min:4,max:5,grid:{color:'rgba(0,0,0,.05)'},ticks:{font:{family:'Sora',size:9},callback:v=>v.toFixed(1)}}}});
+
+// ca2Chart already handles déj/dîner — alias for compatibility
+const dejChart = null;
+const fbChart  = null;
+const fnb2Chart= makeChart('fnb2Chart','bar',[{label:'Food',data:[],backgroundColor:'rgba(139,26,26,0.75)',borderRadius:3},{label:'%',data:[],type:'line',borderColor:'#C8963C',borderWidth:2,fill:false,yAxisID:'y2'}],{scales:{x:{grid:{display:false}},y:{position:'left'},y2:{min:0,max:40,position:'right',grid:{display:false}}}});
+const fnb3Chart= makeChart('fnb3Chart','bar',[{label:'Bev',data:[],backgroundColor:'rgba(139,26,26,0.4)',borderRadius:3},{label:'%',data:[],type:'line',borderColor:'#C8963C',borderWidth:2,fill:false,yAxisID:'y2'}],{scales:{x:{grid:{display:false}},y:{position:'left'},y2:{min:0,max:15,position:'right',grid:{display:false}}}});
+
+
+
 /* ════════════ PERIOD PICKER ════════════ */
 let gran = 'week', idx = WEEKS.length - 1;
 function currentList() { return gran === 'week' ? WEEKS : MONTHS; }
@@ -1301,10 +1389,10 @@ function renderPeriod() {
   dayChart.update('active');
 
   // ── GRAPHE TICKET MOYEN (tktChart) — Vue d'ensemble ──
-  tktChart.data.labels           = histLbls;
-  tktChart.data.datasets[0].data = histM.map(mm => +(mm?.tktSoir || 0).toFixed(2));
-  tktChart.data.datasets[1].data = histM.map(mm => +(mm?.tktMidi || 0).toFixed(2));
-  tktChart.update('active');
+  if (tktChart) { tktChart.data.labels = histLbls;
+  tktChart.data.datasets[0].data = histM.map(mm => +(mm?.tktSoir||0).toFixed(2));
+  tktChart.data.datasets[1].data = histM.map(mm => +(mm?.tktMidi||0).toFixed(2));
+  tktChart.update('active'); }
 
   // ── ANALYSE CA ──
   // CA kpi strip
@@ -1345,10 +1433,10 @@ function renderPeriod() {
   const tktMidiHist = histM.map(mm => mm?.tktMidi > 0 ? +(mm.tktMidi).toFixed(2) : null);
   const tktSoirHist = histM.map(mm => mm?.tktSoir > 0 ? +(mm.tktSoir).toFixed(2) : null);
   const hasTktData  = tktMidiHist.some(v => v !== null);
-  ca2Chart.data.labels           = histLbls;
+  if (ca2Chart) { ca2Chart.data.labels = histLbls;
   ca2Chart.data.datasets[0].data = hasTktData ? tktSoirHist : [];
   ca2Chart.data.datasets[1].data = hasTktData ? tktMidiHist : [];
-  ca2Chart.update('active');
+  ca2Chart.update('active'); }
   if (tktMidiHistChart) {
     tktMidiHistChart.data.labels           = histLbls;
     tktMidiHistChart.data.datasets[0].data = hasTktData ? tktSoirHist : [];
@@ -1365,7 +1453,7 @@ function renderPeriod() {
   }
 
   // dejChart (CA déj/dîner par jour)
-  if (typeof dejChart !== 'undefined' && dejChart) {
+  if (dejChart) {
     if (gran === 'week' && S13.length > 0) {
       dejChart.data.labels = S13.map(d => d.lbl);
       dejChart.data.datasets[0].data = S13.map(d => d.soir);
@@ -1379,7 +1467,7 @@ function renderPeriod() {
   }
 
   // fbChart (CA cuisine/boissons)
-  if (typeof fbChart !== 'undefined' && fbChart) {
+  if (fbChart) {
     const foodDays = gran === 'week' && S13.length > 0
       ? S13.map(d => caFB > 0 ? Math.round(d.total * caFood / caFB) : 0)
       : histM.map(mm => mm?.caFood || 0);
