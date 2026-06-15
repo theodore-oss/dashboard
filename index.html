@@ -292,27 +292,12 @@ footer { max-width: 1040px; margin: 32px auto 0; padding-top: 20px; border-top: 
           <span class="rk-lbl">Remplissage</span>
           <span class="rk-delta neu" id="rk-fill-d">—</span>
         </div>
-        <div class="rk">
-          <span class="rk-val" id="rk-resa">186</span>
-          <span class="rk-lbl">Couverts</span>
-          <span class="rk-delta neu" id="rk-resa-d">—</span>
-        </div>
-        <div class="rk">
-          <span class="rk-val" id="rk-delay">3,4 j</span>
-          <span class="rk-lbl">Délai moy.</span>
-          <span class="rk-delta neu" id="rk-delay-d">—</span>
-        </div>
+
       </div>
 
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:32px;">
+      <div>
+
         <div>
-          <div class="section-sep">Mode de réservation</div>
-          <div class="bar-rows">
-            <div class="br"><span class="br-lbl">Réservation</span><div class="br-track"><div class="br-fill" style="width:72%"></div></div><span class="br-val">134 (72 %)</span></div>
-            <div class="br"><span class="br-lbl">Client de passage</span><div class="br-track"><div class="br-fill g" style="width:28%"></div></div><span class="br-val">52 (28 %)</span></div>
-          </div>
-        </div>
-        <div style="border-left:1px solid var(--border);padding-left:32px;">
           <div class="section-sep">Taux de remplissage par service</div>
           <div class="bar-rows">
             <div class="br"><span class="br-lbl">Midi</span><div class="br-track"><div class="br-fill" style="width:71%"></div></div><span class="br-val">71 %</span></div>
@@ -358,36 +343,6 @@ footer { max-width: 1040px; margin: 32px auto 0; padding-top: 20px; border-top: 
         </div>
         <div style="flex:1;">
           <div class="chart-h120"><canvas id="googleChart"></canvas></div>
-        </div>
-      </div>
-    </div>
-  </div>
-            <div class="rl-sub">Cible &lt; 30 % <span class="mock-tag">Pennylane fictif</span></div>
-          </div>
-          <div>
-            <div class="rl-head"><span class="rl-nm">Labour cost</span><span class="rl-val wn">34,1 %</span></div>
-            <div class="rl-track"><div class="rl-fill" style="width:34.1%;background:var(--gold);opacity:.7;"></div></div>
-            <div class="rl-sub">Cible &lt; 35 % <span class="mock-tag">Skello fictif</span></div>
-          </div>
-            <div class="rl-sub">Cible &lt; 65 %</div>
-          </div>
-        </div>
-        <div class="ratio-list">
-          <div>
-            <div class="rl-head"><span class="rl-nm">CA / couvert</span><span class="rl-val gd">45,06 €</span></div>
-            <div class="rl-track"><div class="rl-fill" style="width:75%;background:var(--ok);opacity:.6;"></div></div>
-            <div class="rl-sub">Cible &gt; 45 €</div>
-          </div>
-          <div>
-            <div class="rl-head"><span class="rl-nm">Part alcool / CA</span><span class="rl-val gd">13,3 %</span></div>
-            <div class="rl-track"><div class="rl-fill" style="width:44%;background:var(--ok);opacity:.6;"></div></div>
-            <div class="rl-sub">Données réelles</div>
-          </div>
-          <div>
-            <div class="rl-head"><span class="rl-nm">Heures supplémentaires</span><span class="rl-val bd">12 h</span></div>
-            <div class="rl-track"><div class="rl-fill" style="width:40%;background:var(--danger);opacity:.6;"></div></div>
-            <div class="rl-sub">Cible = 0 <span class="mock-tag">Skello fictif</span></div>
-          </div>
         </div>
       </div>
     </div>
@@ -735,7 +690,6 @@ footer { max-width: 1040px; margin: 32px auto 0; padding-top: 20px; border-top: 
       <div class="card-header"><div class="card-num" style="background:var(--muted);">%</div><span class="card-title">Coûts en % du CA</span></div>
       <div class="card-body">
         <div class="fin-rows">
-          <div class="fin-row"><span class="fn-lbl">Labour cost total</span><span class="fn-val acc" id="st-pct-total">34,1 %</span></div>
           <div class="fin-row"><span class="fn-lbl">vs période préc.</span><span class="fn-val neu" id="st-pct-delta">— pts</span></div>
           <div class="fin-row"><span class="fn-lbl">% Cuisine</span><span class="fn-val" id="st-pct-cuisine">19,9 %</span></div>
           <div class="fin-row"><span class="fn-lbl">vs période préc.</span><span class="fn-val neu" id="st-pct-cuisine-d">— pts</span></div>
@@ -905,8 +859,7 @@ async function loadLiveData() {
         tktMidi:    covMidi > 0 ? +(sum('CA_Net_Midi') / sum('Couverts_Midi')).toFixed(2) : 0,
         tktSoir:    covSoir > 0 ? +(sum('CA_Net_Soir') / sum('Couverts_Soir')).toFixed(2) : 0,
         foodCost:   28,
-        labourCost: 34,
-        primeCost:  62,
+            primeCost:  62,
         rempliMidi: 70,
         rempliSoir: 82,
         // Extra
@@ -1482,8 +1435,7 @@ function renderPeriod() {
     el.className = 'rk-delta ' + o.cls;
   };
 
-  // Délai moyen fictif cohérent par période
-  const delay = (i) => +(3.2 + i * 0.05).toFixed(1);
+  // Période
 
   const set  = (id, val) => document.getElementById(id).textContent = val;
   const setd = (id, txt, cls) => { set(id, txt); document.getElementById(id).className = 'kpi-cell-delta ' + cls; };
@@ -1507,16 +1459,10 @@ function renderPeriod() {
   set('ann-val', '∼ ' + ann.toFixed(2).replace('.',',') + ' M€');
 
   // ── Bloc 2 : KPIs réservations + deltas ──
-  const delayVal  = delay(idx);
-  const delayPrev = idx > 0 ? delay(idx - 1) : null;
   document.getElementById('rk-cov').textContent   = m.couverts.toLocaleString('fr-FR');
   document.getElementById('rk-fill').textContent  = Math.round(m.rempli) + ' %';
-  document.getElementById('rk-resa').textContent  = m.resa.toLocaleString('fr-FR');
-  document.getElementById('rk-delay').textContent = delayVal.toFixed(1).replace('.', ',') + ' j';
   setDelta('rk-cov-d',   fmtPct(m.couverts, pi?.couverts));
   setDelta('rk-fill-d',  fmtPts(m.rempli,   pi?.rempli));
-  setDelta('rk-resa-d',  fmtPct(m.resa,     pi?.resa));
-  setDelta('rk-delay-d', fmtDays(delayVal,  delayPrev));
 
   // ── Bloc 2 : Barres mode de réservation ──
   const resaPct = Math.round(m.resa * 100 / (m.resa + Math.max(5, Math.round(m.couverts * 0.28 / 2.4))));
@@ -1547,16 +1493,13 @@ function renderPeriod() {
 
   // ── Bloc 5 : Ratios ──
   const ratios = [
-    { nm:'Food cost',    val:m.foodCost,   cible:'< 30 %', cls: m.foodCost < 30 ? 'gd' : 'bd', w: m.foodCost },
-    { nm:'Labour cost',  val:m.labourCost, cible:'< 35 %', cls: m.labourCost < 35 ? 'wn' : 'bd', w: m.labourCost },
-    { nm:'CA / couvert', val:tktTotal,     cible:'> 45 €',  cls: tktTotal > 45 ? 'gd' : 'bd', w: tktTotal / 80 * 100 },
-  ];
+    { nm:'Food cost',    val:m.foodCost,   cible:'< 30 %', cls: m.foodCost < 30 ? 'gd' : 'bd', w: m.foodCost },  ];
   const rlHeads = document.querySelectorAll('.rl-head');
   const rlFills = document.querySelectorAll('.rl-fill');
   const rlSubs  = document.querySelectorAll('.rl-sub');
   ratios.forEach((r, i) => {
     if (!rlHeads[i]) return;
-    rlHeads[i].querySelector('.rl-val').textContent = r.nm === 'CA / couvert' ? r.val.toFixed(2) + ' €' : r.val + ' %';
+    rlHeads[i].querySelector('.rl-val').textContent = r.val + ' %';
     rlHeads[i].querySelector('.rl-val').className   = 'rl-val ' + r.cls;
     if (rlFills[i]) rlFills[i].style.width = Math.min(r.w, 100) + '%';
   });
@@ -1668,7 +1611,7 @@ function updateSecondaryTabs(p, m, pi, f, fi) {
 
   // ── Analyse CA ──
   s('ca-prime-val', m.primeCost + ' %');
-  s('ca-prime-sub', `Food cost ${m.foodCost} % + Labour cost ${m.labourCost} % — Cible < 65 %`);
+  s('ca-prime-sub', `Food cost ${m.foodCost} % — Cible < 30 %`);
   document.getElementById('ca-prime-gauge') && (document.getElementById('ca-prime-gauge').style.width = Math.min(m.primeCost,100)+'%');
   s('ca-fc-pct', m.foodCost + ' %');
   s('ca-lc-pct', m.labourCost + ' %');
