@@ -394,20 +394,16 @@ footer { max-width: 1040px; margin: 32px auto 0; padding-top: 20px; border-top: 
       <div class="kpi-cell-val" id="ca-kv2">— €</div>
       <div class="kpi-cell-delta neu" id="ca-kd2">—</div>
     </div>
-    <div class="kpi-cell" onclick="scrollToBloc('ca-3')" style="cursor:pointer;">
+    <div class="kpi-cell" onclick="scrollToBloc('ca-6')" style="cursor:pointer;">
       <div class="kpi-n" data-n="3">Top cuisine</div>
-      <div style="margin-top:6px;display:flex;flex-direction:column;gap:3px;">
-        <div style="font-size:11px;font-weight:500;color:var(--text);">1. Jamón ibérico bellota</div>
-        <div style="font-size:11px;color:var(--text);">2. Tortilla de Rosario</div>
-        <div style="font-size:11px;color:var(--muted);">3. Lentejas</div>
+      <div id="kpi-top-food" style="margin-top:6px;display:flex;flex-direction:column;gap:3px;">
+        <div style="font-size:11px;color:var(--muted);">Chargement…</div>
       </div>
     </div>
-    <div class="kpi-cell" onclick="scrollToBloc('ca-3')" style="cursor:pointer;">
+    <div class="kpi-cell" onclick="scrollToBloc('ca-6')" style="cursor:pointer;">
       <div class="kpi-n" data-n="4">Top boissons</div>
-      <div style="margin-top:6px;display:flex;flex-direction:column;gap:3px;">
-        <div style="font-size:11px;font-weight:500;color:var(--text);">1. Vino tinto de la casa</div>
-        <div style="font-size:11px;color:var(--text);">2. Cerveza Estrella</div>
-        <div style="font-size:11px;color:var(--muted);">3. Vermut</div>
+      <div id="kpi-top-bois" style="margin-top:6px;display:flex;flex-direction:column;gap:3px;">
+        <div style="font-size:11px;color:var(--muted);">Chargement…</div>
       </div>
     </div>
   </div>
@@ -1086,6 +1082,22 @@ function updateTop10UI(food, bois) {
         <span class="plat-ca">${Math.round(p.ca).toLocaleString('fr-FR')} €</span>
       </div>`).join('');
   }
+
+  // Mise à jour cartouche KPI strip
+  const kpiFood = document.getElementById('kpi-top-food');
+  if (kpiFood && food.length) {
+    const styles = ['font-weight:500;color:var(--text)', 'color:var(--text)', 'color:var(--muted)'];
+    kpiFood.innerHTML = food.slice(0,3).map((p,i) =>
+      `<div style="font-size:11px;${styles[i]}">${i+1}. ${p.name}</div>`
+    ).join('');
+  }
+  const kpiBois = document.getElementById('kpi-top-bois');
+  if (kpiBois && bois.length) {
+    const styles = ['font-weight:500;color:var(--text)', 'color:var(--text)', 'color:var(--muted)'];
+    kpiBois.innerHTML = bois.slice(0,3).map((p,i) =>
+      `<div style="font-size:11px;${styles[i]}">${i+1}. ${p.name}</div>`
+    ).join('');
+  }
   // Top 5 overview
   const top5El = document.getElementById('bloc-6');
   if (top5El && food.length) {
@@ -1259,11 +1271,7 @@ const rosarioBarPlugin = {
       if (!totals[i] || topY[i] === null) continue;
       const bar = chart.getDatasetMeta(0).data[i];
       if (!bar) continue;
-      // Détecte si c'est un graphe de couverts (pas d'€)
-      const isCov = chart.canvas.id === 'covChart';
-      const fmt = v => isCov
-        ? (v >= 1000 ? (v/1000).toFixed(1)+'k' : Math.round(v).toString())
-        : (v >= 1000 ? (v/1000).toFixed(0)+'k €' : Math.round(v)+' €');
+      // Format géré dans la boucle ci-dessus
       ctx.fillText(fmt(totals[i]), bar.x, topY[i] - 5);
     }
 
@@ -1476,16 +1484,12 @@ function renderPeriod() {
       total  = selWkRows.map(r => n(r['CA_Net_Total']));
       midi   = selWkRows.map(r => n(r['CA_Net_Midi']));
       soir   = selWkRows.map(r => n(r['CA_Net_Soir']));
-    } else if (S13.length > 0) {
-      labels = S13.map(d => d.lbl);
-      total  = S13.map(d => d.total);
-      midi   = S13.map(d => d.midi);
-      soir   = S13.map(d => d.soir);
     } else {
-      labels = dayNames;
-      total  = weights.map(w => Math.round(p.ca * w));
-      midi   = total.map(v => Math.round(v * 0.24));
-      soir   = total.map(v => Math.round(v * 0.76));
+      // Pas de données quotidiennes — afficher une seule barre avec le CA total
+      labels = [p.lbl.split(' · ')[0]];
+      total  = [p.ca];
+      midi   = [0];
+      soir   = [0];
     }
     const prevTotal = prevW ? labels.map((_, i) => Math.round(prevW.ca * (weights[i] || 0.14))) : [];
     dayChart.data.labels = labels;
@@ -1669,8 +1673,9 @@ function updateCa1Chart(p, m) {
       total=selRows2.map(r=>n(r['CA_Net_Total']));
       midi=selRows2.map(r=>n(r['CA_Net_Midi']));
       soir=selRows2.map(r=>n(r['CA_Net_Soir']));
-    } else if (S13.length > 0) { labels=S13.map(d=>d.lbl); total=S13.map(d=>d.total); midi=S13.map(d=>d.midi); soir=S13.map(d=>d.soir); }
-    else { labels=dayNames; total=weights.map(w=>Math.round(p.ca*w)); midi=total.map(v=>Math.round(v*0.24)); soir=total.map(v=>Math.round(v*0.76)); }
+    } else {
+      labels=[p.lbl.split(' · ')[0]]; total=[p.ca]; midi=[0]; soir=[0];
+    }
     const prev = prevW && S13.length > 0 ? S13.map((_,i) => Math.round(prevW.ca*(weights[i]||0.14))) : (prevW ? weights.map(w=>Math.round(prevW.ca*w)) : []);
     ca1Chart.data.labels = labels;
     [0,1,2,3].forEach(i=>ca1Chart.data.datasets[i].hidden=false);
