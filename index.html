@@ -1033,6 +1033,10 @@ async function loadLiveData() {
     S12.length = 0;
     livePREV.forEach(v => S12.push(v));
 
+    // Stocke byWeek globalement pour renderPeriod
+    window.LIVE_BY_WEEK = byWeek;
+    window.LIVE_DAY_NAMES = DAY_NAMES;
+
     // Stocke top10 globalement
     window.LIVE_TOP10_FOOD  = liveTop10Food;
     window.LIVE_TOP10_BOIS  = liveTop10Bois;
@@ -1456,9 +1460,23 @@ function renderPeriod() {
   if (gran === 'week') {
     const prevW = idx > 0 ? WEEKS[idx-1] : null;
     const weights  = [0.11, 0.13, 0.14, 0.13, 0.15, 0.22, 0.12];
+    const DN = ['Dim','Lun','Mar','Mer','Jeu','Ven','Sam'];
     const dayNames = ['Lun','Mar','Mer','Jeu','Ven','Sam','Dim'];
     let labels, total, midi, soir;
-    if (S13.length > 0) {
+
+    // Reconstruire les données du jour depuis byWeek selon la semaine sélectionnée
+    const byWeek = window.LIVE_BY_WEEK;
+    const selWkKey = WEEKS[idx]?.key;
+    const selWkRows = byWeek && selWkKey && byWeek[selWkKey]
+      ? byWeek[selWkKey].sort((a,b) => a['Date'].localeCompare(b['Date']))
+      : [];
+
+    if (selWkRows.length > 0) {
+      labels = selWkRows.map(r => { const d=r['Date']; const dt=new Date(+d.slice(0,4),+d.slice(4,6)-1,+d.slice(6,8)); return DN[dt.getDay()]+' '+d.slice(6,8); });
+      total  = selWkRows.map(r => n(r['CA_Net_Total']));
+      midi   = selWkRows.map(r => n(r['CA_Net_Midi']));
+      soir   = selWkRows.map(r => n(r['CA_Net_Soir']));
+    } else if (S13.length > 0) {
       labels = S13.map(d => d.lbl);
       total  = S13.map(d => d.total);
       midi   = S13.map(d => d.midi);
@@ -1637,12 +1655,21 @@ function updateSecondaryTabs(p, m, pi, f, fi) {
 function updateCa1Chart(p, m) {
   if (!ca1Chart) return;
   if (gran === 'week') {
-    const isS13 = p.key === '2026-W13';
     const prevW = idx > 0 ? WEEKS[idx-1] : null;
     const weights = [0.11,0.13,0.14,0.13,0.15,0.22,0.12];
     const dayNames = ['Lun','Mar','Mer','Jeu','Ven','Sam','Dim'];
+    const DN2 = ['Dim','Lun','Mar','Mer','Jeu','Ven','Sam'];
     let labels, total, midi, soir;
-    if (S13.length > 0) { labels=S13.map(d=>d.lbl); total=S13.map(d=>d.total); midi=S13.map(d=>d.midi); soir=S13.map(d=>d.soir); }
+    const byWeek2 = window.LIVE_BY_WEEK;
+    const selKey2 = WEEKS[idx]?.key;
+    const selRows2 = byWeek2 && selKey2 && byWeek2[selKey2]
+      ? byWeek2[selKey2].sort((a,b)=>a['Date'].localeCompare(b['Date'])) : [];
+    if (selRows2.length > 0) {
+      labels=selRows2.map(r=>{const d=r['Date'];const dt=new Date(+d.slice(0,4),+d.slice(4,6)-1,+d.slice(6,8));return DN2[dt.getDay()]+' '+d.slice(6,8);});
+      total=selRows2.map(r=>n(r['CA_Net_Total']));
+      midi=selRows2.map(r=>n(r['CA_Net_Midi']));
+      soir=selRows2.map(r=>n(r['CA_Net_Soir']));
+    } else if (S13.length > 0) { labels=S13.map(d=>d.lbl); total=S13.map(d=>d.total); midi=S13.map(d=>d.midi); soir=S13.map(d=>d.soir); }
     else { labels=dayNames; total=weights.map(w=>Math.round(p.ca*w)); midi=total.map(v=>Math.round(v*0.24)); soir=total.map(v=>Math.round(v*0.76)); }
     const prev = prevW && S13.length > 0 ? S13.map((_,i) => Math.round(prevW.ca*(weights[i]||0.14))) : (prevW ? weights.map(w=>Math.round(prevW.ca*w)) : []);
     ca1Chart.data.labels = labels;
