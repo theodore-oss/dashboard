@@ -277,31 +277,38 @@ footer { max-width: 1040px; margin: 32px auto 0; padding-top: 20px; border-top: 
   <div class="card" id="bloc-2">
     <div class="card-header">
       <div class="card-num">2</div>
-      <span class="card-title">Réservations & couverts</span>
-      <span class="card-src">Zenchef <span class="mock-tag">fictif</span></span>
+      <span class="card-title">Couverts &amp; remplissage</span>
+      <span class="card-src">Lightspeed · à jour</span>
     </div>
     <div class="card-body">
-      <div class="resa-kpis">
-        <div class="rk">
-          <span class="rk-val" id="rk-cov">812</span>
-          <span class="rk-lbl">Couverts</span>
-          <span class="rk-delta neu" id="rk-cov-d">—</span>
+      <div style="display:flex;align-items:flex-start;gap:40px;">
+        <!-- Gauche : couverts + remplissage global -->
+        <div class="resa-kpis" style="flex-shrink:0;">
+          <div class="rk">
+            <span class="rk-val" id="rk-cov">—</span>
+            <span class="rk-lbl">Couverts</span>
+            <span class="rk-delta neu" id="rk-cov-d">—</span>
+          </div>
+          <div class="rk">
+            <span class="rk-val" id="rk-fill">—</span>
+            <span class="rk-lbl">Remplissage</span>
+            <span class="rk-delta neu" id="rk-fill-d">—</span>
+          </div>
         </div>
-        <div class="rk">
-          <span class="rk-val ok" id="rk-fill">78 %</span>
-          <span class="rk-lbl">Remplissage</span>
-          <span class="rk-delta neu" id="rk-fill-d">—</span>
-        </div>
-
-      </div>
-
-      <div>
-
-        <div>
-          <div class="section-sep">Taux de remplissage par service</div>
+        <!-- Droite : remplissage par service -->
+        <div style="flex:1;border-left:1px solid var(--border);padding-left:32px;">
+          <div class="section-sep">Par service</div>
           <div class="bar-rows">
-            <div class="br"><span class="br-lbl">Midi</span><div class="br-track"><div class="br-fill" style="width:71%"></div></div><span class="br-val">71 %</span></div>
-            <div class="br"><span class="br-lbl">Soir</span><div class="br-track"><div class="br-fill" style="width:82%"></div></div><span class="br-val">82 %</span></div>
+            <div class="br">
+              <span class="br-lbl">Déjeuner</span>
+              <div class="br-track"><div class="br-fill" id="fill-midi-bar" style="width:0%;max-width:100%;"></div></div>
+              <span class="br-val" id="fill-midi-val">—</span>
+            </div>
+            <div class="br">
+              <span class="br-lbl">Dîner</span>
+              <div class="br-track"><div class="br-fill" id="fill-soir-bar" style="width:0%;max-width:100%;"></div></div>
+              <span class="br-val" id="fill-soir-val">—</span>
+            </div>
           </div>
         </div>
       </div>
@@ -501,6 +508,74 @@ footer { max-width: 1040px; margin: 32px auto 0; padding-top: 20px; border-top: 
     </div>
   </div>
 
+  <!-- BLOC CA-DEJ : DÉJEUNER vs DÎNER -->
+  <div class="card" id="bloc-ca-dej">
+    <div class="card-header">
+      <div class="card-num">3</div>
+      <span class="card-title">Déjeuner vs Dîner · CA &amp; évolution</span>
+      <span class="card-src">Lightspeed · données réelles</span>
+    </div>
+    <div class="card-body">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px;">
+        <div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:14px 16px;display:flex;align-items:center;gap:14px;">
+          <div style="font-size:26px;line-height:1;flex-shrink:0;">☀️</div>
+          <div>
+            <div style="font-size:9px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px;">Déjeuner</div>
+            <div style="font-size:20px;font-weight:600;color:var(--accent);" id="dej-ca-val">—</div>
+            <div style="font-size:10px;color:var(--muted);margin-top:2px;" id="dej-ca-sub">— % du CA</div>
+          </div>
+        </div>
+        <div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:14px 16px;display:flex;align-items:center;gap:14px;">
+          <div style="font-size:26px;line-height:1;flex-shrink:0;">🌙</div>
+          <div>
+            <div style="font-size:9px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px;">Dîner</div>
+            <div style="font-size:20px;font-weight:600;color:var(--accent);" id="din-ca-val">—</div>
+            <div style="font-size:10px;color:var(--muted);margin-top:2px;" id="din-ca-sub">— % du CA</div>
+          </div>
+        </div>
+      </div>
+      <div class="cleg">
+        <div class="cleg-item"><span style="width:12px;height:12px;border-radius:2px;background:rgba(139,26,26,0.75);display:inline-block;"></span>Dîner</div>
+        <div class="cleg-item"><span style="width:12px;height:12px;border-radius:2px;background:rgba(200,150,60,0.75);display:inline-block;"></span>Déjeuner</div>
+      </div>
+      <div class="chart-h160"><canvas id="dejChart"></canvas></div>
+    </div>
+  </div>
+
+  <!-- BLOC CA-FB : CUISINE vs BOISSONS -->
+  <div class="card" id="bloc-ca-fb">
+    <div class="card-header">
+      <div class="card-num">4</div>
+      <span class="card-title">Cuisine vs Boissons · CA &amp; évolution</span>
+      <span class="card-src">Lightspeed · données réelles</span>
+    </div>
+    <div class="card-body">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px;">
+        <div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:14px 16px;display:flex;align-items:center;gap:14px;">
+          <div style="font-size:26px;line-height:1;flex-shrink:0;">🍽️</div>
+          <div>
+            <div style="font-size:9px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px;">Cuisine &amp; Tapas</div>
+            <div style="font-size:20px;font-weight:600;color:var(--accent);" id="fb-food-val">—</div>
+            <div style="font-size:10px;color:var(--muted);margin-top:2px;" id="fb-food-sub">— % du CA</div>
+          </div>
+        </div>
+        <div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:14px 16px;display:flex;align-items:center;gap:14px;">
+          <div style="font-size:26px;line-height:1;flex-shrink:0;">🍷</div>
+          <div>
+            <div style="font-size:9px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px;">Boissons &amp; Bouteilles</div>
+            <div style="font-size:20px;font-weight:600;color:var(--accent);" id="fb-bev-val">—</div>
+            <div style="font-size:10px;color:var(--muted);margin-top:2px;" id="fb-bev-sub">— % du CA</div>
+          </div>
+        </div>
+      </div>
+      <div class="cleg">
+        <div class="cleg-item"><span style="width:12px;height:12px;border-radius:2px;background:rgba(139,26,26,0.75);display:inline-block;"></span>Cuisine</div>
+        <div class="cleg-item"><span style="width:12px;height:12px;border-radius:2px;background:rgba(200,150,60,0.75);display:inline-block;"></span>Boissons</div>
+      </div>
+      <div class="chart-h160"><canvas id="fbChart"></canvas></div>
+    </div>
+  </div>
+
   <!-- BLOC CA-3 : TOP 10 PRODUITS -->
   <div class="card" id="bloc-ca-3">
     <div class="card-header">
@@ -512,33 +587,11 @@ footer { max-width: 1040px; margin: 32px auto 0; padding-top: 20px; border-top: 
       <div class="grid-2">
         <div>
           <div class="section-sep">🍽️ Cuisine &amp; Tapas — top 10</div>
-          <div class="plats">
-            <div class="plat"><span class="plat-num">1</span><span class="plat-name">Jamón ibérico bellota</span><span class="plat-qty">165 vtes</span><span class="plat-ca">3 600 €</span></div>
-            <div class="plat"><span class="plat-num">2</span><span class="plat-name">Tortilla de Rosario</span><span class="plat-qty">315 vtes</span><span class="plat-ca">3 432 €</span></div>
-            <div class="plat"><span class="plat-num">3</span><span class="plat-name">Lentejas</span><span class="plat-qty">129 vtes</span><span class="plat-ca">2 111 €</span></div>
-            <div class="plat"><span class="plat-num">4</span><span class="plat-name">Pimientos de Padrón</span><span class="plat-qty">242 vtes</span><span class="plat-ca">1 980 €</span></div>
-            <div class="plat"><span class="plat-num">5</span><span class="plat-name">Pan con tomate</span><span class="plat-qty">580 vtes</span><span class="plat-ca">1 845 €</span></div>
-            <div class="plat"><span class="plat-num">6</span><span class="plat-name">Merluza en salsa verde</span><span class="plat-qty">74 vtes</span><span class="plat-ca">1 610 €</span></div>
-            <div class="plat"><span class="plat-num">7</span><span class="plat-name">Mejillones en escabeche</span><span class="plat-qty">134 vtes</span><span class="plat-ca">1 581 €</span></div>
-            <div class="plat"><span class="plat-num">8</span><span class="plat-name">Salpicón</span><span class="plat-qty">128 vtes</span><span class="plat-ca">1 510 €</span></div>
-            <div class="plat"><span class="plat-num">9</span><span class="plat-name">Carilleras</span><span class="plat-qty">57 vtes</span><span class="plat-ca">1 239 €</span></div>
-            <div class="plat"><span class="plat-num">10</span><span class="plat-name">Tarta de queso</span><span class="plat-qty">199 vtes</span><span class="plat-ca">1 080 €</span></div>
-          </div>
+          <div class="plats" id="top10-food-list"><div style="color:var(--muted);font-size:12px;padding:8px;">Chargement...</div></div>
         </div>
         <div>
           <div class="section-sep">🍷 Boissons &amp; Bouteilles — top 10</div>
-          <div class="plats">
-            <div class="plat"><span class="plat-num">1</span><span class="plat-name">Vino tinto de la casa</span><span class="plat-qty">284 vtes</span><span class="plat-ca">2 130 €</span></div>
-            <div class="plat"><span class="plat-num">2</span><span class="plat-name">Cerveza Estrella Damm</span><span class="plat-qty">412 vtes</span><span class="plat-ca">1 854 €</span></div>
-            <div class="plat"><span class="plat-num">3</span><span class="plat-name">Vermut Rosario</span><span class="plat-qty">198 vtes</span><span class="plat-ca">1 386 €</span></div>
-            <div class="plat"><span class="plat-num">4</span><span class="plat-name">Agua con gas</span><span class="plat-qty">520 vtes</span><span class="plat-ca">1 300 €</span></div>
-            <div class="plat"><span class="plat-num">5</span><span class="plat-name">Vino blanco Albariño</span><span class="plat-qty">142 vtes</span><span class="plat-ca">1 136 €</span></div>
-            <div class="plat"><span class="plat-num">6</span><span class="plat-name">Café solo</span><span class="plat-qty">380 vtes</span><span class="plat-ca">950 €</span></div>
-            <div class="plat"><span class="plat-num">7</span><span class="plat-name">Sangria maison</span><span class="plat-qty">96 vtes</span><span class="plat-ca">864 €</span></div>
-            <div class="plat"><span class="plat-num">8</span><span class="plat-name">Agua sin gas</span><span class="plat-qty">410 vtes</span><span class="plat-ca">820 €</span></div>
-            <div class="plat"><span class="plat-num">9</span><span class="plat-name">Cava brut nature</span><span class="plat-qty">62 vtes</span><span class="plat-ca">558 €</span></div>
-            <div class="plat"><span class="plat-num">10</span><span class="plat-name">Horchata de la casa</span><span class="plat-qty">148 vtes</span><span class="plat-ca">444 €</span></div>
-          </div>
+          <div class="plats" id="top10-bev-list"><div style="color:var(--muted);font-size:12px;padding:8px;">Chargement...</div></div>
         </div>
       </div>
     </div>
@@ -963,8 +1016,8 @@ async function loadLiveData() {
 
 function updateTop10UI(food, bois) {
   // Met à jour le top 10 food
-  const foodEl = document.querySelectorAll('#bloc-ca-3 .plats')[0];
-  const boisEl = document.querySelectorAll('#bloc-ca-3 .plats')[1];
+  const foodEl = document.getElementById('top10-food-list') || document.querySelectorAll('#bloc-ca-3 .plats')[0];
+  const boisEl = document.getElementById('top10-bev-list')  || document.querySelectorAll('#bloc-ca-3 .plats')[1];
   if (foodEl && food.length) {
     foodEl.innerHTML = food.map((p,i) => `
       <div class="plat">
@@ -1004,34 +1057,15 @@ async function loadGoogleRating() {
     const rows = await fetchSheet('Google_Rating');
     if (!rows.length) { console.log('Pas de note Google dans le Sheet'); return; }
 
-    // Dernière note connue (pour le nombre d'avis)
+    // Dernière note = note actuelle
     const last    = rows[rows.length - 1];
-    const reviews = parseInt(last['Reviews'] || last['reviews'] || 0);
+    const reviews = parseInt(String(last['Reviews'] || last['reviews'] || '0').replace(/\D/g,'')) || 0;
+    const lastNote = parseFloat(String(last['Rating'] || last['rating'] || '0').replace(',','.')) || 0;
 
-    // Moyenne de la semaine sélectionnée (WEEKS[idx])
-    const wk = WEEKS[idx];
-    let weekRows = [];
-    if (wk && wk.key) {
-      // Filtre les notes dans la fenêtre de la semaine courante
-      // wk.key = "2026-W24" → on filtre par date dans la semaine
-      weekRows = rows.filter(r => {
-        const d = String(r['Date'] || r['date'] || '');
-        if (!d || d.length < 8) return false;
-        const dt = new Date(+d.slice(0,4), +d.slice(4,6)-1, +d.slice(6,8));
-        const day = dt.getDay() || 7;
-        const mon = new Date(dt); mon.setDate(dt.getDate() - day + 1);
-        const thu = new Date(mon); thu.setDate(mon.getDate() + 6);
-        // Compare avec les dates de la semaine sélectionnée
-        const wkDates = (LIVE_WEEKS || WEEKS)[idx];
-        if (!wkDates) return true; // fallback : toutes les notes
-        return true; // si on n'a pas les dates exactes, on prend tout
-      });
-    }
-
-    // Si pas de filtre semaine possible, prend les 7 dernières entrées
-    const sample = weekRows.length > 0 ? weekRows : rows.slice(-7);
-    const ratings = sample.map(r => parseFloat(r['Rating'] || r['rating'] || 0)).filter(v => v > 0);
-    const avg = ratings.length ? +(ratings.reduce((a,b) => a+b, 0) / ratings.length).toFixed(1) : 0;
+    // Moyenne de la semaine : les 7 dernières entrées max
+    const sample  = rows.slice(-7);
+    const ratings = sample.map(r => parseFloat(String(r['Rating']||r['rating']||'0').replace(',','.')) || 0).filter(v => v > 0);
+    const avg     = ratings.length ? +(ratings.reduce((a,b)=>a+b,0)/ratings.length).toFixed(1) : lastNote;
 
     if (avg > 0) updateGoogleUI(avg, reviews);
   } catch(e) {
@@ -1674,34 +1708,31 @@ function updateSecondaryTabs(p, m, pi, f, fi) {
   // ca1Chart sync
   updateCa1Chart(p, m);
 
-  // ── F&B Cost ──
-  const fnbEur = f.foodEur + f.bevEur;
-  const fnbPct = +(f.foodPct + f.bevPct).toFixed(1);
-  s('fnb-kv1', fnbEur.toLocaleString('fr-FR') + ' €');
-  s('fnb-kd1', fnbPct + ' % du CA');
-  s('fnb-kv2', f.foodEur.toLocaleString('fr-FR') + ' €');
-  s('fnb-kd2', f.foodPct + ' % du CA');
-  s('fnb-kv3', f.bevEur.toLocaleString('fr-FR') + ' €');
-  s('fnb-kd3', f.bevPct + ' % du CA');
-  s('fnb1-eur', fnbEur.toLocaleString('fr-FR') + ' €');
-  s('fnb1-eur-d', fi ? fmtD(fnbEur, fi.foodEur+fi.bevEur, true) : '—');
-  s('fnb1-pct', fnbPct + ' %');
-  s('fnb1-pct-d', fi ? fmtD(fnbPct, +(fi.foodPct+fi.bevPct).toFixed(1), false) + ' pts' : '—');
-  s('fnb1-food-val', f.foodEur.toLocaleString('fr-FR') + ' € · ' + Math.round(f.foodEur/fnbEur*100) + ' %');
-  s('fnb1-bev-val',  f.bevEur.toLocaleString('fr-FR')  + ' € · ' + Math.round(f.bevEur/fnbEur*100)  + ' %');
-  // fnb2/fnb3 charts
-  const fnbList  = gran==='week' ? FNB_W : FNB_M;
-  const perList  = gran==='week' ? WEEKS : MONTHS;
-  const fnbSlice = fnbList.slice(Math.max(0,idx-5),idx+1);
-  const fnbLbls  = fnbSlice.map((_,i)=>perList[Math.max(0,idx-5)+i].lbl.split(' ')[0]);
-  fnb2Chart.data.labels = fnbLbls;
-  fnb2Chart.data.datasets[0].data = fnbSlice.map(f=>f.foodEur);
-  fnb2Chart.data.datasets[1].data = fnbSlice.map(f=>f.foodPct);
-  fnb2Chart.update('active');
-  fnb3Chart.data.labels = fnbLbls;
-  fnb3Chart.data.datasets[0].data = fnbSlice.map(f=>f.bevEur);
-  fnb3Chart.data.datasets[1].data = fnbSlice.map(f=>f.bevPct);
-  fnb3Chart.update('active');
+  // ── F&B Cost (optionnel - données fictives) ──
+  try {
+    if (f && f.foodEur !== undefined) {
+      const fnbEur = f.foodEur + f.bevEur;
+      const fnbPct = +(f.foodPct + f.bevPct).toFixed(1);
+      s('fnb-kv1', fnbEur.toLocaleString('fr-FR') + ' €');
+      s('fnb-kd1', fnbPct + ' % du CA');
+      s('fnb-kv2', f.foodEur.toLocaleString('fr-FR') + ' €');
+      s('fnb-kd2', f.foodPct + ' % du CA');
+      s('fnb-kv3', f.bevEur.toLocaleString('fr-FR') + ' €');
+      s('fnb-kd3', f.bevPct + ' % du CA');
+      s('fnb1-eur', fnbEur.toLocaleString('fr-FR') + ' €');
+      s('fnb1-eur-d', fi ? fmtD(fnbEur, fi.foodEur+fi.bevEur, true) : '—');
+      s('fnb1-pct', fnbPct + ' %');
+      s('fnb1-pct-d', fi ? fmtD(fnbPct, +(fi.foodPct+fi.bevPct).toFixed(1), false) + ' pts' : '—');
+      s('fnb1-food-val', f.foodEur.toLocaleString('fr-FR') + ' € · ' + Math.round(f.foodEur/fnbEur*100) + ' %');
+      s('fnb1-bev-val',  f.bevEur.toLocaleString('fr-FR')  + ' € · ' + Math.round(f.bevEur/fnbEur*100)  + ' %');
+      const fnbList  = gran==='week' ? FNB_W : FNB_M;
+      const perList  = gran==='week' ? WEEKS : MONTHS;
+      const fnbSlice = fnbList.slice(Math.max(0,idx-5),idx+1);
+      const fnbLbls  = fnbSlice.map((_,i)=>perList[Math.max(0,idx-5)+i].lbl.split(' ')[0]);
+      if (fnb2Chart) { fnb2Chart.data.labels = fnbLbls; fnb2Chart.data.datasets[0].data = fnbSlice.map(f=>f.foodEur); fnb2Chart.data.datasets[1].data = fnbSlice.map(f=>f.foodPct); fnb2Chart.update('active'); }
+      if (fnb3Chart) { fnb3Chart.data.labels = fnbLbls; fnb3Chart.data.datasets[0].data = fnbSlice.map(f=>f.bevEur); fnb3Chart.data.datasets[1].data = fnbSlice.map(f=>f.bevPct); fnb3Chart.update('active'); }
+    }
+  } catch(e) { console.warn('F&B block skipped:', e.message); }
 
   // ── Staff Cost ──
   const stTotal = Math.round(p.ca * m.labourCost / 100);
