@@ -273,7 +273,19 @@ footer { max-width: 1040px; margin: 32px auto 0; padding-top: 20px; border-top: 
     </div>
   </div>
 
-  <!-- BLOC 2 : RÉSERVATIONS -->
+  <!-- BLOC 1b : HISTORIQUE CA 6 SEMAINES -->
+  <div class="card" id="bloc-hist">
+    <div class="card-header">
+      <div class="card-num" style="background:#555;">↗</div>
+      <span class="card-title">CA net · historique 6 semaines</span>
+      <span class="card-src">Lightspeed · données réelles</span>
+    </div>
+    <div class="card-body">
+      <div class="chart-h160"><canvas id="histChart"></canvas></div>
+    </div>
+  </div>
+
+  <!-- BLOC 2 : COUVERTS & REMPLISSAGE -->
   <div class="card" id="bloc-2">
     <div class="card-header">
       <div class="card-num">2</div>
@@ -281,35 +293,29 @@ footer { max-width: 1040px; margin: 32px auto 0; padding-top: 20px; border-top: 
       <span class="card-src">Lightspeed · à jour</span>
     </div>
     <div class="card-body">
-      <div style="display:flex;align-items:flex-start;gap:40px;">
-        <!-- Gauche : couverts + remplissage global -->
-        <div class="resa-kpis" style="flex-shrink:0;">
-          <div class="rk">
-            <span class="rk-val" id="rk-cov">—</span>
-            <span class="rk-lbl">Couverts</span>
-            <span class="rk-delta neu" id="rk-cov-d">—</span>
-          </div>
-          <div class="rk">
-            <span class="rk-val" id="rk-fill">—</span>
-            <span class="rk-lbl">Remplissage</span>
-            <span class="rk-delta neu" id="rk-fill-d">—</span>
-          </div>
+      <!-- Graphe historique couverts -->
+      <div class="chart-h120" style="margin-bottom:20px;"><canvas id="covChart"></canvas></div>
+      <!-- Stats en ligne -->
+      <div style="display:flex;gap:0;border:1px solid var(--border);border-radius:8px;overflow:hidden;">
+        <div style="flex:1;padding:14px 16px;border-right:1px solid var(--border);text-align:center;">
+          <div style="font-size:9px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px;">Couverts</div>
+          <div style="font-size:24px;font-weight:600;color:var(--accent);" id="rk-cov">—</div>
+          <div style="font-size:10px;color:var(--muted);margin-top:2px;" id="rk-cov-d">—</div>
         </div>
-        <!-- Droite : remplissage par service -->
-        <div style="flex:1;border-left:1px solid var(--border);padding-left:32px;">
-          <div class="section-sep">Par service</div>
-          <div class="bar-rows">
-            <div class="br">
-              <span class="br-lbl">Déjeuner</span>
-              <div class="br-track"><div class="br-fill" id="fill-midi-bar" style="width:0%;max-width:100%;"></div></div>
-              <span class="br-val" id="fill-midi-val">—</span>
-            </div>
-            <div class="br">
-              <span class="br-lbl">Dîner</span>
-              <div class="br-track"><div class="br-fill" id="fill-soir-bar" style="width:0%;max-width:100%;"></div></div>
-              <span class="br-val" id="fill-soir-val">—</span>
-            </div>
-          </div>
+        <div style="flex:1;padding:14px 16px;border-right:1px solid var(--border);text-align:center;">
+          <div style="font-size:9px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px;">Remplissage</div>
+          <div style="font-size:24px;font-weight:600;color:var(--accent);" id="rk-fill">—</div>
+          <div style="font-size:10px;color:var(--muted);margin-top:2px;" id="rk-fill-d">—</div>
+        </div>
+        <div style="flex:1;padding:14px 16px;border-right:1px solid var(--border);text-align:center;">
+          <div style="font-size:9px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px;">Déjeuner</div>
+          <div style="font-size:24px;font-weight:600;color:var(--accent);" id="fill-midi-val">—</div>
+          <div style="font-size:10px;color:var(--muted);margin-top:2px;">taux remplissage</div>
+        </div>
+        <div style="flex:1;padding:14px 16px;text-align:center;">
+          <div style="font-size:9px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px;">Dîner</div>
+          <div style="font-size:24px;font-weight:600;color:var(--accent);" id="fill-soir-val">—</div>
+          <div style="font-size:10px;color:var(--muted);margin-top:2px;">taux remplissage</div>
         </div>
       </div>
     </div>
@@ -390,7 +396,19 @@ footer { max-width: 1040px; margin: 32px auto 0; padding-top: 20px; border-top: 
     </div>
   </div>
 
-  <!-- BLOC CA-1 : CA TOTAL -->
+  <!-- BLOC CA-0 : HISTORIQUE CA 6 SEMAINES (identique vue d'ensemble) -->
+  <div class="card" id="bloc-ca-0">
+    <div class="card-header">
+      <div class="card-num" style="background:#555;">↗</div>
+      <span class="card-title">CA net · historique 6 semaines</span>
+      <span class="card-src">Lightspeed · données réelles</span>
+    </div>
+    <div class="card-body">
+      <div class="chart-h160"><canvas id="caHistChart"></canvas></div>
+    </div>
+  </div>
+
+  <!-- BLOC CA-1 : CA TOTAL PAR JOUR -->
   <div class="card" id="bloc-ca-1">
     <div class="card-header">
       <div class="card-num">1</div>
@@ -405,113 +423,13 @@ footer { max-width: 1040px; margin: 32px auto 0; padding-top: 20px; border-top: 
         <div class="cleg-item"><span class="cleg-dashed" style="border-color:rgba(140,136,130,0.55);"></span>Période préc.</div>
       </div>
       <div class="chart-h160"><canvas id="ca1Chart"></canvas></div>
-
-      <!-- Répartition déjeuner / dîner — visuel -->
-      <div class="section-sep">Répartition déjeuner / dîner</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;">
-        <div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:14px 16px;display:flex;align-items:center;gap:14px;">
-          <div style="font-size:26px;line-height:1;flex-shrink:0;">☀️</div>
-          <div>
-            <div style="font-size:9px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px;">Déjeuner</div>
-            <div style="font-size:20px;font-weight:600;color:var(--accent);" id="ca1-midi-ca">8 879 €</div>
-            <div style="font-size:10px;color:var(--muted);margin-top:2px;" id="ca1-midi-sub">24 % du CA · 34,15 € / cvt</div>
-          </div>
-        </div>
-        <div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:14px 16px;display:flex;align-items:center;gap:14px;">
-          <div style="font-size:26px;line-height:1;flex-shrink:0;">🌙</div>
-          <div>
-            <div style="font-size:9px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px;">Dîner</div>
-            <div style="font-size:20px;font-weight:600;color:var(--accent);" id="ca1-soir-ca">27 691 €</div>
-            <div style="font-size:10px;color:var(--muted);margin-top:2px;" id="ca1-soir-sub">76 % du CA · 50,17 € / cvt</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Répartition cuisine / boissons — même mise en forme -->
-      <div class="section-sep">Répartition cuisine / boissons</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
-        <div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:14px 16px;display:flex;align-items:center;gap:14px;">
-          <div style="font-size:26px;line-height:1;flex-shrink:0;">🍽️</div>
-          <div>
-            <div style="font-size:9px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px;">Cuisine</div>
-            <div style="font-size:20px;font-weight:600;color:var(--accent);" id="ca1-food-val">30 364 €</div>
-            <div style="font-size:10px;color:var(--muted);margin-top:2px;" id="ca1-food-pct">83 % du CA</div>
-          </div>
-        </div>
-        <div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:14px 16px;display:flex;align-items:center;gap:14px;">
-          <div style="font-size:26px;line-height:1;flex-shrink:0;">🍷</div>
-          <div>
-            <div style="font-size:9px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px;">Boissons</div>
-            <div style="font-size:20px;font-weight:600;color:var(--accent);" id="ca1-bev-val">6 219 €</div>
-            <div style="font-size:10px;color:var(--muted);margin-top:2px;" id="ca1-bev-pct">17 % du CA</div>
-          </div>
-        </div>
-      </div>
     </div>
   </div>
 
-  <!-- BLOC CA-2 : TICKET MOYEN -->
+  <!-- BLOC CA-2 : DÉJEUNER vs DÎNER -->
   <div class="card" id="bloc-ca-2">
     <div class="card-header">
       <div class="card-num">2</div>
-      <span class="card-title">Ticket moyen · détail & historique</span>
-      <span class="card-src">Lightspeed · données réelles</span>
-    </div>
-    <div class="card-body">
-
-      <!-- Segmentation service -->
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px;">
-        <div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:14px 16px;display:flex;align-items:center;gap:14px;">
-          <div style="font-size:26px;line-height:1;flex-shrink:0;">☀️</div>
-          <div>
-            <div style="font-size:9px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px;">Déjeuner</div>
-            <div style="font-size:22px;font-weight:600;color:var(--accent);" id="ca2-tkt-midi">34,15 €</div>
-            <div style="font-size:10px;color:var(--muted);margin-top:2px;">par couvert</div>
-          </div>
-        </div>
-        <div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:14px 16px;display:flex;align-items:center;gap:14px;">
-          <div style="font-size:26px;line-height:1;flex-shrink:0;">🌙</div>
-          <div>
-            <div style="font-size:9px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px;">Dîner</div>
-            <div style="font-size:22px;font-weight:600;color:var(--accent);" id="ca2-tkt-soir">50,17 €</div>
-            <div style="font-size:10px;color:var(--muted);margin-top:2px;">par couvert</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Segmentation type -->
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px;">
-        <div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:14px 16px;display:flex;align-items:center;gap:14px;">
-          <div style="font-size:26px;line-height:1;flex-shrink:0;">🍽️</div>
-          <div>
-            <div style="font-size:9px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px;">Cuisine</div>
-            <div style="font-size:22px;font-weight:600;color:var(--accent);" id="ca2-tkt-food">37,50 €</div>
-            <div style="font-size:10px;color:var(--muted);margin-top:2px;">par couvert</div>
-          </div>
-        </div>
-        <div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:14px 16px;display:flex;align-items:center;gap:14px;">
-          <div style="font-size:26px;line-height:1;flex-shrink:0;">🍷</div>
-          <div>
-            <div style="font-size:9px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px;">Boissons</div>
-            <div style="font-size:22px;font-weight:600;color:var(--accent);" id="ca2-tkt-bev">7,56 €</div>
-            <div style="font-size:10px;color:var(--muted);margin-top:2px;">par couvert</div>
-          </div>
-        </div>
-      </div>
-
-      <div class="section-sep">Évolution du ticket moyen · 6 dernières périodes</div>
-      <div class="cleg">
-        <div class="cleg-item"><span style="width:12px;height:12px;border-radius:2px;background:rgba(139,26,26,0.75);display:inline-block;"></span>Dîner</div>
-        <div class="cleg-item"><span style="width:12px;height:12px;border-radius:2px;background:rgba(200,150,60,0.75);display:inline-block;"></span>Déjeuner</div>
-      </div>
-      <div class="chart-h160"><canvas id="ca2Chart"></canvas></div>
-    </div>
-  </div>
-
-  <!-- BLOC CA-DEJ : DÉJEUNER vs DÎNER -->
-  <div class="card" id="bloc-ca-dej">
-    <div class="card-header">
-      <div class="card-num">3</div>
       <span class="card-title">Déjeuner vs Dîner · CA &amp; évolution</span>
       <span class="card-src">Lightspeed · données réelles</span>
     </div>
@@ -522,7 +440,7 @@ footer { max-width: 1040px; margin: 32px auto 0; padding-top: 20px; border-top: 
           <div>
             <div style="font-size:9px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px;">Déjeuner</div>
             <div style="font-size:20px;font-weight:600;color:var(--accent);" id="dej-ca-val">—</div>
-            <div style="font-size:10px;color:var(--muted);margin-top:2px;" id="dej-ca-sub">— % du CA</div>
+            <div style="font-size:10px;color:var(--muted);margin-top:2px;" id="dej-ca-sub">—</div>
           </div>
         </div>
         <div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:14px 16px;display:flex;align-items:center;gap:14px;">
@@ -530,22 +448,42 @@ footer { max-width: 1040px; margin: 32px auto 0; padding-top: 20px; border-top: 
           <div>
             <div style="font-size:9px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px;">Dîner</div>
             <div style="font-size:20px;font-weight:600;color:var(--accent);" id="din-ca-val">—</div>
-            <div style="font-size:10px;color:var(--muted);margin-top:2px;" id="din-ca-sub">— % du CA</div>
+            <div style="font-size:10px;color:var(--muted);margin-top:2px;" id="din-ca-sub">—</div>
           </div>
         </div>
       </div>
+      <div class="section-sep">Ticket moyen · Déjeuner &amp; Dîner</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px;">
+        <div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:14px 16px;display:flex;align-items:center;gap:14px;">
+          <div style="font-size:26px;line-height:1;flex-shrink:0;">☀️</div>
+          <div>
+            <div style="font-size:9px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px;">Ticket moyen déjeuner</div>
+            <div style="font-size:20px;font-weight:600;color:var(--accent);" id="ca2-tkt-midi">—</div>
+            <div style="font-size:10px;color:var(--muted);margin-top:2px;">par couvert</div>
+          </div>
+        </div>
+        <div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:14px 16px;display:flex;align-items:center;gap:14px;">
+          <div style="font-size:26px;line-height:1;flex-shrink:0;">🌙</div>
+          <div>
+            <div style="font-size:9px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px;">Ticket moyen dîner</div>
+            <div style="font-size:20px;font-weight:600;color:var(--accent);" id="ca2-tkt-soir">—</div>
+            <div style="font-size:10px;color:var(--muted);margin-top:2px;">par couvert</div>
+          </div>
+        </div>
+      </div>
+      <div class="section-sep">Évolution ticket moyen · 6 dernières périodes</div>
       <div class="cleg">
         <div class="cleg-item"><span style="width:12px;height:12px;border-radius:2px;background:rgba(139,26,26,0.75);display:inline-block;"></span>Dîner</div>
         <div class="cleg-item"><span style="width:12px;height:12px;border-radius:2px;background:rgba(200,150,60,0.75);display:inline-block;"></span>Déjeuner</div>
       </div>
-      <div class="chart-h160"><canvas id="dejChart"></canvas></div>
+      <div class="chart-h160"><canvas id="ca2Chart"></canvas></div>
     </div>
   </div>
 
-  <!-- BLOC CA-FB : CUISINE vs BOISSONS -->
-  <div class="card" id="bloc-ca-fb">
+  <!-- BLOC CA-3 : CUISINE vs BOISSONS -->
+  <div class="card" id="bloc-ca-3">
     <div class="card-header">
-      <div class="card-num">4</div>
+      <div class="card-num">3</div>
       <span class="card-title">Cuisine vs Boissons · CA &amp; évolution</span>
       <span class="card-src">Lightspeed · données réelles</span>
     </div>
@@ -556,7 +494,7 @@ footer { max-width: 1040px; margin: 32px auto 0; padding-top: 20px; border-top: 
           <div>
             <div style="font-size:9px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px;">Cuisine &amp; Tapas</div>
             <div style="font-size:20px;font-weight:600;color:var(--accent);" id="fb-food-val">—</div>
-            <div style="font-size:10px;color:var(--muted);margin-top:2px;" id="fb-food-sub">— % du CA</div>
+            <div style="font-size:10px;color:var(--muted);margin-top:2px;" id="fb-food-sub">—</div>
           </div>
         </div>
         <div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:14px 16px;display:flex;align-items:center;gap:14px;">
@@ -564,22 +502,42 @@ footer { max-width: 1040px; margin: 32px auto 0; padding-top: 20px; border-top: 
           <div>
             <div style="font-size:9px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px;">Boissons &amp; Bouteilles</div>
             <div style="font-size:20px;font-weight:600;color:var(--accent);" id="fb-bev-val">—</div>
-            <div style="font-size:10px;color:var(--muted);margin-top:2px;" id="fb-bev-sub">— % du CA</div>
+            <div style="font-size:10px;color:var(--muted);margin-top:2px;" id="fb-bev-sub">—</div>
           </div>
         </div>
       </div>
+      <div class="section-sep">Ticket moyen · Cuisine &amp; Boissons</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px;">
+        <div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:14px 16px;display:flex;align-items:center;gap:14px;">
+          <div style="font-size:26px;line-height:1;flex-shrink:0;">🍽️</div>
+          <div>
+            <div style="font-size:9px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px;">Ticket moyen cuisine</div>
+            <div style="font-size:20px;font-weight:600;color:var(--accent);" id="ca2-tkt-food">—</div>
+            <div style="font-size:10px;color:var(--muted);margin-top:2px;">par couvert</div>
+          </div>
+        </div>
+        <div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:14px 16px;display:flex;align-items:center;gap:14px;">
+          <div style="font-size:26px;line-height:1;flex-shrink:0;">🍷</div>
+          <div>
+            <div style="font-size:9px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px;">Ticket moyen boissons</div>
+            <div style="font-size:20px;font-weight:600;color:var(--accent);" id="ca2-tkt-bev">—</div>
+            <div style="font-size:10px;color:var(--muted);margin-top:2px;">par couvert</div>
+          </div>
+        </div>
+      </div>
+      <div class="section-sep">Évolution ticket moyen · 6 dernières périodes</div>
       <div class="cleg">
         <div class="cleg-item"><span style="width:12px;height:12px;border-radius:2px;background:rgba(139,26,26,0.75);display:inline-block;"></span>Cuisine</div>
         <div class="cleg-item"><span style="width:12px;height:12px;border-radius:2px;background:rgba(200,150,60,0.75);display:inline-block;"></span>Boissons</div>
       </div>
-      <div class="chart-h160"><canvas id="fbChart"></canvas></div>
+      <div class="chart-h160"><canvas id="fbTktChart"></canvas></div>
     </div>
   </div>
 
-  <!-- BLOC CA-3 : TOP 10 PRODUITS -->
-  <div class="card" id="bloc-ca-3">
+  <!-- BLOC CA-4 : TOP 10 PRODUITS -->
+  <div class="card" id="bloc-ca-4">
     <div class="card-header">
-      <div class="card-num">3</div>
+      <div class="card-num">4</div>
       <span class="card-title">Top produits · par chiffre d'affaires</span>
       <span class="card-src">Lightspeed · données réelles</span>
     </div>
@@ -903,26 +861,19 @@ async function loadLiveData() {
       const covSoir = sum('Couverts_Soir');
       return {
         couverts:   Math.round(cov),
-        rempli:     Math.round(cov / (178 * rows.length) * 100), // couverts / (178 par jour = 89 dej + 89 diner)
-        rempliMidi: Math.round(covMidi / (89 * rows.length) * 100), // 89 couverts dej
-        rempliSoir: Math.round(covSoir / (89 * rows.length) * 100), // 89 couverts diner
-        resa:       Math.round(cov * 0.7),
-        noshows:    0,
-        walkin:     Math.round(cov * 0.3),
-        tktMidi:    covMidi > 0 ? +(sum('CA_Net_Midi') / sum('Couverts_Midi')).toFixed(2) : 0,
-        tktSoir:    covSoir > 0 ? +(sum('CA_Net_Soir') / sum('Couverts_Soir')).toFixed(2) : 0,
+        rempli:     Math.round(cov / (178 * rows.length) * 100),
+        rempliMidi: Math.round(covMidi > 0 ? covMidi / (89 * rows.length) * 100 : 0),
+        rempliSoir: Math.round(covSoir > 0 ? covSoir / (89 * rows.length) * 100 : 0),
+        tktMidi:    covMidi > 0 ? +(sum('CA_Net_Midi') / covMidi).toFixed(2) : 0,
+        tktSoir:    covSoir > 0 ? +(sum('CA_Net_Soir') / covSoir).toFixed(2) : 0,
         foodCost:   28,
-            primeCost:  62,
-        rempliMidi: 70,
-        rempliSoir: 82,
-        // Extra
-        caNet:      +sum('CA_Net_Total').toFixed(2),
+        primeCost:  62,
         caNet:      +sum('CA_Net_Total').toFixed(0),
         caNetMidi:  +sum('CA_Net_Midi').toFixed(0),
         caNetSoir:  +sum('CA_Net_Soir').toFixed(0),
-        caFood:     +sum('CA_Food_HT').toFixed(0),    // Cuisine + Tapas
-        caBoisss:   +sum('CA_Boissons_HT').toFixed(0), // Alcool + Boissons + Bouteilles
-        tktFood:    cov > 0 ? +(sum('CA_Food_HT')    / cov).toFixed(2) : 0,
+        caFood:     +sum('CA_Food_HT').toFixed(0),
+        caBoisss:   +sum('CA_Boissons_HT').toFixed(0),
+        tktFood:    cov > 0 ? +(sum('CA_Food_HT') / cov).toFixed(2) : 0,
         tktBoisss:  cov > 0 ? +(sum('CA_Boissons_HT') / cov).toFixed(2) : 0,
       };
     });
@@ -986,6 +937,64 @@ async function loadLiveData() {
     TKT_WEEKS.length = 0;
     liveTKT_WEEKS.forEach(t => TKT_WEEKS.push(t));
 
+    // ── Rebuild MONTHS par mois calendaire (évite le problème de chevauchement) ──
+    const byMonth = {};
+    kpiRows.forEach(row => {
+      const d = String(row['Date'] || '');
+      if (d.length < 6) return;
+      const mk = d.slice(0,4) + '-' + d.slice(4,6); // "2026-02"
+      if (!byMonth[mk]) byMonth[mk] = [];
+      byMonth[mk].push(row);
+    });
+    const monthKeys = Object.keys(byMonth).sort();
+    const liveMonthNames = {
+      '01':'Janvier','02':'Février','03':'Mars','04':'Avril','05':'Mai',
+      '06':'Juin','07':'Juillet','08':'Août','09':'Septembre',
+      '10':'Octobre','11':'Novembre','12':'Décembre'
+    };
+    const liveMONTHS = monthKeys.map((mk, i) => {
+      const rows = byMonth[mk];
+      const ca = rows.reduce((s,r) => s + n(r['CA_Net_Total']), 0);
+      const prevMk = i > 0 ? monthKeys[i-1] : null;
+      const prev_ca = prevMk ? byMonth[prevMk].reduce((s,r) => s + n(r['CA_Net_Total']), 0) : null;
+      const [y, m] = mk.split('-');
+      return { key: mk, lbl: liveMonthNames[m] + ' ' + y, ca: Math.round(ca), prev_ca: prev_ca ? Math.round(prev_ca) : null };
+    });
+
+    // Rebuild METRICS_M par mois
+    const liveMETRICS_M = monthKeys.map(mk => {
+      const rows = byMonth[mk];
+      const sum = (col) => rows.reduce((s,r) => s + n(r[col]), 0);
+      const cov = sum('Couverts_Total');
+      const covMidi = sum('Couverts_Midi');
+      const covSoir = sum('Couverts_Soir');
+      return {
+        couverts:   Math.round(cov),
+        rempli:     Math.round(cov / (178 * rows.length) * 100),
+        rempliMidi: Math.round(covMidi > 0 ? covMidi / (89 * rows.length) * 100 : 0),
+        rempliSoir: Math.round(covSoir > 0 ? covSoir / (89 * rows.length) * 100 : 0),
+        tktMidi:    covMidi > 0 ? +(sum('CA_Net_Midi') / covMidi).toFixed(2) : 0,
+        tktSoir:    covSoir > 0 ? +(sum('CA_Net_Soir') / covSoir).toFixed(2) : 0,
+        foodCost:   28, primeCost: 62,
+        caNet:      +sum('CA_Net_Total').toFixed(0),
+        caNetMidi:  +sum('CA_Net_Midi').toFixed(0),
+        caNetSoir:  +sum('CA_Net_Soir').toFixed(0),
+        caFood:     +sum('CA_Food_HT').toFixed(0),
+        caBoisss:   +sum('CA_Boissons_HT').toFixed(0),
+        tktFood:    cov > 0 ? +(sum('CA_Food_HT') / cov).toFixed(2) : 0,
+        tktBoisss:  cov > 0 ? +(sum('CA_Boissons_HT') / cov).toFixed(2) : 0,
+      };
+    });
+
+    MONTHS.length = 0;
+    liveMONTHS.forEach(m => MONTHS.push(m));
+    if (typeof METRICS_M !== 'undefined') {
+      METRICS_M.length = 0;
+      liveMETRICS_M.forEach(m => METRICS_M.push(m));
+    } else {
+      window.LIVE_METRICS_M = liveMETRICS_M;
+    }
+
     // Override S13 (semaine courante)
     S13.length = 0;
     liveCURRENT.forEach(d => S13.push(d));
@@ -1016,8 +1025,8 @@ async function loadLiveData() {
 
 function updateTop10UI(food, bois) {
   // Met à jour le top 10 food
-  const foodEl = document.getElementById('top10-food-list') || document.querySelectorAll('#bloc-ca-3 .plats')[0];
-  const boisEl = document.getElementById('top10-bev-list')  || document.querySelectorAll('#bloc-ca-3 .plats')[1];
+  const foodEl = document.getElementById('top10-food-list') || document.querySelectorAll('#bloc-ca-4 .plats')[0];
+  const boisEl = document.getElementById('top10-bev-list')  || document.querySelectorAll('#bloc-ca-4 .plats')[1];
   if (foodEl && food.length) {
     foodEl.innerHTML = food.map((p,i) => `
       <div class="plat">
