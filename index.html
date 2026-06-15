@@ -1470,151 +1470,197 @@ function currentList() { return gran === 'week' ? WEEKS : MONTHS; }
 
 function renderPeriod() {
   const list = currentList();
-  idx = Math.max(0, Math.min(list.length - 1, idx));
-  const p  = list[idx];
-  const m  = gran === 'week' ? METRICS_W[idx] : METRICS_M[idx];
-  const pi = gran === 'week' ? (idx > 0 ? METRICS_W[idx-1] : null) : (idx > 0 ? METRICS_M[idx-1] : null);
-  const unit = gran === 'week' ? 'vs semaine préc.' : 'vs mois préc.';
+  const p    = list[idx];
+  const pi   = idx > 0 ? list[idx - 1] : null;
+  const m    = gran === 'week' ? METRICS_W[idx] : (window.LIVE_METRICS_M || METRICS_W)[idx] || METRICS_W[Math.min(idx, METRICS_W.length-1)];
+  const mi   = pi && idx > 0 ? (gran === 'week' ? METRICS_W[idx-1] : (window.LIVE_METRICS_M || METRICS_W)[idx-1]) : null;
+  if (!p || !m) return;
 
+  const unit = gran === 'week' ? 'vs S préc.' : 'vs M préc.';
+  const s    = (id, v) => { const e = document.getElementById(id); if (e) e.textContent = v; };
+  const sc   = (id, cls) => { const e = document.getElementById(id); if (e) e.className = cls; };
+  const fmtPct = (val, prev) => {
+    if (!prev) return { txt: '—', cls: 'neu' };
+    const d = ((val - prev) / prev * 100).toFixed(1);
+    return { txt: `${+d>=0?'▲ +':'▼ '}${d} %`, cls: +d>=0?'up':'dn' };
+  };
+  const fmtPts = (val, prev) => {
+    if (!prev && prev !== 0) return { txt: '—', cls: 'neu' };
+    const d = (val - prev).toFixed(1);
+    return { txt: `${+d>=0?'▲ +':'▼ '}${d} pts`, cls: +d>=0?'up':'dn' };
+  };
+  const setDelta = (id, o) => { const e = document.getElementById(id); if (e) { e.textContent = o.txt; e.className = 'rk-delta ' + o.cls; } };
+  const setd = (id, txt, cls) => { s(id, txt); sc(id, 'kpi-cell-delta ' + cls); };
+  const fmt  = v => Math.round(v).toLocaleString('fr-FR');
+
+  // ── NAV ──
   document.getElementById('pnav-lbl').textContent = p.lbl;
   document.getElementById('hdr-sub').textContent  = p.lbl + ' · Dashboard Rosario';
   document.querySelectorAll('.pnav-btn')[0].style.opacity = idx === 0 ? '.3' : '1';
   document.querySelectorAll('.pnav-btn')[1].style.opacity = idx === list.length-1 ? '.3' : '1';
 
-  // ── Helpers delta ──
-  const fmtPct = (val, prev) => {
-    if (!prev) return { txt: '—', cls: 'neu' };
-    const p = ((val - prev) / prev * 100).toFixed(1);
-    return { txt: `${+p>=0?'▲ +':'▼ '}${p} %`, cls: +p>=0?'up':'dn' };
-  };
-  const fmtPts = (val, prev) => {
-    if (!prev) return { txt: '—', cls: 'neu' };
-    const d = (val - prev).toFixed(1);
-    return { txt: `${+d>=0?'▲ +':'▼ '}${d} pts`, cls: +d>=0?'up':'dn' };
-  };
-  const fmtDays = (val, prev) => {
-    if (!prev) return { txt: '—', cls: 'neu' };
-    const d = (val - prev).toFixed(1);
-    return { txt: `${+d>=0?'▲ +':'▼ '}${d} j`, cls: +d>=0?'dn':'up' };
-  };
-  const setDelta = (id, o) => {
-    const el = document.getElementById(id);
-    if (!el) return;
-    el.textContent = o.txt;
-    el.className = 'rk-delta ' + o.cls;
-  };
-
-  // Période
-
-  const set  = (id, val) => document.getElementById(id).textContent = val;
-  const setd = (id, txt, cls) => { set(id, txt); document.getElementById(id).className = 'kpi-cell-delta ' + cls; };
-
-  // ── KPI Bandeau ──
+  // ── KPI STRIP ──
   const caFmt = fmtPct(p.ca, p.prev_ca);
-  set('kv-ca',   p.ca.toLocaleString('fr-FR') + ' €');
-  setd('kd-ca',  caFmt.txt + (p.prev_ca ? ' ' + unit : ''), caFmt.cls);
+  s('kv-ca',   fmt(p.ca) + ' €');
+  setd('kd-ca', caFmt.txt + (p.prev_ca ? ' ' + unit : ''), caFmt.cls);
 
-  set('kv-cov',  m.couverts.toLocaleString('fr-FR'));
+  s('kv-cov',  fmt(m.couverts));
   setd('kd-cov', 'Couverts servis', 'neu');
-  document.getElementById('kv-fill').textContent = Math.round(m.rempli) + ' %';
+  s('kv-fill', Math.round(m.rempli) + ' %');
 
-  const caNet = m.caNet || p.ca; // CA net réel depuis le Sheet
-  const tktTotal = m.couverts > 0 ? +(caNet / m.couverts).toFixed(2) : +((m.tktMidi * 0.32 + m.tktSoir * 0.68)).toFixed(2);
-  set('kv-tkt',  tktTotal.toFixed(2) + ' €');
-  setd('kd-tkt', `Déj. ${m.tktMidi} € · Dîner ${m.tktSoir} €`, 'neu');
+  const caNet    = m.caNet || p.ca;
+  const tktTotal = m.couverts > 0 ? +(caNet / m.couverts).toFixed(2) : +((m.tktMidi||0)*0.32 + (m.tktSoir||0)*0.68).toFixed(2);
+  s('kv-tkt', tktTotal.toFixed(2) + ' €');
+  setd('kd-tkt', `Déj. ${(m.tktMidi||0).toFixed(2)} € · Dîner ${(m.tktSoir||0).toFixed(2)} €`, 'neu');
 
-  const days = gran === 'week' ? 7 : new Date(p.key.slice(0,4), p.key.slice(5,7), 0).getDate();
+  const days = gran === 'week' ? 7 : new Date(p.key.slice(0,4), +p.key.slice(5,7), 0).getDate();
   const ann  = Math.round(p.ca / days * 360 / 10000) / 100;
-  set('ann-val', '∼ ' + ann.toFixed(2).replace('.',',') + ' M€');
+  s('ann-val', '∼ ' + ann.toFixed(2).replace('.',',') + ' M€');
 
-  // ── Bloc 2 : KPIs réservations + deltas ──
-  document.getElementById('rk-cov').textContent   = m.couverts.toLocaleString('fr-FR');
-  document.getElementById('rk-fill').textContent  = Math.round(m.rempli) + ' %';
-  setDelta('rk-cov-d',   fmtPct(m.couverts, pi?.couverts));
-  setDelta('rk-fill-d',  fmtPts(m.rempli,   pi?.rempli));
+  // Note Google (strip)
+  // mis à jour par loadGoogleRating()
 
-  // ── Bloc 2 : Barres mode de réservation ──
-  const resaPct = Math.round(m.resa * 100 / (m.resa + Math.max(5, Math.round(m.couverts * 0.28 / 2.4))));
-  const walkPct = 100 - resaPct;
-  const walkN   = Math.round(m.couverts / 2.4 * walkPct / 100);
-  document.querySelectorAll('.br-fill')[0].style.width = resaPct + '%';
-  document.querySelectorAll('.br-val')[0].textContent  = m.resa + ' (' + resaPct + ' %)';
-  document.querySelectorAll('.br-fill')[1].style.width = walkPct + '%';
-  document.querySelectorAll('.br-val')[1].textContent  = walkN + ' (' + walkPct + ' %)';
+  // ── BLOC 2 : Couverts & remplissage ──
+  s('rk-cov',  fmt(m.couverts));
+  s('rk-fill', Math.round(m.rempli) + ' %');
+  setDelta('rk-cov-d',  fmtPct(m.couverts, mi?.couverts));
+  setDelta('rk-fill-d', fmtPts(m.rempli,   mi?.rempli));
+  s('fill-midi-val', (m.rempliMidi || 0) + ' %');
+  s('fill-soir-val', (m.rempliSoir || 0) + ' %');
 
-  // ── Bloc 2 : Barres remplissage par service ──
-  document.querySelectorAll('.br-fill')[2].style.width = m.rempliMidi + '%';
-  document.querySelectorAll('.br-val')[2].textContent  = m.rempliMidi + ' %';
-  document.querySelectorAll('.br-fill')[3].style.width = Math.min(m.rempliSoir, 100) + '%';
-  document.querySelectorAll('.br-val')[3].textContent  = m.rempliSoir + ' %';
-
-  // ── Bloc 3 : Ticket moyen — 6 semaines ou 6 mois ──
-  const tktSlice = gran === 'week'
-    ? METRICS_W.slice(Math.max(0, idx - 5), idx + 1).map((mm, i) => ({
-        lbl: WEEKS[Math.max(0, idx-5)+i].lbl.split(' · ')[0], dej: mm.tktMidi, soir: mm.tktSoir }))
-    : METRICS_M.slice(Math.max(0, idx - 5), idx + 1).map((mm, i) => ({
-        lbl: MONTHS[Math.max(0, idx-5)+i].lbl.split(' ')[0] + ' ' + MONTHS[Math.max(0, idx-5)+i].lbl.split(' ')[1],
-        dej: mm.tktMidi, soir: mm.tktSoir }));
-  tktChart.data.labels           = tktSlice.map(d => d.lbl);
-  tktChart.data.datasets[0].data = tktSlice.map(d => +d.soir.toFixed(2));
-  tktChart.data.datasets[1].data = tktSlice.map(d => +d.dej.toFixed(2));
-  tktChart.update('active');
-
-  // ── Bloc 5 : Ratios ──
-  const ratios = [
-    { nm:'Food cost',    val:m.foodCost,   cible:'< 30 %', cls: m.foodCost < 30 ? 'gd' : 'bd', w: m.foodCost },  ];
-  const rlHeads = document.querySelectorAll('.rl-head');
-  const rlFills = document.querySelectorAll('.rl-fill');
-  const rlSubs  = document.querySelectorAll('.rl-sub');
-  ratios.forEach((r, i) => {
-    if (!rlHeads[i]) return;
-    rlHeads[i].querySelector('.rl-val').textContent = r.val + ' %';
-    rlHeads[i].querySelector('.rl-val').className   = 'rl-val ' + r.cls;
-    if (rlFills[i]) rlFills[i].style.width = Math.min(r.w, 100) + '%';
+  // ── GRAPHES HISTORIQUE (6 périodes) ──
+  const allList  = gran === 'week' ? WEEKS : MONTHS;
+  const metricsArr = gran === 'week' ? METRICS_W : (window.LIVE_METRICS_M || METRICS_W);
+  const histSlice  = allList.slice(Math.max(0, idx - 5), idx + 1);
+  const histM      = metricsArr.slice(Math.max(0, idx - 5), idx + 1);
+  const histLbls   = histSlice.map(w => {
+    const parts = w.lbl.split(' · ');
+    return parts[0].trim();
   });
+  const histVals = histSlice.map(w => w.ca);
 
-  // ── Graphique CA ──
+  if (histChart)   { histChart.data.labels = histLbls; histChart.data.datasets[0].data = histVals; histChart.update(); }
+  if (caHistChart) { caHistChart.data.labels = histLbls; caHistChart.data.datasets[0].data = histVals; caHistChart.update(); }
+  if (covChart)    { covChart.data.labels = histLbls; covChart.data.datasets[0].data = histM.map(mm => mm?.couverts || 0); covChart.update(); }
+
+  // ── GRAPHE CA PAR JOUR (dayChart) ──
   if (gran === 'week') {
-    const isS13  = p.key === '2026-W13';
-    const prevW  = idx > 0 ? WEEKS[idx-1] : null;
+    const prevW = idx > 0 ? WEEKS[idx-1] : null;
     const weights  = [0.11, 0.13, 0.14, 0.13, 0.15, 0.22, 0.12];
     const dayNames = ['Lun','Mar','Mer','Jeu','Ven','Sam','Dim'];
     let labels, total, midi, soir;
-    // Toujours utiliser S13 (données réelles) — ne montre que les jours disponibles
     if (S13.length > 0) {
-      labels = S13.map(d => d.lbl); total = S13.map(d => d.total);
-      midi = S13.map(d => d.midi); soir = S13.map(d => d.soir);
+      labels = S13.map(d => d.lbl);
+      total  = S13.map(d => d.total);
+      midi   = S13.map(d => d.midi);
+      soir   = S13.map(d => d.soir);
     } else {
-      labels = dayNames; total = weights.map(w => Math.round(p.ca * w));
-      midi = total.map(v => Math.round(v * 0.24)); soir = total.map(v => Math.round(v * 0.76));
+      labels = dayNames;
+      total  = weights.map(w => Math.round(p.ca * w));
+      midi   = total.map(v => Math.round(v * 0.24));
+      soir   = total.map(v => Math.round(v * 0.76));
     }
-    // Semaine précédente : aligne sur le même nb de jours disponibles
-    const prevTotal = prevW && S13.length > 0
-      ? S13.map((_, i) => Math.round(prevW.ca * (weights[i] || 0.14)))
-      : (prevW ? weights.map(w => Math.round(prevW.ca * w)) : []);
+    const prevTotal = prevW ? labels.map((_, i) => Math.round(prevW.ca * (weights[i] || 0.14))) : [];
     dayChart.data.labels = labels;
-    dayChart.data.datasets[0].data = total;  dayChart.data.datasets[0].hidden = false;
-    dayChart.data.datasets[1].data = soir;   dayChart.data.datasets[1].hidden = false;
-    dayChart.data.datasets[2].data = midi;   dayChart.data.datasets[2].hidden = false;
+    dayChart.data.datasets[0].data = total;    dayChart.data.datasets[0].hidden = false;
+    dayChart.data.datasets[1].data = soir;     dayChart.data.datasets[1].hidden = false;
+    dayChart.data.datasets[2].data = midi;     dayChart.data.datasets[2].hidden = false;
     dayChart.data.datasets[3].data = prevTotal; dayChart.data.datasets[3].hidden = prevTotal.length === 0;
-    dayChart.data.datasets[4].data = [];     dayChart.data.datasets[4].hidden = true;
-    document.getElementById('day-chart-title').textContent = 'Chiffre d\'affaires HT · par jour';
+    dayChart.data.datasets[4].data = [];       dayChart.data.datasets[4].hidden = true;
+    s('day-chart-title', 'Chiffre d'affaires HT · par jour');
   } else {
     const start = Math.max(0, idx - 5);
     const slice = MONTHS.slice(start, idx + 1);
-    dayChart.data.labels = slice.map(m => m.lbl);
+    dayChart.data.labels = slice.map(mm => mm.lbl);
     [0,1,2,3].forEach(i => { dayChart.data.datasets[i].data = []; dayChart.data.datasets[i].hidden = true; });
-    dayChart.data.datasets[4].data            = slice.map(m => m.ca);
-    dayChart.data.datasets[4].backgroundColor = slice.map((m,i) => i === slice.length-1 ? '#8B1A1A' : 'rgba(139,26,26,0.25)');
-    dayChart.data.datasets[4].hidden          = false;
-    document.getElementById('day-chart-title').textContent = 'Chiffre d\'affaires HT · 6 derniers mois';
+    dayChart.data.datasets[4].data = slice.map(mm => mm.ca);
+    dayChart.data.datasets[4].backgroundColor = slice.map((_, i) => i === slice.length-1 ? '#8B1A1A' : 'rgba(139,26,26,0.25)');
+    dayChart.data.datasets[4].hidden = false;
+    s('day-chart-title', 'Chiffre d'affaires HT · 6 derniers mois');
   }
   dayChart.update('active');
 
-  // Mise à jour des onglets secondaires
-  const f  = gran === 'week' ? FNB_W[idx]  : FNB_M[idx];
-  const fi = idx > 0 ? (gran === 'week' ? FNB_W[idx-1] : FNB_M[idx-1]) : null;
-  updateSecondaryTabs(p, m, pi, f, fi);
+  // ── GRAPHE TICKET MOYEN (tktChart) — Vue d'ensemble ──
+  tktChart.data.labels           = histLbls;
+  tktChart.data.datasets[0].data = histM.map(mm => +(mm?.tktSoir || 0).toFixed(2));
+  tktChart.data.datasets[1].data = histM.map(mm => +(mm?.tktMidi || 0).toFixed(2));
+  tktChart.update('active');
+
+  // ── ANALYSE CA ──
+  // CA kpi strip
+  s('ca-kv1', fmt(p.ca) + ' €');
+  const caPctCA = p.prev_ca ? ((p.ca-p.prev_ca)/p.prev_ca*100).toFixed(1) : null;
+  setd('ca-kd1', caPctCA ? `${+caPctCA>=0?'▲ +':'▼ '}${caPctCA} % ${unit}` : '—', caPctCA ? (+caPctCA>=0?'up':'dn') : 'neu');
+  s('ca-kv2', tktTotal.toFixed(2) + ' €');
+  setd('ca-kd2', `Déj. ${(m.tktMidi||0).toFixed(2)} € · Dîner ${(m.tktSoir||0).toFixed(2)} €`, 'neu');
+
+  // ca1Chart (par jour / par mois)
+  if (typeof updateCa1Chart === 'function') updateCa1Chart(p, m);
+
+  // Déjeuner vs Dîner
+  const caMidi  = m.caNetMidi || Math.round(caNet * 0.24);
+  const caSoir  = m.caNetSoir || Math.round(caNet * 0.76);
+  const pctMidi = caNet > 0 ? Math.round(caMidi / caNet * 100) : 0;
+  const pctSoir = caNet > 0 ? Math.round(caSoir / caNet * 100) : 0;
+  s('dej-ca-val', fmt(caMidi) + ' €');
+  s('dej-ca-sub', pctMidi + ' % du CA · ' + (m.tktMidi||0).toFixed(2) + ' € / cvt');
+  s('din-ca-val', fmt(caSoir) + ' €');
+  s('din-ca-sub', pctSoir + ' % du CA · ' + (m.tktSoir||0).toFixed(2) + ' € / cvt');
+  s('ca2-tkt-midi', (m.tktMidi||0).toFixed(2) + ' €');
+  s('ca2-tkt-soir', (m.tktSoir||0).toFixed(2) + ' €');
+
+  // Cuisine vs Boissons
+  const caFood = m.caFood || Math.round(caNet * 0.75);
+  const caBev  = m.caBoisss || Math.round(caNet * 0.25);
+  const caFB   = caFood + caBev || 1;
+  s('fb-food-val', fmt(caFood) + ' €');
+  s('fb-food-sub', Math.round(caFood/caFB*100) + ' % du CA');
+  s('fb-bev-val',  fmt(caBev) + ' €');
+  s('fb-bev-sub',  Math.round(caBev/caFB*100) + ' % du CA');
+  s('ca2-tkt-food', (m.tktFood||0).toFixed(2) + ' €');
+  s('ca2-tkt-bev',  (m.tktBoisss||0).toFixed(2) + ' €');
+
+  // ca2Chart : ticket moyen déj/dîner historique
+  ca2Chart.data.labels           = histLbls;
+  ca2Chart.data.datasets[0].data = histM.map(mm => +(mm?.tktSoir || 0).toFixed(2));
+  ca2Chart.data.datasets[1].data = histM.map(mm => +(mm?.tktMidi || 0).toFixed(2));
+  ca2Chart.update('active');
+
+  // fbTktChart : ticket moyen cuisine/boissons historique
+  if (fbTktChart) {
+    fbTktChart.data.labels           = histLbls;
+    fbTktChart.data.datasets[0].data = histM.map(mm => +(mm?.tktFood   || 0).toFixed(2));
+    fbTktChart.data.datasets[1].data = histM.map(mm => +(mm?.tktBoisss || 0).toFixed(2));
+    fbTktChart.update();
+  }
+
+  // dejChart (CA déj/dîner par jour)
+  if (typeof dejChart !== 'undefined' && dejChart) {
+    if (gran === 'week' && S13.length > 0) {
+      dejChart.data.labels = S13.map(d => d.lbl);
+      dejChart.data.datasets[0].data = S13.map(d => d.soir);
+      dejChart.data.datasets[1].data = S13.map(d => d.midi);
+    } else {
+      dejChart.data.labels = histLbls;
+      dejChart.data.datasets[0].data = histM.map(mm => mm?.caNetSoir || 0);
+      dejChart.data.datasets[1].data = histM.map(mm => mm?.caNetMidi || 0);
+    }
+    dejChart.update();
+  }
+
+  // fbChart (CA cuisine/boissons)
+  if (typeof fbChart !== 'undefined' && fbChart) {
+    const foodDays = gran === 'week' && S13.length > 0
+      ? S13.map(d => caFB > 0 ? Math.round(d.total * caFood / caFB) : 0)
+      : histM.map(mm => mm?.caFood || 0);
+    const bevDays = gran === 'week' && S13.length > 0
+      ? S13.map(d => caFB > 0 ? Math.round(d.total * caBev / caFB) : 0)
+      : histM.map(mm => mm?.caBoisss || 0);
+    fbChart.data.labels = gran === 'week' && S13.length > 0 ? S13.map(d => d.lbl) : histLbls;
+    fbChart.data.datasets[0].data = foodDays;
+    fbChart.data.datasets[1].data = bevDays;
+    fbChart.update();
+  }
 }
 
 function setGran(g, el) {
@@ -1664,123 +1710,7 @@ function scrollToBloc(n) {
 
 /* ════════════ UPDATE SECONDARY TABS ════════════ */
 function updateSecondaryTabs(p, m, pi, f, fi) {
-  const unit = gran === 'week' ? 'vs S préc.' : 'vs M préc.';
-  const s    = (id,v) => { const e=document.getElementById(id); if(e) e.textContent=v; };
-  const fmtD = (v,pv,isEur) => {
-    if(!pv) return '—';
-    const d = isEur ? Math.round(v-pv) : +(v-pv).toFixed(1);
-    const sign = d>=0 ? '+' : '';
-    return `${sign}${isEur ? d.toLocaleString('fr-FR')+' €' : d+'%'} ${unit}`;
-  };
-  const fmtP = (v,pv) => {
-    if(!pv) return '—';
-    const d = ((v-pv)/pv*100).toFixed(1);
-    return `${+d>=0?'▲ +':'▼ '}${d} % ${unit}`;
-  };
-
-  // ── Analyse CA ──
-  s('ca-prime-val', m.primeCost + ' %');
-  s('ca-prime-sub', `Food cost ${m.foodCost} % — Cible < 30 %`);
-  document.getElementById('ca-prime-gauge') && (document.getElementById('ca-prime-gauge').style.width = Math.min(m.primeCost,100)+'%');
-  s('ca-fc-pct', m.foodCost + ' %');
-  s('ca-lc-pct', m.labourCost + ' %');
-  s('ca-kv1', p.ca.toLocaleString('fr-FR') + ' €');
-  const caPct = p.prev_ca ? ((p.ca-p.prev_ca)/p.prev_ca*100).toFixed(1) : null;
-  s('ca-kd1', caPct ? `${+caPct>=0?'▲ +':'▼ '}${caPct} % ${unit}` : '—');
-  const tktT = +((m.tktMidi*0.32+m.tktSoir*0.68)).toFixed(2);
-  s('ca-kv2', tktT.toFixed(2) + ' €');
-  s('ca-kd2', `Déj. ${m.tktMidi} € · Dîner ${m.tktSoir} €`);
-  // ca1Chart
-  const foodEur = Math.round(p.ca * 0.83), bevEur = Math.round(p.ca * 0.17);
-  s('ca1-food-val', foodEur.toLocaleString('fr-FR') + ' €');
-  s('ca1-food-pct', '83 % du CA');
-  s('ca1-bev-val',  bevEur.toLocaleString('fr-FR') + ' €');
-  s('ca1-bev-pct',  '17 % du CA');
-  const midiCA = Math.round(p.ca * 0.24), soirCA = Math.round(p.ca * 0.76);
-  s('ca1-midi-ca', midiCA.toLocaleString('fr-FR') + ' €');
-  s('ca1-soir-ca', soirCA.toLocaleString('fr-FR') + ' €');
-  s('ca2-tkt-food', (tktT * 0.83).toFixed(2) + ' €');
-  s('ca2-tkt-bev',  (tktT * 0.17).toFixed(2) + ' €');
-  s('ca2-tkt-midi', m.tktMidi + ' €');
-  s('ca2-tkt-soir', m.tktSoir + ' €');
-  // ca2Chart update
-  const tktSlice = gran==='week'
-    ? METRICS_W.slice(Math.max(0,idx-5),idx+1)
-    : METRICS_M.slice(Math.max(0,idx-5),idx+1);
-  const tktLbls = gran==='week'
-    ? tktSlice.map((_,i)=>WEEKS[Math.max(0,idx-5)+i].lbl.split(' · ')[0])
-    : tktSlice.map((_,i)=>MONTHS[Math.max(0,idx-5)+i].lbl.split(' ')[0]);
-  ca2Chart.data.labels = tktLbls;
-  ca2Chart.data.datasets[0].data = tktSlice.map(mm=>+mm.tktSoir.toFixed(2));
-  ca2Chart.data.datasets[1].data = tktSlice.map(mm=>+mm.tktMidi.toFixed(2));
-  ca2Chart.update('active');
-  // ca1Chart sync
-  updateCa1Chart(p, m);
-
-  // ── F&B Cost (optionnel - données fictives) ──
-  try {
-    if (f && f.foodEur !== undefined) {
-      const fnbEur = f.foodEur + f.bevEur;
-      const fnbPct = +(f.foodPct + f.bevPct).toFixed(1);
-      s('fnb-kv1', fnbEur.toLocaleString('fr-FR') + ' €');
-      s('fnb-kd1', fnbPct + ' % du CA');
-      s('fnb-kv2', f.foodEur.toLocaleString('fr-FR') + ' €');
-      s('fnb-kd2', f.foodPct + ' % du CA');
-      s('fnb-kv3', f.bevEur.toLocaleString('fr-FR') + ' €');
-      s('fnb-kd3', f.bevPct + ' % du CA');
-      s('fnb1-eur', fnbEur.toLocaleString('fr-FR') + ' €');
-      s('fnb1-eur-d', fi ? fmtD(fnbEur, fi.foodEur+fi.bevEur, true) : '—');
-      s('fnb1-pct', fnbPct + ' %');
-      s('fnb1-pct-d', fi ? fmtD(fnbPct, +(fi.foodPct+fi.bevPct).toFixed(1), false) + ' pts' : '—');
-      s('fnb1-food-val', f.foodEur.toLocaleString('fr-FR') + ' € · ' + Math.round(f.foodEur/fnbEur*100) + ' %');
-      s('fnb1-bev-val',  f.bevEur.toLocaleString('fr-FR')  + ' € · ' + Math.round(f.bevEur/fnbEur*100)  + ' %');
-      const fnbList  = gran==='week' ? FNB_W : FNB_M;
-      const perList  = gran==='week' ? WEEKS : MONTHS;
-      const fnbSlice = fnbList.slice(Math.max(0,idx-5),idx+1);
-      const fnbLbls  = fnbSlice.map((_,i)=>perList[Math.max(0,idx-5)+i].lbl.split(' ')[0]);
-      if (fnb2Chart) { fnb2Chart.data.labels = fnbLbls; fnb2Chart.data.datasets[0].data = fnbSlice.map(f=>f.foodEur); fnb2Chart.data.datasets[1].data = fnbSlice.map(f=>f.foodPct); fnb2Chart.update('active'); }
-      if (fnb3Chart) { fnb3Chart.data.labels = fnbLbls; fnb3Chart.data.datasets[0].data = fnbSlice.map(f=>f.bevEur); fnb3Chart.data.datasets[1].data = fnbSlice.map(f=>f.bevPct); fnb3Chart.update('active'); }
-    }
-  } catch(e) { console.warn('F&B block skipped:', e.message); }
-
-  // ── Staff Cost ──
-  const stTotal = Math.round(p.ca * m.labourCost / 100);
-  const stCuis  = Math.round(stTotal * 0.58);
-  const stSalle = stTotal - stCuis;
-  const stPctCuis = +(m.labourCost * 0.58).toFixed(1);
-  const stPctSalle= +(m.labourCost * 0.42).toFixed(1);
-  const piTotal = pi ? Math.round((gran==='week'?WEEKS[idx-1]:MONTHS[idx-1]).ca * pi.labourCost / 100) : null;
-  const piCuis  = piTotal ? Math.round(piTotal * 0.58) : null;
-  const piSalle = piTotal ? piTotal - piCuis : null;
-  s('st-kv1', stTotal.toLocaleString('fr-FR') + ' €');
-  s('st-kd1', +(m.labourCost).toFixed(1) + ' % du CA');
-  s('st-kv2', stCuis.toLocaleString('fr-FR') + ' €');
-  s('st-kd2', stPctCuis + ' % du CA');
-  s('st-kv3', stSalle.toLocaleString('fr-FR') + ' €');
-  s('st-kd3', stPctSalle + ' % du CA');
-  s('st-abs-total', stTotal.toLocaleString('fr-FR') + ' €');
-  s('st-abs-delta', piTotal ? fmtP(stTotal, piTotal) : '—');
-  s('st-abs-cuisine', stCuis.toLocaleString('fr-FR') + ' €');
-  s('st-abs-cuisine-d', piCuis ? fmtP(stCuis, piCuis) : '—');
-  s('st-abs-salle', stSalle.toLocaleString('fr-FR') + ' €');
-  s('st-abs-salle-d', piSalle ? fmtP(stSalle, piSalle) : '—');
-  s('st-pct-total', m.labourCost + ' %');
-  s('st-pct-delta', pi ? fmtD(m.labourCost, pi.labourCost, false) + ' pts' : '—');
-  s('st-pct-cuisine', stPctCuis + ' %');
-  s('st-pct-cuisine-d', pi ? fmtD(stPctCuis, +(pi.labourCost*0.58).toFixed(1), false) + ' pts' : '—');
-  s('st-pct-salle', stPctSalle + ' %');
-  s('st-pct-salle-d', pi ? fmtD(stPctSalle, +(pi.labourCost*0.42).toFixed(1), false) + ' pts' : '—');
-  const hCuis = gran==='week' ? Math.round(stCuis/20) : Math.round(stCuis/20*4.3);
-  const hSalle= gran==='week' ? Math.round(stSalle/18) : Math.round(stSalle/18*4.3);
-  s('st-cuisine-eff', gran==='week' ? '8' : '8');
-  s('st-cuisine-h', hCuis + ' h');
-  s('st-cuisine-cost', stCuis.toLocaleString('fr-FR') + ' €');
-  s('st-salle-eff', gran==='week' ? '7' : '7');
-  s('st-salle-h', hSalle + ' h');
-  s('st-salle-cost', stSalle.toLocaleString('fr-FR') + ' €');
-  s('st-total-eff', '15');
-  s('st-total-h', (hCuis+hSalle) + ' h');
-  s('st-total-cost', stTotal.toLocaleString('fr-FR') + ' €');
+  // Fonction conservée pour compatibilité — logique déplacée dans renderPeriod
 }
 
 function updateCa1Chart(p, m) {
