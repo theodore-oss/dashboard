@@ -570,7 +570,7 @@ footer { max-width: 1040px; margin: 32px auto 0; padding-top: 20px; border-top: 
     <div class="card-body">
       <div class="grid-2">
         <div>
-          <div class="section-sep">🍽️ Cuisine — top 10</div>
+          <div class="section-sep">🍽️ Cuisine &amp; Tapas — top 10</div>
           <div class="plats">
             <div class="plat"><span class="plat-num">1</span><span class="plat-name">Jamón ibérico bellota</span><span class="plat-qty">165 vtes</span><span class="plat-ca">3 600 €</span></div>
             <div class="plat"><span class="plat-num">2</span><span class="plat-name">Tortilla de Rosario</span><span class="plat-qty">315 vtes</span><span class="plat-ca">3 432 €</span></div>
@@ -585,7 +585,7 @@ footer { max-width: 1040px; margin: 32px auto 0; padding-top: 20px; border-top: 
           </div>
         </div>
         <div>
-          <div class="section-sep">🍷 Boissons — top 10</div>
+          <div class="section-sep">🍷 Boissons &amp; Bouteilles — top 10</div>
           <div class="plats">
             <div class="plat"><span class="plat-num">1</span><span class="plat-name">Vino tinto de la casa</span><span class="plat-qty">284 vtes</span><span class="plat-ca">2 130 €</span></div>
             <div class="plat"><span class="plat-num">2</span><span class="plat-name">Cerveza Estrella Damm</span><span class="plat-qty">412 vtes</span><span class="plat-ca">1 854 €</span></div>
@@ -928,9 +928,9 @@ async function loadLiveData() {
         caNet:      +sum('CA_Net_Total').toFixed(0),
         caNetMidi:  +sum('CA_Net_Midi').toFixed(0),
         caNetSoir:  +sum('CA_Net_Soir').toFixed(0),
-        caFood:     +sum('CA_Food_HT').toFixed(0),
-        caBoisss:   +sum('CA_Boissons_HT').toFixed(0),
-        tktFood:    cov > 0 ? +(sum('CA_Food_HT') / cov).toFixed(2) : 0,
+        caFood:     +sum('CA_Food_HT').toFixed(0),    // Cuisine + Tapas
+        caBoisss:   +sum('CA_Boissons_HT').toFixed(0), // Alcool + Boissons + Bouteilles
+        tktFood:    cov > 0 ? +(sum('CA_Food_HT')    / cov).toFixed(2) : 0,
         tktBoisss:  cov > 0 ? +(sum('CA_Boissons_HT') / cov).toFixed(2) : 0,
       };
     });
