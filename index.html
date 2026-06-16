@@ -956,14 +956,8 @@ async function loadLiveData() {
     const liveWEEKS = weekKeys.map((wk, i) => {
       const rows = byWeek[wk];
       const ca = rows.reduce((s,r) => s + n(r['CA_Net_Total']), 0);
-      // Privatisations pour ce mois
-      const mkKey = mk.replace('-',''); // "202606"
-      const privMonthCa = Object.entries(window.LIVE_PRIV_BY_WEEK || {}).reduce((s, [weekKey, wkData]) => {
-        const wkRows = byWeek[weekKey] || [];
-        const inMonth = wkRows.some(r => String(r['Date']).slice(0,6) === mkKey);
-        return s + (inMonth ? (wkData.total || 0) : 0);
-      }, 0);
-      const privWkCa = privMonthCa;
+      // Privatisations pour cette semaine
+      const privWkCa = (window.LIVE_PRIV_BY_WEEK || {})[wk]?.total || 0;
       const prev_ca = i > 0 ? weekKeys.slice(0,i).reduce((s,k) =>
         s + byWeek[k].reduce((ss,r) => ss + n(r['CA_Net_Total']), 0), 0) / i : null;
       const prevWk = i > 0 ? weekKeys[i-1] : null;
@@ -1076,18 +1070,12 @@ async function loadLiveData() {
     const liveMONTHS = monthKeys.map((mk, i) => {
       const rows = byMonth[mk];
       const ca = rows.reduce((s,r) => s + n(r['CA_Net_Total']), 0);
-      // Privatisations pour ce mois
-      const mkKey = mk.replace('-',''); // "202606"
-      const privMonthCa = Object.entries(window.LIVE_PRIV_BY_WEEK || {}).reduce((s, [weekKey, wkData]) => {
-        const wkRows = byWeek[weekKey] || [];
-        const inMonth = wkRows.some(r => String(r['Date']).slice(0,6) === mkKey);
-        return s + (inMonth ? (wkData.total || 0) : 0);
-      }, 0);
-      const privWkCa = privMonthCa;
+      // Privatisations pour cette semaine
+      const privWkCa = (window.LIVE_PRIV_BY_WEEK || {})[wk]?.total || 0;
       const prevMk = i > 0 ? monthKeys[i-1] : null;
       const prev_ca = prevMk ? byMonth[prevMk].reduce((s,r) => s + n(r['CA_Net_Total']), 0) : null;
       const [y, m] = mk.split('-');
-      return { key: mk, lbl: liveMonthNames[m] + ' ' + y, ca: Math.round(ca), prev_ca: prev_ca ? Math.round(prev_ca) : null };
+      return { key: mk, lbl: liveMonthNames[m] + ' ' + y, ca: Math.round(ca + privMoCa), prev_ca: prev_ca ? Math.round(prev_ca) : null };
     });
 
     // Rebuild METRICS_M par mois
