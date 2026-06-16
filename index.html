@@ -909,6 +909,21 @@ async function loadLiveData() {
         privRows.push({ date: dateKey, cuisine, alcool, total });
       });
       console.log('✅ Privatisations parsées:', privRows.length, 'lignes valides');
+      if (privRows.length > 0) {
+        console.log('Priv sample:', privRows.slice(0,3));
+        console.log('Priv headers:', {iDate, iStatut, iCuisine, iAlcool, iTotal});
+        // Check 23 avril specifically
+        const apr23 = privRows.filter(r => r.date === '20260423');
+        console.log('23 avril privRows:', apr23);
+      } else {
+        // Debug: show first 3 raw lines
+        console.log('Headers raw:', headers);
+        console.log('First data line:', lines[1]);
+        const testVals = parseCSVLine(lines[1] || '');
+        console.log('Parsed first line:', testVals);
+        console.log('iDate val:', testVals[iDate], 'iStatut val:', testVals[iStatut], 'iTotal val:', testVals[iTotal]);
+        console.log('Extras LS col 11:', testVals[11]);
+      }
     }
 
     // Stocker globalement
@@ -1383,7 +1398,7 @@ const dayChart = new Chart(document.getElementById('dayChart'), {
 
 const tktChart   = makeChart('tktChart', 'bar',
   [{label:'Ticket moyen',data:[],backgroundColor:'rgba(139,26,26,0.75)',borderRadius:4,borderSkipped:false}],
-  { ...barOpts(v=>v.toFixed(0)+' €'), scales:{ x:{grid:{display:false},ticks:{font:{family:'Sora',size:10}}}, y:{min:0,grid:{color:'rgba(0,0,0,.05)'},ticks:{font:{family:'Sora',size:10},callback:v=>v.toFixed(0)+' €'}} } }
+  { ...barOpts(v=>v.toFixed(1)+' €'), scales:{ x:{grid:{display:false},ticks:{font:{family:'Sora',size:10}}}, y:{min:0,grid:{color:'rgba(0,0,0,.05)'},ticks:{font:{family:'Sora',size:10},callback:v=>v.toFixed(0)+' €'}} } }
 );
 
 const histChart  = makeChart('histChart','bar', [{label:'CA net',data:[],backgroundColor:'rgba(139,26,26,0.75)',borderRadius:4}],
