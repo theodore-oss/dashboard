@@ -274,7 +274,7 @@ footer { max-width: 1040px; margin: 32px auto 0; padding-top: 20px; border-top: 
       <div class="cleg">
         <div class="cleg-item"><span class="cleg-line" style="background:#8B1A1A;height:2.5px;"></span>Total</div>
         <div class="cleg-item"><span class="cleg-dashed" style="border-color:#8B1A1A;"></span>Clients</div>
-        <div class="cleg-item"><span style="width:12px;height:12px;border-radius:2px;background:rgba(191,61,122,0.6);display:inline-block;"></span>Événements</div>
+        <div class="cleg-item"><span class="cleg-dashed" style="border-color:#bf3d7a;"></span>Événements</div>
         <div class="cleg-item"><span class="cleg-dashed" style="border-color:rgba(140,136,130,0.55);"></span>Sem. préc.</div>
       </div>
       <div class="chart-h160"><canvas id="dayChart"></canvas></div>
@@ -341,11 +341,15 @@ footer { max-width: 1040px; margin: 32px auto 0; padding-top: 20px; border-top: 
       <span class="card-src">Lightspeed · données réelles</span>
     </div>
     <div class="card-body">
-      <div class="cleg">
-        <div class="cleg-item"><span style="width:12px;height:12px;border-radius:2px;background:rgba(139,26,26,0.75);display:inline-block;"></span>Dîner</div>
-        <div class="cleg-item"><span style="width:12px;height:12px;border-radius:2px;background:rgba(200,150,60,0.75);display:inline-block;"></span>Déjeuner</div>
+      <div style="text-align:center;margin-bottom:16px;">
+        <div style="font-size:11px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px;">Ticket moyen net</div>
+        <div style="font-size:36px;font-weight:600;color:var(--accent);" id="kv-tkt-big">—</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:4px;" id="kv-tkt-delta">—</div>
       </div>
-      <div class="chart-h160"><canvas id="tktChart"></canvas></div>
+      <div class="cleg">
+        <div class="cleg-item"><span style="width:12px;height:12px;border-radius:2px;background:rgba(139,26,26,0.75);display:inline-block;"></span>Ticket moyen</div>
+      </div>
+      <div class="chart-h120"><canvas id="tktChart"></canvas></div>
     </div>
   </div>
 
@@ -420,7 +424,7 @@ footer { max-width: 1040px; margin: 32px auto 0; padding-top: 20px; border-top: 
       <div class="cleg">
         <div class="cleg-item"><span class="cleg-line" style="background:#8B1A1A;height:2.5px;"></span>Total</div>
         <div class="cleg-item"><span class="cleg-dashed" style="border-color:#8B1A1A;"></span>Clients</div>
-        <div class="cleg-item"><span style="width:12px;height:12px;border-radius:2px;background:rgba(191,61,122,0.6);display:inline-block;"></span>Événements</div>
+        <div class="cleg-item"><span class="cleg-dashed" style="border-color:#bf3d7a;"></span>Événements</div>
         <div class="cleg-item"><span style="width:12px;height:12px;border-radius:2px;background:rgba(191,61,122,0.6);display:inline-block;"></span>Événements</div>
         <div class="cleg-item"><span class="cleg-dashed" style="border-color:rgba(140,136,130,0.55);"></span>Période préc.</div>
       </div>
@@ -1362,7 +1366,7 @@ const dayChart = new Chart(document.getElementById('dayChart'), {
 });
 
 const tktChart   = makeChart('tktChart', 'bar',
-  [{label:'Dîner',data:[],backgroundColor:'rgba(139,26,26,0.75)',borderRadius:3,borderSkipped:false},{label:'Déjeuner',data:[],backgroundColor:'rgba(200,150,60,0.75)',borderRadius:3,borderSkipped:false}],
+  [{label:'Ticket moyen',data:[],backgroundColor:'rgba(139,26,26,0.75)',borderRadius:4,borderSkipped:false}],
   { ...barOpts(v=>v.toFixed(0)+' €'), scales:{ x:{grid:{display:false},ticks:{font:{family:'Sora',size:10}}}, y:{min:0,grid:{color:'rgba(0,0,0,.05)'},ticks:{font:{family:'Sora',size:10},callback:v=>v.toFixed(0)+' €'}} } }
 );
 
@@ -1465,6 +1469,9 @@ function renderPeriod() {
   const caNet    = m.caNet || p.ca;
   const tktTotal = m.couverts > 0 ? +(caNet / m.couverts).toFixed(2) : +((m.tktMidi||0)*0.32 + (m.tktSoir||0)*0.68).toFixed(2);
   s('kv-tkt', tktTotal.toFixed(2) + ' €');
+  s('kv-tkt-big', tktTotal.toFixed(2) + ' €');
+  const tktPrev = mi && mi.couverts > 0 ? +((mi.caNet||0)/mi.couverts).toFixed(2) : null;
+  s('kv-tkt-delta', tktPrev ? (tktTotal >= tktPrev ? '▲ +' : '▼ ') + Math.abs(tktTotal - tktPrev).toFixed(2) + ' € vs S préc.' : '—');
   setd('kd-tkt', mi ? fmtPct(tktTotal, mi.couverts > 0 ? +((mi.caNet||mi.caNetMidi+mi.caNetSoir||0)/mi.couverts).toFixed(2) : 0).txt + ' vs S préc.' : '—', 'neu');
 
   const days = gran === 'week' ? 7 : new Date(p.key.slice(0,4), +p.key.slice(5,7), 0).getDate();
@@ -1548,8 +1555,8 @@ function renderPeriod() {
       : labels.map(() => 0);
     dayChart.data.labels = labels;
     dayChart.data.datasets[0].data = total;    dayChart.data.datasets[0].hidden = false;
-    dayChart.data.datasets[1].data = total;    dayChart.data.datasets[1].hidden = false; // Clients = total Lightspeed
-    dayChart.data.datasets[2].data = privData; dayChart.data.datasets[2].hidden = !privData.some(v=>v>0); // Événements
+    dayChart.data.datasets[1].data = total;    dayChart.data.datasets[1].hidden = false;
+    dayChart.data.datasets[2].data = privData; dayChart.data.datasets[2].hidden = !privData.some(v=>v>0);
     dayChart.data.datasets[3].data = prevTotal; dayChart.data.datasets[3].hidden = prevTotal.length === 0;
     dayChart.data.datasets[4].data = [];       dayChart.data.datasets[4].hidden = true;
     // Dataset 5 : événements privatisations
@@ -1572,9 +1579,11 @@ function renderPeriod() {
 
   // ── GRAPHE TICKET MOYEN (tktChart) — Vue d'ensemble ──
   if (tktChart) { tktChart.data.labels = histLbls;
-  tktChart.data.datasets[0].data = histM.map(mm => +(mm?.tktSoir||0).toFixed(2));
-  tktChart.data.datasets[1].data = histM.map(mm => +(mm?.tktMidi||0).toFixed(2));
-  tktChart.update('active'); }
+    tktChart.data.datasets[0].data = histM.map(mm => {
+      const c = mm?.couverts || 0;
+      return c > 0 ? +((mm?.caNet||0)/c).toFixed(2) : +(mm?.tktMoy||0).toFixed(2);
+    });
+    tktChart.update('active'); }
 
   } catch(chartErr) { console.warn('Chart update error:', chartErr.message, chartErr.stack?.split('\n')[1]); }
 
