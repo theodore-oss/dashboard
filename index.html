@@ -889,6 +889,9 @@ async function loadLiveData() {
         const vals = parseCSVLine(line);
         const statut = (vals[iStatut] || '').toLowerCase();
         if (statut.includes('annul') || statut.includes('cancel')) return;
+        // Exclure les lignes avec "Lightspeed" en colonne L (Extras LS = index 11)
+        const extrasLS = (vals[11] || '').toLowerCase().trim();
+        if (extrasLS === 'lightspeed') return;
         const dateStr = vals[iDate] || '';
         // Parse date DD/MM/YYYY or YYYY-MM-DD
         let dateKey = '';
