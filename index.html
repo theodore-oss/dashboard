@@ -893,18 +893,30 @@ async function loadLiveData() {
         const extrasLS = (vals[11] || '').toLowerCase().trim();
         if (extrasLS === 'lightspeed') return;
         const dateStr = vals[iDate] || '';
-        // Parse date DD/MM/YYYY or YYYY-MM-DD
         let dateKey = '';
-        if (dateStr.match(/\d{2}\/\d{2}\/\d{4}/)) {
+        // Format DD/MM/YYYY
+        if (dateStr.match(/\d{1,2}\/\d{1,2}\/\d{4}/)) {
           const [d,m,y] = dateStr.split('/');
           dateKey = y + m.padStart(2,'0') + d.padStart(2,'0');
+        // Format YYYY-MM-DD
         } else if (dateStr.match(/\d{4}-\d{2}-\d{2}/)) {
           dateKey = dateStr.replace(/-/g,'');
+        // Format "27-nov." ou "27-nov" ou "27-Nov."
+        } else if (dateStr.match(/\d{1,2}[-\s](\w+)\.?/)) {
+          const MONTHS = {jan:1,fév:2,feb:2,mar:3,avr:4,apr:4,mai:5,may:5,jun:6,jui:6,jul:7,aoû:8,aug:8,sep:9,oct:10,nov:11,déc:12,dec:12};
+          const parts = dateStr.toLowerCase().replace('.','').split(/[-\s]/);
+          const day = parts[0].padStart(2,'0');
+          const mon = MONTHS[parts[1]?.slice(0,3)];
+          // Déterminer l'année depuis iAnne header ou année courante
+          const iAnnee = headers.findIndex(h => h.toLowerCase().includes('ann'));
+          const yr = vals[iAnnee] || new Date().getFullYear();
+          if (mon && day) dateKey = String(yr) + String(mon).padStart(2,'0') + day;
         }
         if (!dateKey || dateKey.length !== 8) return;
-        const cuisine = n(vals[iCuisine]);
-        const alcool  = n(vals[iAlcool]);
-        const total   = n(vals[iTotal]) || cuisine + alcool;
+        const cleanAmt = v => parseFloat((v||'').replace(/[€\s]/g,'').replace(',','.')) || 0;
+        const cuisine = cleanAmt(vals[iCuisine]);
+        const alcool  = cleanAmt(vals[iAlcool]);
+        const total   = cleanAmt(vals[iTotal]) || cuisine + alcool;
         if (!total) return;
         privRows.push({ date: dateKey, cuisine, alcool, total });
       });
