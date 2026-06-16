@@ -956,13 +956,11 @@ async function loadLiveData() {
     const liveWEEKS = weekKeys.map((wk, i) => {
       const rows = byWeek[wk];
       const ca = rows.reduce((s,r) => s + n(r['CA_Net_Total']), 0);
-      // Privatisations pour ce mois (somme des semaines du mois)
+      // Privatisations pour ce mois
+      const mkKey = mk.replace('-',''); // "202606"
       const privMonthCa = Object.entries(window.LIVE_PRIV_BY_WEEK || {}).reduce((s, [weekKey, wkData]) => {
-        // Inclure si la semaine appartient à ce mois (mk = "2026-06")
-        const wkStart = weekKey; // "2026-W23"
-        // Vérifier si les données du KPI de cette semaine sont dans ce mois
         const wkRows = byWeek[weekKey] || [];
-        const inMonth = wkRows.some(r => String(r['Date']).slice(0,6) === mk.replace('-',''));
+        const inMonth = wkRows.some(r => String(r['Date']).slice(0,6) === mkKey);
         return s + (inMonth ? (wkData.total || 0) : 0);
       }, 0);
       const privWkCa = privMonthCa;
@@ -1078,13 +1076,11 @@ async function loadLiveData() {
     const liveMONTHS = monthKeys.map((mk, i) => {
       const rows = byMonth[mk];
       const ca = rows.reduce((s,r) => s + n(r['CA_Net_Total']), 0);
-      // Privatisations pour ce mois (somme des semaines du mois)
+      // Privatisations pour ce mois
+      const mkKey = mk.replace('-',''); // "202606"
       const privMonthCa = Object.entries(window.LIVE_PRIV_BY_WEEK || {}).reduce((s, [weekKey, wkData]) => {
-        // Inclure si la semaine appartient à ce mois (mk = "2026-06")
-        const wkStart = weekKey; // "2026-W23"
-        // Vérifier si les données du KPI de cette semaine sont dans ce mois
         const wkRows = byWeek[weekKey] || [];
-        const inMonth = wkRows.some(r => String(r['Date']).slice(0,6) === mk.replace('-',''));
+        const inMonth = wkRows.some(r => String(r['Date']).slice(0,6) === mkKey);
         return s + (inMonth ? (wkData.total || 0) : 0);
       }, 0);
       const privWkCa = privMonthCa;
