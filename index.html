@@ -467,110 +467,85 @@ footer { max-width: 1040px; margin: 32px auto 0; padding-top: 20px; border-top: 
     </div>
   </div>
 
-  <!-- BLOC CA-2 : CA + TICKET MOYEN -->
+  <!-- BLOC CA-2 : TICKET MOYEN + COMPARATIF -->
   <div class="card" id="bloc-ca-2">
     <div class="card-header">
       <div class="card-num">2</div>
-      <span class="card-title">CA &amp; Ticket moyen · Déjeuner / Dîner / Cuisine / Boissons</span>
+      <span class="card-title">Ticket moyen &amp; analyse comparative</span>
       <span class="card-src">Lightspeed · données réelles</span>
     </div>
     <div class="card-body">
 
-      <!-- CA Déjeuner vs Dîner -->
-      <div class="section-sep">CA Déjeuner vs Dîner</div>
+      <!-- TM total (identique vue d'ensemble) -->
+      <div style="text-align:center;margin-bottom:16px;">
+        <div style="font-size:11px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px;">Ticket moyen net</div>
+        <div style="font-size:36px;font-weight:600;color:var(--accent);" id="ca2-tkt-big">—</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:4px;" id="ca2-tkt-delta">—</div>
+      </div>
+      <div class="cleg">
+        <div class="cleg-item"><span style="width:12px;height:12px;border-radius:2px;background:rgba(139,26,26,0.75);display:inline-block;"></span>Ticket moyen</div>
+      </div>
+      <div class="chart-h120" style="margin-bottom:28px;"><canvas id="ca2TktChart"></canvas></div>
+
+      <!-- Sélecteur de comparaison -->
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:18px;border-top:1px solid var(--border);padding-top:20px;">
+        <span style="font-size:12px;font-weight:500;color:var(--muted);">Comparer :</span>
+        <select id="ca2-compare-select" onchange="updateCompare()" style="font-family:'Sora',sans-serif;font-size:13px;padding:8px 14px;border:1px solid var(--border);border-radius:8px;background:#fff;color:var(--text);cursor:pointer;flex:1;max-width:280px;">
+          <option value="dejdin">Déjeuner vs Dîner</option>
+          <option value="cuisbois">Cuisine vs Boissons</option>
+          <option value="cliev">Clients vs Événements</option>
+        </select>
+      </div>
+
+      <!-- CA des 2 catégories sélectionnées -->
+      <div class="section-sep" id="cmp-ca-title">CA · Déjeuner vs Dîner</div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px;">
         <div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:14px 16px;display:flex;align-items:center;gap:14px;">
-          <div style="font-size:26px;line-height:1;flex-shrink:0;">☀️</div>
+          <div style="font-size:26px;line-height:1;flex-shrink:0;" id="cmp-a-icon">☀️</div>
           <div>
-            <div style="font-size:9px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px;">Déjeuner</div>
-            <div style="font-size:20px;font-weight:600;color:var(--accent);" id="dej-ca-val">—</div>
-            <div style="font-size:10px;color:var(--muted);margin-top:2px;" id="dej-ca-sub">—</div>
+            <div style="font-size:9px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px;" id="cmp-a-lbl">Déjeuner</div>
+            <div style="font-size:20px;font-weight:600;color:var(--accent);" id="cmp-a-ca">—</div>
+            <div style="font-size:10px;color:var(--muted);margin-top:2px;" id="cmp-a-sub">—</div>
           </div>
         </div>
         <div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:14px 16px;display:flex;align-items:center;gap:14px;">
-          <div style="font-size:26px;line-height:1;flex-shrink:0;">🌙</div>
+          <div style="font-size:26px;line-height:1;flex-shrink:0;" id="cmp-b-icon">🌙</div>
           <div>
-            <div style="font-size:9px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px;">Dîner</div>
-            <div style="font-size:20px;font-weight:600;color:var(--accent);" id="din-ca-val">—</div>
-            <div style="font-size:10px;color:var(--muted);margin-top:2px;" id="din-ca-sub">—</div>
+            <div style="font-size:9px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px;" id="cmp-b-lbl">Dîner</div>
+            <div style="font-size:20px;font-weight:600;color:var(--accent);" id="cmp-b-ca">—</div>
+            <div style="font-size:10px;color:var(--muted);margin-top:2px;" id="cmp-b-sub">—</div>
           </div>
         </div>
       </div>
 
-      <!-- CA Cuisine vs Boissons -->
-      <div class="section-sep">CA Cuisine vs Boissons</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:28px;">
-        <div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:14px 16px;display:flex;align-items:center;gap:14px;">
-          <div style="font-size:26px;line-height:1;flex-shrink:0;">🍽️</div>
-          <div>
-            <div style="font-size:9px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px;">Cuisine &amp; Tapas</div>
-            <div style="font-size:20px;font-weight:600;color:var(--accent);" id="fb-food-val">—</div>
-            <div style="font-size:10px;color:var(--muted);margin-top:2px;" id="fb-food-sub">—</div>
-          </div>
-        </div>
-        <div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:14px 16px;display:flex;align-items:center;gap:14px;">
-          <div style="font-size:26px;line-height:1;flex-shrink:0;">🍷</div>
-          <div>
-            <div style="font-size:9px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px;">Boissons &amp; Bouteilles</div>
-            <div style="font-size:20px;font-weight:600;color:var(--accent);" id="fb-bev-val">—</div>
-            <div style="font-size:10px;color:var(--muted);margin-top:2px;" id="fb-bev-sub">—</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Ticket moyen Déjeuner / Dîner -->
-      <div class="section-sep">Ticket moyen · Déjeuner &amp; Dîner</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;">
-        <div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:14px 16px;display:flex;align-items:center;gap:14px;">
-          <div style="font-size:26px;line-height:1;flex-shrink:0;">☀️</div>
-          <div>
-            <div style="font-size:9px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px;">Déjeuner</div>
-            <div style="font-size:22px;font-weight:600;color:var(--accent);" id="ca2-tkt-midi">—</div>
-            <div style="font-size:10px;color:var(--muted);margin-top:2px;">par couvert</div>
-          </div>
-        </div>
-        <div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:14px 16px;display:flex;align-items:center;gap:14px;">
-          <div style="font-size:26px;line-height:1;flex-shrink:0;">🌙</div>
-          <div>
-            <div style="font-size:9px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px;">Dîner</div>
-            <div style="font-size:22px;font-weight:600;color:var(--accent);" id="ca2-tkt-soir">—</div>
-            <div style="font-size:10px;color:var(--muted);margin-top:2px;">par couvert</div>
-          </div>
-        </div>
-      </div>
-      <div class="section-sep">Évolution ticket moyen déjeuner / dîner · 6 périodes</div>
+      <!-- Graphe historique comparé -->
+      <div class="section-sep" id="cmp-hist-title">Évolution comparée · 6 périodes</div>
       <div class="cleg">
-        <div class="cleg-item"><span style="width:12px;height:12px;border-radius:2px;background:rgba(139,26,26,0.75);display:inline-block;"></span>Dîner</div>
-        <div class="cleg-item"><span style="width:12px;height:12px;border-radius:2px;background:rgba(200,150,60,0.75);display:inline-block;"></span>Déjeuner</div>
+        <div class="cleg-item"><span style="width:12px;height:12px;border-radius:2px;background:rgba(139,26,26,0.75);display:inline-block;"></span><span id="cmp-leg-a">Déjeuner</span></div>
+        <div class="cleg-item"><span style="width:12px;height:12px;border-radius:2px;background:rgba(200,150,60,0.75);display:inline-block;"></span><span id="cmp-leg-b">Dîner</span></div>
       </div>
-      <div class="chart-h160" style="margin-bottom:28px;"><canvas id="tktMidiHistChart"></canvas></div>
+      <div class="chart-h160" style="margin-bottom:24px;"><canvas id="cmpChart"></canvas></div>
 
-      <!-- Ticket moyen Cuisine / Boissons -->
-      <div class="section-sep">Ticket moyen · Cuisine &amp; Boissons</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;">
+      <!-- TM par catégorie (cartouches) -->
+      <div class="section-sep" id="cmp-tkt-title">Ticket moyen · Déjeuner vs Dîner</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
         <div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:14px 16px;display:flex;align-items:center;gap:14px;">
-          <div style="font-size:26px;line-height:1;flex-shrink:0;">🍽️</div>
+          <div style="font-size:26px;line-height:1;flex-shrink:0;" id="cmp-tkt-a-icon">☀️</div>
           <div>
-            <div style="font-size:9px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px;">Cuisine</div>
-            <div style="font-size:22px;font-weight:600;color:var(--accent);" id="ca2-tkt-food">—</div>
+            <div style="font-size:9px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px;" id="cmp-tkt-a-lbl">Déjeuner</div>
+            <div style="font-size:22px;font-weight:600;color:var(--accent);" id="cmp-tkt-a-val">—</div>
             <div style="font-size:10px;color:var(--muted);margin-top:2px;">par couvert</div>
           </div>
         </div>
         <div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:14px 16px;display:flex;align-items:center;gap:14px;">
-          <div style="font-size:26px;line-height:1;flex-shrink:0;">🍷</div>
+          <div style="font-size:26px;line-height:1;flex-shrink:0;" id="cmp-tkt-b-icon">🌙</div>
           <div>
-            <div style="font-size:9px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px;">Boissons</div>
-            <div style="font-size:22px;font-weight:600;color:var(--accent);" id="ca2-tkt-bev">—</div>
+            <div style="font-size:9px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px;" id="cmp-tkt-b-lbl">Dîner</div>
+            <div style="font-size:22px;font-weight:600;color:var(--accent);" id="cmp-tkt-b-val">—</div>
             <div style="font-size:10px;color:var(--muted);margin-top:2px;">par couvert</div>
           </div>
         </div>
       </div>
-      <div class="section-sep">Évolution ticket moyen cuisine / boissons · 6 périodes</div>
-      <div class="cleg">
-        <div class="cleg-item"><span style="width:12px;height:12px;border-radius:2px;background:rgba(139,26,26,0.75);display:inline-block;"></span>Cuisine</div>
-        <div class="cleg-item"><span style="width:12px;height:12px;border-radius:2px;background:rgba(200,150,60,0.75);display:inline-block;"></span>Boissons</div>
-      </div>
-      <div class="chart-h160"><canvas id="fbTktChart"></canvas></div>
 
     </div>
   </div>
@@ -1328,6 +1303,8 @@ const rosarioBarPlugin = {
   afterDatasetsDraw(chart) {
     const { ctx, data } = chart;
     if (!data.labels || data.labels.length < 2) return;
+    // Pas de label sur le graphe comparatif (2 barres côte à côte)
+    if (chart.canvas?.id === 'cmpChart') return;
 
     ctx.save();
 
@@ -1428,17 +1405,15 @@ const ca1Chart   = new Chart(document.getElementById('ca1Chart'), {
     scales:{x:{offset:true,grid:{display:false},ticks:{font:{family:'Sora',size:10}}},y:{grid:{color:'rgba(0,0,0,.05)'},ticks:{font:{family:'Sora',size:10},callback:v=>Math.round(v/1000)+'k€'}}}}
 });
 
-const ca2Chart   = makeChart('ca2Chart','bar',
-  [{label:'Dîner',data:[],backgroundColor:'rgba(139,26,26,0.75)',borderRadius:3,borderSkipped:false},{label:'Déjeuner',data:[],backgroundColor:'rgba(200,150,60,0.75)',borderRadius:3,borderSkipped:false}],
-  barOpts(v=>v.toFixed(0)+' €'));
+const ca2TktChart = makeChart('ca2TktChart', 'bar',
+  [{label:'Ticket moyen',data:[],backgroundColor:'rgba(139,26,26,0.75)',borderRadius:4,borderSkipped:false}],
+  { ...barOpts(v=>v.toFixed(1)+' €'), scales:{ x:{grid:{display:false},ticks:{font:{family:'Sora',size:10}}}, y:{min:0,grid:{color:'rgba(0,0,0,.05)'},ticks:{font:{family:'Sora',size:10},callback:v=>v.toFixed(1)+' €'}} } });
 
-const tktMidiHistChart = makeChart('tktMidiHistChart','bar',
-  [{label:'Dîner',data:[],backgroundColor:'rgba(139,26,26,0.75)',borderRadius:3,borderSkipped:false},{label:'Déjeuner',data:[],backgroundColor:'rgba(200,150,60,0.75)',borderRadius:3,borderSkipped:false}],
-  barOpts(v=>v.toFixed(0)+' €'));
+const cmpChart = makeChart('cmpChart','bar',
+  [{label:'A',data:[],backgroundColor:'rgba(139,26,26,0.75)',borderRadius:3,borderSkipped:false},{label:'B',data:[],backgroundColor:'rgba(200,150,60,0.75)',borderRadius:3,borderSkipped:false}],
+  barOpts(v=>(v/1000).toFixed(1)+'k €'));
 
-const fbTktChart = makeChart('fbTktChart','bar',
-  [{label:'Cuisine',data:[],backgroundColor:'rgba(139,26,26,0.75)',borderRadius:3,borderSkipped:false},{label:'Boissons',data:[],backgroundColor:'rgba(200,150,60,0.75)',borderRadius:3,borderSkipped:false}],
-  barOpts(v=>v.toFixed(0)+' €'));
+// fbTktChart supprimé (fusionné dans cmpChart)
 
 const googleChart= makeChart('googleChart','line',
   [{label:'Note Google',data:[],borderColor:'#f9c74f',borderWidth:2,pointBackgroundColor:'#f9c74f',pointRadius:3,tension:0.35,fill:true,backgroundColor:'rgba(249,199,79,0.08)'}],
@@ -1670,57 +1645,109 @@ function renderPeriod() {
   s('ca2-tkt-food', (m.tktFood||0).toFixed(2) + ' €');
   s('ca2-tkt-bev',  (m.tktBoisss||0).toFixed(2) + ' €');
 
-  // ca2Chart : ticket moyen déj/dîner historique
-  // Ticket moyen déj/dîner — seulement si données disponibles (pas d'estimation)
-  const tktMidiHist = histM.map(mm => mm?.tktMidi > 0 ? +(mm.tktMidi).toFixed(2) : null);
-  const tktSoirHist = histM.map(mm => mm?.tktSoir > 0 ? +(mm.tktSoir).toFixed(2) : null);
-  const hasTktData  = tktMidiHist.some(v => v !== null);
-  if (ca2Chart) { ca2Chart.data.labels = histLbls;
-  ca2Chart.data.datasets[0].data = hasTktData ? tktSoirHist : [];
-  ca2Chart.data.datasets[1].data = hasTktData ? tktMidiHist : [];
-  ca2Chart.update('active'); }
-  if (tktMidiHistChart) {
-    tktMidiHistChart.data.labels           = histLbls;
-    tktMidiHistChart.data.datasets[0].data = hasTktData ? tktSoirHist : [];
-    tktMidiHistChart.data.datasets[1].data = hasTktData ? tktMidiHist : [];
-    tktMidiHistChart.update();
+  // ── Bloc CA-2 : Ticket moyen total (identique vue d'ensemble) ──
+  s('ca2-tkt-big', tktTotal.toFixed(2) + ' €');
+  const ca2TktPrev = mi && mi.couverts > 0 ? +((mi.caNet||0)/mi.couverts).toFixed(2) : null;
+  s('ca2-tkt-delta', ca2TktPrev ? (tktTotal >= ca2TktPrev ? '▲ +' : '▼ ') + Math.abs(tktTotal - ca2TktPrev).toFixed(2) + ' € vs S préc.' : '—');
+  if (ca2TktChart) {
+    ca2TktChart.data.labels = histLbls;
+    ca2TktChart.data.datasets[0].data = histM.map(mm => {
+      const c = mm?.couverts || 0;
+      return c > 0 ? +((mm?.caNet||0)/c).toFixed(2) : 0;
+    });
+    ca2TktChart.update('active');
   }
 
-  // fbTktChart : ticket moyen cuisine/boissons historique
-  if (fbTktChart) {
-    fbTktChart.data.labels           = histLbls;
-    fbTktChart.data.datasets[0].data = histM.map(mm => +(mm?.tktFood   || 0).toFixed(2));
-    fbTktChart.data.datasets[1].data = histM.map(mm => +(mm?.tktBoisss || 0).toFixed(2));
-    fbTktChart.update();
+  // ── Stocker les données pour updateCompare() ──
+  window.CMP_DATA = {
+    histLbls,
+    histM,
+    // CA période courante
+    caMidi: m.caNetMidi || Math.round(caLS * 0.24),
+    caSoir: m.caNetSoir || Math.round(caLS * 0.76),
+    caFood, caBev,
+    caClients, caEvents,
+    // TM période courante
+    tktMidi:   m.tktMidi   || 0,
+    tktSoir:   m.tktSoir   || 0,
+    tktFood:   m.tktFood   || 0,
+    tktBoisss: m.tktBoisss || 0,
+    tktClients: m.couverts > 0 ? +(caClients/m.couverts).toFixed(2) : 0,
+    tktEvents:  0, // pas de couverts dédiés aux événements
+    couverts: m.couverts || 0,
+  };
+  updateCompare();
+}
+
+// ── Comparateur du bloc CA-2 (Déj/Dîn · Cuisine/Bois · Clients/Évén) ──
+function updateCompare() {
+  const sel = document.getElementById('ca2-compare-select');
+  if (!sel || !window.CMP_DATA) return;
+  const mode = sel.value;
+  const d = window.CMP_DATA;
+
+  // Helpers locaux (s et fmt sont locales à renderPeriod)
+  const s   = (id, v) => { const e = document.getElementById(id); if (e) e.textContent = v; };
+  const fmt = v => Math.round(v).toLocaleString('fr-FR');
+
+  // Configuration par mode
+  const cfg = {
+    dejdin: {
+      title: 'Déjeuner vs Dîner',
+      a: { icon:'☀️', lbl:'Déjeuner', ca:d.caMidi, tkt:d.tktMidi },
+      b: { icon:'🌙', lbl:'Dîner',    ca:d.caSoir, tkt:d.tktSoir },
+      histA: d.histM.map(mm => mm?.caNetMidi || 0),
+      histB: d.histM.map(mm => mm?.caNetSoir || 0),
+    },
+    cuisbois: {
+      title: 'Cuisine vs Boissons',
+      a: { icon:'🍽️', lbl:'Cuisine',  ca:d.caFood, tkt:d.tktFood },
+      b: { icon:'🍷', lbl:'Boissons', ca:d.caBev,  tkt:d.tktBoisss },
+      histA: d.histM.map(mm => mm?.caFood   || 0),
+      histB: d.histM.map(mm => mm?.caBoisss || 0),
+    },
+    cliev: {
+      title: 'Clients vs Événements',
+      a: { icon:'🍽️', lbl:'Clients',     ca:d.caClients, tkt:d.tktClients },
+      b: { icon:'🎉', lbl:'Événements',  ca:d.caEvents,  tkt:d.tktEvents },
+      histA: d.histM.map((mm,i) => mm?.caNet || 0),
+      histB: d.histM.map((mm,i) => 0), // privs historiques non ventilées
+    },
+  }[mode];
+  if (!cfg) return;
+
+  const caTot = (cfg.a.ca + cfg.b.ca) || 1;
+
+  // Titres
+  s('cmp-ca-title',   'CA · ' + cfg.title);
+  s('cmp-hist-title', 'Évolution comparée · ' + cfg.title);
+  s('cmp-tkt-title',  'Ticket moyen · ' + cfg.title);
+
+  // Cartouches CA
+  s('cmp-a-icon', cfg.a.icon); s('cmp-a-lbl', cfg.a.lbl);
+  s('cmp-a-ca', fmt(cfg.a.ca) + ' €'); s('cmp-a-sub', Math.round(cfg.a.ca/caTot*100) + ' % du CA');
+  s('cmp-b-icon', cfg.b.icon); s('cmp-b-lbl', cfg.b.lbl);
+  s('cmp-b-ca', fmt(cfg.b.ca) + ' €'); s('cmp-b-sub', Math.round(cfg.b.ca/caTot*100) + ' % du CA');
+
+  // Légende graphe
+  s('cmp-leg-a', cfg.a.lbl);
+  s('cmp-leg-b', cfg.b.lbl);
+
+  // Graphe historique comparé
+  if (cmpChart) {
+    cmpChart.data.labels = d.histLbls;
+    cmpChart.data.datasets[0].label = cfg.a.lbl;
+    cmpChart.data.datasets[0].data  = cfg.histA;
+    cmpChart.data.datasets[1].label = cfg.b.lbl;
+    cmpChart.data.datasets[1].data  = cfg.histB;
+    cmpChart.update('active');
   }
 
-  // dejChart (CA déj/dîner par jour)
-  if (dejChart) {
-    if (gran === 'week' && S13.length > 0) {
-      dejChart.data.labels = S13.map(d => d.lbl);
-      dejChart.data.datasets[0].data = S13.map(d => d.soir);
-      dejChart.data.datasets[1].data = S13.map(d => d.midi);
-    } else {
-      dejChart.data.labels = histLbls;
-      dejChart.data.datasets[0].data = histM.map(mm => mm?.caNetSoir || 0);
-      dejChart.data.datasets[1].data = histM.map(mm => mm?.caNetMidi || 0);
-    }
-    dejChart.update();
-  }
-
-  // fbChart (CA cuisine/boissons)
-  if (fbChart) {
-    const foodDays = gran === 'week' && S13.length > 0
-      ? S13.map(d => caFB > 0 ? Math.round(d.total * caFood / caFB) : 0)
-      : histM.map(mm => mm?.caFood || 0);
-    const bevDays = gran === 'week' && S13.length > 0
-      ? S13.map(d => caFB > 0 ? Math.round(d.total * caBev / caFB) : 0)
-      : histM.map(mm => mm?.caBoisss || 0);
-    fbChart.data.labels = gran === 'week' && S13.length > 0 ? S13.map(d => d.lbl) : histLbls;
-    fbChart.data.datasets[0].data = foodDays;
-    fbChart.data.datasets[1].data = bevDays;
-    fbChart.update();
-  }
+  // Cartouches TM
+  s('cmp-tkt-a-icon', cfg.a.icon); s('cmp-tkt-a-lbl', cfg.a.lbl);
+  s('cmp-tkt-a-val', cfg.a.tkt > 0 ? cfg.a.tkt.toFixed(2) + ' €' : '—');
+  s('cmp-tkt-b-icon', cfg.b.icon); s('cmp-tkt-b-lbl', cfg.b.lbl);
+  s('cmp-tkt-b-val', cfg.b.tkt > 0 ? cfg.b.tkt.toFixed(2) + ' €' : '—');
 }
 
 function setGran(g, el) {
