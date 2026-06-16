@@ -204,7 +204,7 @@ footer { max-width: 1040px; margin: 32px auto 0; padding-top: 20px; border-top: 
       <div class="period-granularity">
         <button class="pgran on" onclick="setGran('week',this)">Semaine</button>
         <button class="pgran"    onclick="setGran('month',this)">Mois</button>
-        <button class="pgran"    onclick="setGran('custom',this)">Période libre</button>
+        
       </div>
       <div class="period-nav">
         <button class="pnav-btn" onclick="navPeriod(-1)">‹</button>
@@ -273,8 +273,8 @@ footer { max-width: 1040px; margin: 32px auto 0; padding-top: 20px; border-top: 
     <div class="card-body">
       <div class="cleg">
         <div class="cleg-item"><span class="cleg-line" style="background:#8B1A1A;height:2.5px;"></span>Total</div>
-        <div class="cleg-item"><span class="cleg-dashed" style="border-color:#8B1A1A;"></span>Dîner</div>
-        <div class="cleg-item"><span class="cleg-dashed" style="border-color:#C8963C;"></span>Déjeuner</div>
+        <div class="cleg-item"><span class="cleg-dashed" style="border-color:#8B1A1A;"></span>Clients</div>
+        <div class="cleg-item"><span style="width:12px;height:12px;border-radius:2px;background:rgba(191,61,122,0.6);display:inline-block;"></span>Événements</div>
         <div class="cleg-item"><span class="cleg-dashed" style="border-color:rgba(140,136,130,0.55);"></span>Sem. préc.</div>
       </div>
       <div class="chart-h160"><canvas id="dayChart"></canvas></div>
@@ -419,8 +419,8 @@ footer { max-width: 1040px; margin: 32px auto 0; padding-top: 20px; border-top: 
       <div class="section-sep"><span id="ca1-title">CA HT · par jour</span></div>
       <div class="cleg">
         <div class="cleg-item"><span class="cleg-line" style="background:#8B1A1A;height:2.5px;"></span>Total</div>
-        <div class="cleg-item"><span class="cleg-dashed" style="border-color:#8B1A1A;"></span>Dîner</div>
-        <div class="cleg-item"><span class="cleg-dashed" style="border-color:#C8963C;"></span>Déjeuner</div>
+        <div class="cleg-item"><span class="cleg-dashed" style="border-color:#8B1A1A;"></span>Clients</div>
+        <div class="cleg-item"><span style="width:12px;height:12px;border-radius:2px;background:rgba(191,61,122,0.6);display:inline-block;"></span>Événements</div>
         <div class="cleg-item"><span style="width:12px;height:12px;border-radius:2px;background:rgba(191,61,122,0.6);display:inline-block;"></span>Événements</div>
         <div class="cleg-item"><span class="cleg-dashed" style="border-color:rgba(140,136,130,0.55);"></span>Période préc.</div>
       </div>
@@ -1114,8 +1114,8 @@ async function loadLiveData() {
 
 function updateTop10UI(food, bois) {
   // Met à jour le top 10 food
-  const foodEl = document.getElementById('top10-food-list') || document.querySelectorAll('#bloc-ca-4 .plats')[0];
-  const boisEl = document.getElementById('top10-bev-list')  || document.querySelectorAll('#bloc-ca-4 .plats')[1];
+  const foodEl = document.getElementById('top10-food-list');
+  const boisEl = document.getElementById('top10-bev-list');
   if (foodEl && food.length) {
     foodEl.innerHTML = food.map((p,i) => `
       <div class="plat">
@@ -1296,7 +1296,7 @@ const rosarioBarPlugin = {
     const isCov = chart.canvas?.id === 'covChart';
     const fmt = v => isCov
       ? (v >= 1000 ? (v/1000).toFixed(1)+'k' : Math.round(v).toString())
-      : (v >= 1000 ? (v/1000).toFixed(0)+'k €' : Math.round(v)+' €');
+      : (v >= 1000 ? (v/1000).toFixed(1)+'k €' : Math.round(v)+' €');
 
     // ── Trouver le dataset "Total" (label=Total ou index 0) ──
     let totalDsIdx = 0;
@@ -1316,7 +1316,7 @@ const rosarioBarPlugin = {
       if (!val) continue;
       const pt = totalMeta?.data[i];
       if (!pt) continue;
-      ctx.fillText(fmt(val), pt.x, pt.y - 6);
+      ctx.fillText(fmt(val), pt.x, pt.y - 10);
     }
 
     ctx.restore();
@@ -1465,7 +1465,7 @@ function renderPeriod() {
   const caNet    = m.caNet || p.ca;
   const tktTotal = m.couverts > 0 ? +(caNet / m.couverts).toFixed(2) : +((m.tktMidi||0)*0.32 + (m.tktSoir||0)*0.68).toFixed(2);
   s('kv-tkt', tktTotal.toFixed(2) + ' €');
-  setd('kd-tkt', `Déj. ${(m.tktMidi||0).toFixed(2)} € · Dîner ${(m.tktSoir||0).toFixed(2)} €`, 'neu');
+  setd('kd-tkt', mi ? fmtPct(tktTotal, mi.couverts > 0 ? +((mi.caNet||mi.caNetMidi+mi.caNetSoir||0)/mi.couverts).toFixed(2) : 0).txt + ' vs S préc.' : '—', 'neu');
 
   const days = gran === 'week' ? 7 : new Date(p.key.slice(0,4), +p.key.slice(5,7), 0).getDate();
   const ann  = Math.round(p.ca / days * 360 / 10000) / 100;
@@ -1548,8 +1548,8 @@ function renderPeriod() {
       : labels.map(() => 0);
     dayChart.data.labels = labels;
     dayChart.data.datasets[0].data = total;    dayChart.data.datasets[0].hidden = false;
-    dayChart.data.datasets[1].data = soir;     dayChart.data.datasets[1].hidden = false;
-    dayChart.data.datasets[2].data = midi;     dayChart.data.datasets[2].hidden = false;
+    dayChart.data.datasets[1].data = total;    dayChart.data.datasets[1].hidden = false; // Clients = total Lightspeed
+    dayChart.data.datasets[2].data = privData; dayChart.data.datasets[2].hidden = !privData.some(v=>v>0); // Événements
     dayChart.data.datasets[3].data = prevTotal; dayChart.data.datasets[3].hidden = prevTotal.length === 0;
     dayChart.data.datasets[4].data = [];       dayChart.data.datasets[4].hidden = true;
     // Dataset 5 : événements privatisations
