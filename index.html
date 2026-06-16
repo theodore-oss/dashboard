@@ -1045,8 +1045,12 @@ async function loadLiveData() {
     const liveMONTHS = monthKeys.map((mk, i) => {
       const rows = byMonth[mk];
       const ca = rows.reduce((s,r) => s + n(r['CA_Net_Total']), 0);
-      // Privatisations pour cette semaine
-      const privWkCa = (window.LIVE_PRIV_BY_WEEK || {})[wk]?.total || 0;
+      // Privatisations pour ce mois (somme des semaines appartenant au mois)
+      const mkKey = mk.replace('-','');
+      const privMoCa = Object.entries(window.LIVE_PRIV_BY_WEEK || {}).reduce((sum, [wkKey, wkData]) => {
+        const wkRows = byWeek[wkKey] || [];
+        return sum + (wkRows.some(r => String(r['Date']).slice(0,6) === mkKey) ? (wkData.total||0) : 0);
+      }, 0);
       const prevMk = i > 0 ? monthKeys[i-1] : null;
       const prev_ca = prevMk ? byMonth[prevMk].reduce((s,r) => s + n(r['CA_Net_Total']), 0) : null;
       const [y, m] = mk.split('-');
