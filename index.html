@@ -884,7 +884,6 @@ async function loadLiveData() {
       const iCuisine = headers.findIndex(h => h.toLowerCase().includes('cuisine'));
       const iAlcool  = headers.findIndex(h => h.toLowerCase().includes('alcool'));
       const iTotal   = headers.findIndex(h => h.toLowerCase().includes('total ht') || h.toLowerCase() === 'total ht');
-      console.log('Priv headers indices:', {iDate, iStatut, iCuisine, iAlcool, iTotal});
       lines.slice(1).forEach(line => {
         const vals = parseCSVLine(line);
         const statut = (vals[iStatut] || '').toLowerCase();
@@ -909,8 +908,11 @@ async function loadLiveData() {
           const mon = MONTHS[parts[1]?.slice(0,3)];
           // Déterminer l'année depuis iAnne header ou année courante
           const iAnnee = headers.findIndex(h => h.toLowerCase().includes('ann'));
+          const iMois  = headers.findIndex(h => h.toLowerCase() === 'mois');
           const yr = vals[iAnnee] || new Date().getFullYear();
-          if (mon && day) dateKey = String(yr) + String(mon).padStart(2,'0') + day;
+          // Préférer la colonne Mois si disponible (plus fiable que l'abréviation)
+          const monNum = iMois >= 0 && vals[iMois] ? parseInt(vals[iMois]) : mon;
+          if (monNum && day) dateKey = String(yr) + String(monNum).padStart(2,'0') + day;
         }
         if (!dateKey || dateKey.length !== 8) return;
         const cleanAmt = v => parseFloat((v||'').replace(/[€\s]/g,'').replace(',','.')) || 0;
@@ -921,21 +923,7 @@ async function loadLiveData() {
         privRows.push({ date: dateKey, cuisine, alcool, total });
       });
       console.log('✅ Privatisations parsées:', privRows.length, 'lignes valides');
-      if (privRows.length > 0) {
-        console.log('Priv sample:', privRows.slice(0,3));
-        console.log('Priv headers:', {iDate, iStatut, iCuisine, iAlcool, iTotal});
-        // Check 23 avril specifically
-        const apr23 = privRows.filter(r => r.date === '20260423');
-        console.log('23 avril privRows:', apr23);
-      } else {
-        // Debug: show first 3 raw lines
-        console.log('Headers raw:', headers);
-        console.log('First data line:', lines[1]);
-        const testVals = parseCSVLine(lines[1] || '');
-        console.log('Parsed first line:', testVals);
-        console.log('iDate val:', testVals[iDate], 'iStatut val:', testVals[iStatut], 'iTotal val:', testVals[iTotal]);
-        console.log('Extras LS col 11:', testVals[11]);
-      }
+
     }
 
     // Stocker globalement
@@ -1597,9 +1585,11 @@ function renderPeriod() {
       ? selWkRows.map(r => privByDay[r['Date']] || 0)
       : labels.map(() => 0);
     dayChart.data.labels = labels;
-    dayChart.data.datasets[0].data = total;    dayChart.data.datasets[0].hidden = false;
-    dayChart.data.datasets[1].data = total;    dayChart.data.datasets[1].hidden = false;
-    dayChart.data.datasets[2].data = privData; dayChart.data.datasets[2].hidden = !privData.some(v=>v>0);
+    // Total = Lightspeed + Événements
+    const totalWithEvents = total.map((v, i) => v + (privData[i] || 0));
+    dayChart.data.datasets[0].data = totalWithEvents; dayChart.data.datasets[0].hidden = false;
+    dayChart.data.datasets[1].data = total;           dayChart.data.datasets[1].hidden = false;
+    dayChart.data.datasets[2].data = privData;        dayChart.data.datasets[2].hidden = !privData.some(v=>v>0);
     dayChart.data.datasets[3].data = prevTotal; dayChart.data.datasets[3].hidden = prevTotal.length === 0;
     dayChart.data.datasets[4].data = [];       dayChart.data.datasets[4].hidden = true;
 
