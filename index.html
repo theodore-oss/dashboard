@@ -421,9 +421,30 @@ footer { max-width: 1040px; margin: 32px auto 0; padding-top: 20px; border-top: 
         <div class="cleg-item"><span class="cleg-line" style="background:#8B1A1A;height:2.5px;"></span>Total</div>
         <div class="cleg-item"><span class="cleg-dashed" style="border-color:#8B1A1A;"></span>Dîner</div>
         <div class="cleg-item"><span class="cleg-dashed" style="border-color:#C8963C;"></span>Déjeuner</div>
+        <div class="cleg-item"><span style="width:12px;height:12px;border-radius:2px;background:rgba(191,61,122,0.6);display:inline-block;"></span>Événements</div>
         <div class="cleg-item"><span class="cleg-dashed" style="border-color:rgba(140,136,130,0.55);"></span>Période préc.</div>
       </div>
       <div class="chart-h160" style="margin-bottom:28px;"><canvas id="ca1Chart"></canvas></div>
+      <!-- Clients vs Événements -->
+      <div class="section-sep">Clients &amp; Événements</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px;">
+        <div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:14px 16px;display:flex;align-items:center;gap:14px;">
+          <div style="font-size:26px;line-height:1;flex-shrink:0;">🍽️</div>
+          <div>
+            <div style="font-size:9px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px;">Clients</div>
+            <div style="font-size:20px;font-weight:600;color:var(--accent);" id="ca-clients-val">—</div>
+            <div style="font-size:10px;color:var(--muted);margin-top:2px;" id="ca-clients-sub">—</div>
+          </div>
+        </div>
+        <div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:14px 16px;display:flex;align-items:center;gap:14px;">
+          <div style="font-size:26px;line-height:1;flex-shrink:0;">🎉</div>
+          <div>
+            <div style="font-size:9px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px;">Événements</div>
+            <div style="font-size:20px;font-weight:600;color:var(--accent);" id="ca-events-val">—</div>
+            <div style="font-size:10px;color:var(--muted);margin-top:2px;" id="ca-events-sub">—</div>
+          </div>
+        </div>
+      </div>
       <div class="section-sep">CA net · historique 6 semaines</div>
       <div class="chart-h160"><canvas id="caHistChart"></canvas></div>
     </div>
@@ -826,12 +847,63 @@ function weekLabel(rows) {
 // ── Construction des structures WEEKS, METRICS_W, TKT_WEEKS depuis le Sheet ──
 async function loadLiveData() {
   try {
-    console.log('🔄 Chargement données Lightspeed...');
-    const [kpiRows, top10Rows] = await Promise.all([
+    console.log('🔄 Chargement données...');
+    const PRIV_URL = 'https://docs.google.com/spreadsheets/d/1lwaRa3K_VjiZbN6uhCv86VUl7gJ0prmsXaF-v1c66pI/gviz/tq?tqx=out:csv&gid=643053622';
+    const [kpiRows, top10Rows, privRaw] = await Promise.all([
       fetchSheet('KPI_Journaliers'),
       fetchSheet('Top10_Journaliers'),
+      fetch(PRIV_URL).then(r => r.text()).catch(() => ''),
     ]);
-    console.log('📊 Données reçues:', kpiRows.length, 'jours,', top10Rows.length, 'produits');
+    console.log('📊 KPI:', kpiRows.length, 'jours · Top10:', top10Rows.length, ' · Priv raw:', privRaw.length, 'chars');
+
+    // Parser le CSV privatisations
+    // Colonnes: Client Date Service Statut #pax Cuisine_HT Alcool_HT Total_HT ...
+    const privRows = [];
+    if (privRaw) {
+      const lines = privRaw.trim().split('\n');
+      const headers = parseCSVLine(lines[0]);
+      const iDate    = headers.findIndex(h => h.toLowerCase().includes('date'));
+      const iStatut  = headers.findIndex(h => h.toLowerCase().includes('statut'));
+      const iCuisine = headers.findIndex(h => h.toLowerCase().includes('cuisine'));
+      const iAlcool  = headers.findIndex(h => h.toLowerCase().includes('alcool'));
+      const iTotal   = headers.findIndex(h => h.toLowerCase().includes('total ht') || h.toLowerCase() === 'total ht');
+      console.log('Priv headers indices:', {iDate, iStatut, iCuisine, iAlcool, iTotal});
+      lines.slice(1).forEach(line => {
+        const vals = parseCSVLine(line);
+        const statut = (vals[iStatut] || '').toLowerCase();
+        if (statut.includes('annul') || statut.includes('cancel')) return;
+        const dateStr = vals[iDate] || '';
+        // Parse date DD/MM/YYYY or YYYY-MM-DD
+        let dateKey = '';
+        if (dateStr.match(/\d{2}\/\d{2}\/\d{4}/)) {
+          const [d,m,y] = dateStr.split('/');
+          dateKey = y + m.padStart(2,'0') + d.padStart(2,'0');
+        } else if (dateStr.match(/\d{4}-\d{2}-\d{2}/)) {
+          dateKey = dateStr.replace(/-/g,'');
+        }
+        if (!dateKey || dateKey.length !== 8) return;
+        const cuisine = n(vals[iCuisine]);
+        const alcool  = n(vals[iAlcool]);
+        const total   = n(vals[iTotal]) || cuisine + alcool;
+        if (!total) return;
+        privRows.push({ date: dateKey, cuisine, alcool, total });
+      });
+      console.log('✅ Privatisations parsées:', privRows.length, 'lignes valides');
+    }
+
+    // Stocker globalement
+    window.LIVE_PRIV_ROWS = privRows;
+
+    // Agréger par semaine
+    const privByWeek = {};
+    privRows.forEach(r => {
+      const wk = getWeekKey(r.date);
+      if (!privByWeek[wk]) privByWeek[wk] = { total: 0, cuisine: 0, alcool: 0 };
+      privByWeek[wk].total   += r.total;
+      privByWeek[wk].cuisine += r.cuisine;
+      privByWeek[wk].alcool  += r.alcool;
+    });
+    window.LIVE_PRIV_BY_WEEK = privByWeek;
 
     if (!kpiRows.length) { console.log('Sheet vide, données fictives conservées'); return; }
 
@@ -1462,12 +1534,29 @@ function renderPeriod() {
       soir   = [0];
     }
     const prevTotal = prevW ? labels.map((_, i) => Math.round(prevW.ca * (weights[i] || 0.14))) : [];
+
+    // Données privatisations par jour pour la semaine sélectionnée
+    const privByDay = {};
+    (window.LIVE_PRIV_ROWS || []).forEach(r => {
+      if (selWkRows.length > 0) {
+        // Vérifier si la date est dans la semaine sélectionnée
+        if (selWkRows.some(sr => sr['Date'] === r.date)) privByDay[r.date] = (privByDay[r.date] || 0) + r.total;
+      }
+    });
+    const privData = selWkRows.length > 0
+      ? selWkRows.map(r => privByDay[r['Date']] || 0)
+      : labels.map(() => 0);
     dayChart.data.labels = labels;
     dayChart.data.datasets[0].data = total;    dayChart.data.datasets[0].hidden = false;
     dayChart.data.datasets[1].data = soir;     dayChart.data.datasets[1].hidden = false;
     dayChart.data.datasets[2].data = midi;     dayChart.data.datasets[2].hidden = false;
     dayChart.data.datasets[3].data = prevTotal; dayChart.data.datasets[3].hidden = prevTotal.length === 0;
     dayChart.data.datasets[4].data = [];       dayChart.data.datasets[4].hidden = true;
+    // Dataset 5 : événements privatisations
+    if (dayChart.data.datasets[5]) {
+      dayChart.data.datasets[5].data   = privData;
+      dayChart.data.datasets[5].hidden = !privData.some(v => v > 0);
+    }
     s('day-chart-title', "Chiffre d'affaires HT · par jour");
   } else {
     const start = Math.max(0, idx - 5);
@@ -1500,7 +1589,7 @@ function renderPeriod() {
   // ca1Chart (par jour / par mois)
   if (typeof updateCa1Chart === 'function') updateCa1Chart(p, m);
 
-  // Déjeuner vs Dîner
+  // Clients (Lightspeed) vs Événements (Privatisations)
   const caMidi  = m.caNetMidi || Math.round(caNet * 0.24);
   const caSoir  = m.caNetSoir || Math.round(caNet * 0.76);
   const pctMidi = caNet > 0 ? Math.round(caMidi / caNet * 100) : 0;
@@ -1509,6 +1598,16 @@ function renderPeriod() {
   s('dej-ca-sub', pctMidi + ' % du CA · ' + (m.tktMidi||0).toFixed(2) + ' € / cvt');
   s('din-ca-val', fmt(caSoir) + ' €');
   s('din-ca-sub', pctSoir + ' % du CA · ' + (m.tktSoir||0).toFixed(2) + ' € / cvt');
+
+  // Clients vs Événements dans le bloc 1 Vue d'ensemble
+  const privWk  = (window.LIVE_PRIV_BY_WEEK || {})[p.key] || { total: 0 };
+  const caClients = caNet; // Lightspeed = CA clients
+  const caEvents  = Math.round(privWk.total);
+  const caGrand   = caClients + caEvents;
+  s('ca-clients-val', fmt(caClients) + ' €');
+  s('ca-clients-sub', caGrand > 0 ? Math.round(caClients/caGrand*100) + ' % du CA total' : '—');
+  s('ca-events-val', fmt(caEvents) + ' €');
+  s('ca-events-sub', caGrand > 0 ? Math.round(caEvents/caGrand*100) + ' % du CA total' : (caEvents === 0 ? 'Aucun événement' : '—'));
   s('ca2-tkt-midi', (m.tktMidi||0).toFixed(2) + ' €');
   s('ca2-tkt-soir', (m.tktSoir||0).toFixed(2) + ' €');
 
@@ -1653,6 +1752,16 @@ function updateCa1Chart(p, m) {
     ca1Chart.data.datasets[2].data=midi;  ca1Chart.data.datasets[3].data=prev;
     ca1Chart.data.datasets[3].hidden = prev.length===0;
     ca1Chart.data.datasets[4].data=[]; ca1Chart.data.datasets[4].hidden=true;
+    // Dataset 5 : événements
+    const privByDay2 = {};
+    (window.LIVE_PRIV_ROWS || []).forEach(r => {
+      if (selRows2.some(sr => sr['Date'] === r.date)) privByDay2[r.date] = (privByDay2[r.date]||0)+r.total;
+    });
+    const privData2 = selRows2.length>0 ? selRows2.map(r=>privByDay2[r['Date']]||0) : labels.map(()=>0);
+    if (ca1Chart.data.datasets[5]) {
+      ca1Chart.data.datasets[5].data   = privData2;
+      ca1Chart.data.datasets[5].hidden = !privData2.some(v=>v>0);
+    }
     document.getElementById('ca1-title') && (document.getElementById('ca1-title').textContent="CA HT · par jour");
   } else {
     const start = Math.max(0,idx-5);
