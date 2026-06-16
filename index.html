@@ -1471,6 +1471,12 @@ function renderPeriod() {
   document.querySelectorAll('.pnav-btn')[0].style.opacity = idx === 0 ? '.3' : '1';
   document.querySelectorAll('.pnav-btn')[1].style.opacity = idx === list.length-1 ? '.3' : '1';
 
+  // ── CA Total = Lightspeed + Privatisations (calculé AVANT toute utilisation) ──
+  const privWkForCA = (window.LIVE_PRIV_BY_WEEK || {})[p.key] || { total: 0 };
+  const caLS     = m.caNet || p.ca;
+  const caNet    = caLS + Math.round(privWkForCA.total);
+  const tktTotal = m.couverts > 0 ? +(caNet / m.couverts).toFixed(2) : +((m.tktMidi||0)*0.32 + (m.tktSoir||0)*0.68).toFixed(2);
+
   // ── KPI STRIP ──
   const caFmt = fmtPct(caNet, p.prev_ca);
   s('kv-ca',   fmt(caNet) + ' €');
@@ -1480,11 +1486,6 @@ function renderPeriod() {
   setd('kd-cov', 'Couverts servis', 'neu');
   s('kv-fill', Math.round(m.rempli) + ' %');
 
-  // CA Total = Lightspeed + Privatisations
-  const privWkForCA = (window.LIVE_PRIV_BY_WEEK || {})[p.key] || { total: 0 };
-  const caLS     = m.caNet || p.ca;
-  const caNet    = caLS + Math.round(privWkForCA.total);
-  const tktTotal = m.couverts > 0 ? +(caNet / m.couverts).toFixed(2) : +((m.tktMidi||0)*0.32 + (m.tktSoir||0)*0.68).toFixed(2);
   s('kv-tkt', tktTotal.toFixed(2) + ' €');
   s('kv-tkt-big', tktTotal.toFixed(2) + ' €');
   const tktPrev = mi && mi.couverts > 0 ? +((mi.caNet||0)/mi.couverts).toFixed(2) : null;
