@@ -291,8 +291,8 @@ footer { max-width: 1040px; margin: 32px auto 0; padding-top: 20px; border-top: 
   <div class="card" id="bloc-4">
     <div class="card-header">
       <div class="card-num">5</div>
-      <span class="card-title">Note Google · évolution</span>
-      <span class="card-src">Google · temps réel</span>
+      <span class="card-title">Note Google</span>
+      <span class="card-src">Google · avis</span>
     </div>
     <div class="card-body">
       <!-- Note actuelle + nb avis -->
@@ -306,12 +306,16 @@ footer { max-width: 1040px; margin: 32px auto 0; padding-top: 20px; border-top: 
           <div style="font-size:11px;color:var(--muted);margin-top:4px;" id="google-count-detail">—</div>
         </div>
       </div>
-      <!-- Graphe 1 : évolution historique de la note -->
-      <div class="section-sep">Évolution de la note</div>
-      <div class="chart-h120" style="margin-bottom:20px;"><canvas id="googleChart"></canvas></div>
-      <!-- Graphe 2 : note par jour de la semaine sélectionnée -->
+      <!-- Graphe 1 : note par jour de la semaine en cours -->
       <div class="section-sep">Note par jour · semaine en cours</div>
-      <div class="chart-h120"><canvas id="googleDayChart"></canvas></div>
+      <div class="cleg">
+        <div class="cleg-item"><span class="cleg-line" style="background:#f9c74f;height:2.5px;"></span>Note du jour</div>
+        <div class="cleg-item"><span style="width:12px;height:12px;border-radius:2px;background:rgba(139,26,26,0.25);display:inline-block;"></span>Nb d'avis</div>
+      </div>
+      <div class="chart-h120" style="margin-bottom:20px;"><canvas id="googleDayChart"></canvas></div>
+      <!-- Graphe 2 : moyenne hebdomadaire pondérée sur 6 semaines -->
+      <div class="section-sep">Note hebdomadaire · 6 dernières semaines (moyenne pondérée)</div>
+      <div class="chart-h120"><canvas id="googleChart"></canvas></div>
     </div>
   </div>
 
@@ -500,7 +504,7 @@ footer { max-width: 1040px; margin: 32px auto 0; padding-top: 20px; border-top: 
     <span class="src-i"><span class="src-dot mock"></span>Zenchef (à connecter)</span>
     <span class="src-i"><span class="src-dot mock"></span>Skello (à connecter)</span>
     <span class="src-i"><span class="src-dot mock"></span>Pennylane (à connecter)</span>
-    <span class="src-i"><span class="src-dot mock"></span>Google (à connecter)</span>
+    <span class="src-i"><span class="src-dot"></span>Google (avis)</span>
   </div>
 </footer>
 
@@ -589,10 +593,12 @@ async function loadLiveData() {
       const iCuisine = headers.findIndex(h => h.toLowerCase().includes('cuisine'));
       const iAlcool  = headers.findIndex(h => h.toLowerCase().includes('alcool'));
       const iTotal   = headers.findIndex(h => h.toLowerCase().includes('total ht') || h.toLowerCase() === 'total ht');
+      const iPax     = headers.findIndex(h => h.toLowerCase().includes('pax'));
       lines.slice(1).forEach(line => {
         const vals = parseCSVLine(line);
         const statut = (vals[iStatut] || '').toLowerCase();
-        if (statut.includes('annul') || statut.includes('cancel')) return;
+        // Ne garder que les privatisations confirmées (colonne Statut)
+        if (!statut.includes('confirm')) return;
         // Exclure les lignes avec "Lightspeed" en colonne L (Extras LS = index 11)
         const extrasLS = (vals[11] || '').toLowerCase().trim();
         if (extrasLS === 'lightspeed') return;
@@ -622,10 +628,11 @@ async function loadLiveData() {
         const cuisine = cleanAmt(vals[iCuisine]);
         const alcool  = cleanAmt(vals[iAlcool]);
         const total   = cleanAmt(vals[iTotal]) || cuisine + alcool;
+        const pax     = parseInt(String(vals[iPax]||'').replace(/[^0-9]/g,'')) || 0;
         if (!total) return;
-        privRows.push({ date: dateKey, cuisine, alcool, total });
+        privRows.push({ date: dateKey, cuisine, alcool, total, pax });
       });
-      console.log('✅ Privatisations parsées:', privRows.length, 'lignes valides');
+      console.log('✅ Privatisations confirmées parsées:', privRows.length, 'lignes valides');
     }
 
     // Ne conserver que les événements déjà passés.
@@ -641,12 +648,23 @@ async function loadLiveData() {
     const privByWeek = {};
     privPast.forEach(r => {
       const wk = getWeekKey(r.date);
-      if (!privByWeek[wk]) privByWeek[wk] = { total: 0, cuisine: 0, alcool: 0 };
+      if (!privByWeek[wk]) privByWeek[wk] = { total: 0, cuisine: 0, alcool: 0, pax: 0 };
       privByWeek[wk].total   += r.total;
       privByWeek[wk].cuisine += r.cuisine;
       privByWeek[wk].alcool  += r.alcool;
+      privByWeek[wk].pax     += r.pax;
     });
     window.LIVE_PRIV_BY_WEEK = privByWeek;
+
+    // Agréger par mois (pour la vue mensuelle)
+    const privByMonth = {};
+    privPast.forEach(r => {
+      const mk = r.date.slice(0,4) + '-' + r.date.slice(4,6);
+      if (!privByMonth[mk]) privByMonth[mk] = { total: 0, pax: 0 };
+      privByMonth[mk].total += r.total;
+      privByMonth[mk].pax   += r.pax;
+    });
+    window.LIVE_PRIV_BY_MONTH = privByMonth;
 
     if (!kpiRows.length) { console.log('Sheet vide, données fictives conservées'); return; }
 
@@ -744,11 +762,7 @@ async function loadLiveData() {
     const liveMONTHS = monthKeys.map((mk, i) => {
       const rows = byMonth[mk];
       const ca = rows.reduce((s,r) => s + n(r['CA_Net_Total']), 0);
-      const mkKey = mk.replace('-','');
-      const privMoCa = Object.entries(window.LIVE_PRIV_BY_WEEK || {}).reduce((sum, [wkKey, wkData]) => {
-        const wkRows = byWeek[wkKey] || [];
-        return sum + (wkRows.some(r => String(r['Date']).slice(0,6) === mkKey) ? (wkData.total||0) : 0);
-      }, 0);
+      const privMoCa = (window.LIVE_PRIV_BY_MONTH || {})[mk]?.total || 0;
       const prevMk = i > 0 ? monthKeys[i-1] : null;
       const prev_ca = prevMk ? byMonth[prevMk].reduce((s,r) => s + n(r['CA_Net_Total']), 0) : null;
       const [y, m] = mk.split('-');
@@ -850,48 +864,52 @@ function updateTop10UI(food, bois) {
 }
 
 // ── Note Google ──
+// Note actuelle (globale) depuis l'onglet Google_Rating ; note par jour & hebdo
+// depuis l'onglet Note_Jour (alimenté par le script Outscraper).
 async function loadGoogleRating() {
   try {
-    const rows = await fetchSheet('Google_Rating');
-    if (!rows.length) { console.log('Pas de note Google dans le Sheet'); return; }
-
-    const last    = rows[rows.length - 1];
-    const reviews = parseInt(String(last['Reviews'] || last['reviews'] || '0').replace(/\D/g,'')) || 0;
-    const lastNote = parseFloat(String(last['Rating'] || last['rating'] || '0').replace(',','.')) || 0;
-
-    // Moyenne des 7 dernières entrées
-    const sample  = rows.slice(-7);
-    const ratings = sample.map(r => parseFloat(String(r['Rating']||r['rating']||'0').replace(',','.')) || 0).filter(v => v > 0);
-    const avg     = ratings.length ? +(ratings.reduce((a,b)=>a+b,0)/ratings.length).toFixed(1) : lastNote;
-
-    if (avg > 0) {
-      updateGoogleUI(avg, reviews);
-      // Historique réel de la note
-      const dateLabels = rows.map(r => String(r['Date']||'').slice(6,8)+'/'+String(r['Date']||'').slice(4,6));
-      const notes = rows.map(r => parseFloat(String(r['Rating']||r['rating']||'0').replace(',','.')) || null);
-      const validPairs = dateLabels.map((l,i) => ({l, n:notes[i]})).filter(x => x.n > 0);
-      updateGoogleChart(validPairs.map(x=>x.l), validPairs.map(x=>x.n));
-
-      // Note par jour de la semaine courante
-      const currWk = WEEKS.length > 0 ? WEEKS[WEEKS.length-1] : null;
-      if (currWk && googleDayChart) {
-        const DN = ['Dim','Lun','Mar','Mer','Jeu','Ven','Sam'];
-        const wkNotes = rows.filter(r => {
-          const d = String(r['Date']||'');
-          if (d.length < 8) return false;
-          return getWeekKey(d) === currWk.key;
-        });
-        if (wkNotes.length > 0) {
-          const dayLbls = wkNotes.map(r => {
-            const d = String(r['Date']||'');
-            const dt = new Date(+d.slice(0,4), +d.slice(4,6)-1, +d.slice(6,8));
-            return DN[dt.getDay()] + ' ' + d.slice(6,8);
-          });
-          const dayNts = wkNotes.map(r => parseFloat(String(r['Rating']||r['rating']||'0').replace(',','.')) || null);
-          updateGoogleDayChart(dayLbls, dayNts);
-        }
-      }
+    // 1) Note actuelle (globale) + nombre d'avis
+    const rows = await fetchSheet('Google_Rating').catch(() => []);
+    if (rows.length) {
+      const last = rows[rows.length - 1];
+      const reviews = parseInt(String(last['Reviews'] || last['reviews'] || '0').replace(/\D/g,'')) || 0;
+      const lastNote = parseFloat(String(last['Rating'] || last['rating'] || '0').replace(',','.')) || 0;
+      if (lastNote > 0) updateGoogleUI(lastNote, reviews);
     }
+
+    // 2) Note par jour & hebdo depuis Note_Jour
+    let jour = [];
+    try { jour = await fetchSheet('Note_Jour'); } catch(e) { console.log('Onglet Note_Jour absent'); }
+    if (!jour || !jour.length) return;
+
+    // Normaliser : { d:'YYYYMMDD', note, nb }
+    const recs = jour.map(r => {
+      const d = String(r['Date'] || '').replace(/\D/g,'');
+      return {
+        d,
+        note: parseFloat(String(r['Note_Moyenne'] || r['Note'] || '0').replace(',','.')) || 0,
+        nb:   parseInt(String(r['Nb_Avis'] || '0').replace(/\D/g,'')) || 0,
+      };
+    }).filter(x => x.d.length === 8 && x.nb > 0);
+    if (!recs.length) return;
+
+    // ── Graphe 1 : note par jour · semaine ISO courante (note=courbe, nb avis=barres) ──
+    const currWk = WEEKS.length > 0 ? WEEKS[WEEKS.length-1] : null;
+    if (currWk) {
+      const DN = ['Dim','Lun','Mar','Mer','Jeu','Ven','Sam'];
+      const wkRecs = recs.filter(x => getWeekKey(x.d) === currWk.key).sort((a,b)=>a.d.localeCompare(b.d));
+      const lbls = wkRecs.map(x => { const dt=new Date(+x.d.slice(0,4),+x.d.slice(4,6)-1,+x.d.slice(6,8)); return DN[dt.getDay()]+' '+x.d.slice(6,8); });
+      updateGoogleDayChart(lbls, wkRecs.map(x=>x.note), wkRecs.map(x=>x.nb));
+    }
+
+    // ── Graphe 2 : moyenne hebdomadaire pondérée · 6 dernières semaines ──
+    const byWk = {};
+    recs.forEach(x => { const wk = getWeekKey(x.d); if (!byWk[wk]) byWk[wk] = { sum:0, nb:0 }; byWk[wk].sum += x.note*x.nb; byWk[wk].nb += x.nb; });
+    const wkKeys = Object.keys(byWk).sort().slice(-6);
+    const wkLbls = wkKeys.map(k => 'S' + k.slice(-2));
+    const wkAvgs = wkKeys.map(k => byWk[k].nb > 0 ? +(byWk[k].sum / byWk[k].nb).toFixed(2) : null);
+    updateGoogleChart(wkLbls, wkAvgs);
+
   } catch(e) {
     console.warn('Note Google non disponible:', e.message);
   }
@@ -906,7 +924,7 @@ function updateGoogleUI(note, reviews) {
   if (noteEl)  noteEl.textContent  = noteStr;
   if (countEl) countEl.textContent = reviews.toLocaleString('fr-FR') + ' avis';
   if (countDetailEl) countDetailEl.textContent = reviews.toLocaleString('fr-FR') + ' avis';
-  if (kvEl)    kvEl.textContent    = noteStr + ' ★';
+  if (kvEl)    kvEl.innerHTML       = noteStr + ' <span style="color:#f9c74f;">★</span>';
 
   const starsEl = document.getElementById('google-stars');
   if (starsEl) {
@@ -918,17 +936,20 @@ function updateGoogleUI(note, reviews) {
   }
 }
 
-function updateGoogleChart(dateLabels, notes) {
-  if (!googleChart || !dateLabels.length) return;
-  googleChart.data.labels = dateLabels;
+// Graphe hebdomadaire (moyenne pondérée) — ligne
+function updateGoogleChart(labels, notes) {
+  if (!googleChart || !labels.length) return;
+  googleChart.data.labels = labels;
   googleChart.data.datasets[0].data = notes;
   googleChart.update();
 }
 
-function updateGoogleDayChart(dayLabels, dayNotes) {
-  if (!googleDayChart || !dayLabels.length) return;
-  googleDayChart.data.labels = dayLabels;
-  googleDayChart.data.datasets[0].data = dayNotes;
+// Graphe par jour — note (ligne) + nombre d'avis (barres)
+function updateGoogleDayChart(labels, notes, counts) {
+  if (!googleDayChart || !labels.length) return;
+  googleDayChart.data.labels = labels;
+  googleDayChart.data.datasets[0].data = notes;
+  googleDayChart.data.datasets[1].data = counts;
   googleDayChart.update();
 }
 
@@ -988,16 +1009,16 @@ const rosarioBarPlugin = {
       ? (v >= 1000 ? (v/1000).toFixed(1)+'k' : Math.round(v).toString())
       : (v >= 1000 ? (v/1000).toFixed(1)+'k €' : Math.round(v)+' €');
 
-    // Dataset "Total" (label=Total ou index 0)
-    let totalDsIdx = 0;
-    data.datasets.forEach((ds, i) => { if (ds.label === 'Total') totalDsIdx = i; });
-    const totalDs   = data.datasets[totalDsIdx];
-    const totalMeta = chart.getDatasetMeta(totalDsIdx);
+    // Dataset "Note" si présent (graphes Google), sinon "Total", sinon index 0
+    let mainIdx = 0;
+    data.datasets.forEach((ds, i) => { if (ds.label === 'Total' || ds.label === 'Note') mainIdx = i; });
+    const mainDs   = data.datasets[mainIdx];
+    const mainMeta = chart.getDatasetMeta(mainIdx);
 
     for (let i = 0; i < data.labels.length; i++) {
-      const val = totalDs?.data[i];
+      const val = mainDs?.data[i];
       if (!val) continue;
-      const pt = totalMeta?.data[i];
+      const pt = mainMeta?.data[i];
       if (!pt) continue;
       ctx.fillText(fmt(val), pt.x, pt.y - 10);
     }
@@ -1080,13 +1101,28 @@ const cmpChart = makeChart('cmpChart','bar',
   [{label:'A',data:[],backgroundColor:'rgba(139,26,26,0.75)',borderRadius:3,borderSkipped:false},{label:'B',data:[],backgroundColor:'rgba(200,150,60,0.75)',borderRadius:3,borderSkipped:false}],
   { scales:{ x:{grid:{display:false},ticks:{font:{family:'Sora',size:10}}}, y:{min:0,grid:{color:'rgba(0,0,0,.05)'},ticks:{font:{family:'Sora',size:10},callback:v=>v.toFixed(0)+' €'}} } });
 
+// Graphe Note hebdomadaire (moyenne pondérée) — ligne
 const googleChart= makeChart('googleChart','line',
   [{label:'Note Google',data:[],borderColor:'#f9c74f',borderWidth:2,pointBackgroundColor:'#f9c74f',pointRadius:3,tension:0.35,fill:true,backgroundColor:'rgba(249,199,79,0.08)'}],
-  {scales:{x:{grid:{display:false},ticks:{font:{family:'Sora',size:9}}},y:{min:4,max:5,grid:{color:'rgba(0,0,0,.05)'},ticks:{font:{family:'Sora',size:9},callback:v=>v.toFixed(1)}}}});
+  {scales:{x:{grid:{display:false},ticks:{font:{family:'Sora',size:9}}},y:{min:3.5,max:5,grid:{color:'rgba(0,0,0,.05)'},ticks:{font:{family:'Sora',size:9},callback:v=>v.toFixed(1)}}}});
 
-const googleDayChart = makeChart('googleDayChart','bar',
-  [{label:'Note',data:[],backgroundColor:'rgba(249,199,79,0.75)',borderRadius:3,borderSkipped:false}],
-  {layout:{padding:{top:20}},scales:{x:{grid:{display:false},ticks:{font:{family:'Sora',size:9}}},y:{min:3.5,max:5,grid:{color:'rgba(0,0,0,.05)'},ticks:{font:{family:'Sora',size:9},callback:v=>v.toFixed(1)}}}});
+// Graphe Note par jour — note (ligne, axe gauche 3.5–5) + nb d'avis (barres, axe droit)
+const googleDayChart = new Chart(document.getElementById('googleDayChart'), {
+  type:'bar',
+  data:{ labels:[], datasets:[
+    { label:'Note', type:'line', yAxisID:'y', data:[], borderColor:'#f9c74f', borderWidth:2, pointBackgroundColor:'#f9c74f', pointRadius:4, tension:0.35, fill:false, order:0 },
+    { label:'Nb avis', type:'bar', yAxisID:'y1', data:[], backgroundColor:'rgba(139,26,26,0.25)', borderRadius:3, order:1 },
+  ]},
+  options:{ responsive:true, maintainAspectRatio:false, layout:{padding:{top:20}}, interaction:{mode:'index',intersect:false},
+    plugins:{ legend:{display:false}, tooltip:{ backgroundColor:'#fff', borderColor:'#e4e1d9', borderWidth:1, titleColor:'#1a1916', bodyColor:'#8a8680', padding:10,
+      callbacks:{ label:c => c.dataset.label === 'Note' ? '  Note : ' + Number(c.parsed.y).toFixed(1).replace('.',',') : '  Avis : ' + c.parsed.y } } },
+    scales:{
+      x:{grid:{display:false},ticks:{font:{family:'Sora',size:9}}},
+      y:{position:'left',min:3.5,max:5,grid:{color:'rgba(0,0,0,.05)'},ticks:{font:{family:'Sora',size:9},callback:v=>v.toFixed(1)}},
+      y1:{position:'right',min:0,grid:{display:false},ticks:{font:{family:'Sora',size:9},precision:0}}
+    }
+  }
+});
 
 
 /* ════════════ PERIOD PICKER ════════════ */
@@ -1126,8 +1162,8 @@ function renderPeriod() {
   document.querySelectorAll('.pnav-btn')[0].style.opacity = idx === 0 ? '.3' : '1';
   document.querySelectorAll('.pnav-btn')[1].style.opacity = idx === list.length-1 ? '.3' : '1';
 
-  // ── CA Total = Lightspeed + Privatisations ──
-  const privWkForCA = (window.LIVE_PRIV_BY_WEEK || {})[p.key] || { total: 0 };
+  // ── CA Total = Lightspeed + Privatisations (semaine ou mois selon la vue) ──
+  const privWkForCA = ((gran === 'week' ? window.LIVE_PRIV_BY_WEEK : window.LIVE_PRIV_BY_MONTH) || {})[p.key] || { total: 0, pax: 0 };
   const caLS     = m.caNet || p.ca;
   const caNet    = caLS + Math.round(privWkForCA.total);
   const tktTotal = m.couverts > 0 ? +(caNet / m.couverts).toFixed(2) : +((m.tktMidi||0)*0.32 + (m.tktSoir||0)*0.68).toFixed(2);
@@ -1168,6 +1204,11 @@ function renderPeriod() {
   const histM      = metricsArr.slice(Math.max(0, idx - 5), idx + 1);
   const histLbls   = histSlice.map(w => w.lbl.split(' · ')[0].trim());
   const histVals   = histSlice.map(w => w.ca);
+
+  // Événements (privatisations) par période — pour le ticket moyen Clients/Événements
+  const privByPeriod = ((gran === 'week' ? window.LIVE_PRIV_BY_WEEK : window.LIVE_PRIV_BY_MONTH) || {});
+  const histEvCA  = histSlice.map(w => Math.round((privByPeriod[w.key]?.total) || 0));
+  const histEvPax = histSlice.map(w => (privByPeriod[w.key]?.pax) || 0);
 
   try { // ── Mises à jour graphes (protégées) ──
   if (histChart)   { histChart.data.labels = histLbls; histChart.data.datasets[0].data = histVals; histChart.update(); }
@@ -1270,6 +1311,7 @@ function renderPeriod() {
   // Clients (Lightspeed) vs Événements (Privatisations)
   const caClients = caLS;
   const caEvents  = Math.round(privWkForCA.total);
+  const evPax     = privWkForCA.pax || 0;
   const caGrand   = caClients + caEvents;
   s('ca-clients-val', fmt(caClients) + ' €');
   s('svc-clients-val', fmt(caClients) + ' €');
@@ -1298,9 +1340,14 @@ function renderPeriod() {
   }
 
   // ── Données pour updateCompare() ──
+  // TM Clients   = CA Lightspeed / (couverts Lightspeed − # pax événements)
+  // TM Événement = CA événements / # pax événements
+  const clientsCov = m.couverts - evPax;
   window.CMP_DATA = {
     histLbls,
     histM,
+    histEvCA,
+    histEvPax,
     caMidi: m.caNetMidi || Math.round(caLS * 0.24),
     caSoir: m.caNetSoir || Math.round(caLS * 0.76),
     caFood, caBev,
@@ -1309,8 +1356,8 @@ function renderPeriod() {
     tktSoir:   m.tktSoir   || 0,
     tktFood:   m.tktFood   || 0,
     tktBoissons: m.tktBoissons || 0,
-    tktClients: m.couverts > 0 ? +(caClients/m.couverts).toFixed(2) : 0,
-    tktEvents:  0,
+    tktClients: clientsCov > 0 ? +(caClients / clientsCov).toFixed(2) : 0,
+    tktEvents:  evPax > 0 ? +(caEvents / evPax).toFixed(2) : 0,
   };
   updateCompare();
 }
@@ -1344,8 +1391,9 @@ function updateCompare() {
       title: 'Clients vs Événements',
       a: { icon:'🍽️', lbl:'Clients',     ca:d.caClients, tkt:d.tktClients },
       b: { icon:'🎉', lbl:'Événements',  ca:d.caEvents,  tkt:d.tktEvents },
-      histA: d.histM.map(mm => (mm?.couverts > 0 ? +((mm?.caNet||0)/mm.couverts).toFixed(2) : 0)),
-      histB: d.histM.map(() => 0),
+      // TM par période : Clients = CA / (couverts − pax évén.) ; Événements = CA évén. / pax évén.
+      histA: d.histM.map((mm,i) => { const cc = (mm?.couverts||0) - (d.histEvPax[i]||0); return cc > 0 ? +((mm?.caNet||0)/cc).toFixed(2) : 0; }),
+      histB: d.histEvPax.map((pax,i) => pax > 0 ? +((d.histEvCA[i]||0)/pax).toFixed(2) : 0),
     },
   }[mode];
   if (!cfg) return;
