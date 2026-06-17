@@ -151,6 +151,7 @@ footer { max-width: 1040px; margin: 32px auto 0; padding-top: 20px; border-top: 
 <div class="tabs">
   <button class="tab on" onclick="showTab('overview',this)">Vue d'ensemble</button>
   <button class="tab" onclick="showTab('ca',this)">Analyse CA</button>
+  <button class="tab" onclick="showTab('operations',this)">Opérations</button>
 </div>
 
 <!-- ══════════════════════════════════════════ VUE D'ENSEMBLE -->
@@ -183,10 +184,22 @@ footer { max-width: 1040px; margin: 32px auto 0; padding-top: 20px; border-top: 
   </div>
 
 
-  <!-- BLOC 1 : CA HT -->
-  <div class="card" id="bloc-1">
+  <!-- BLOC 1 : HISTORIQUE CA 6 SEMAINES -->
+  <div class="card" id="bloc-hist">
     <div class="card-header">
       <div class="card-num">1</div>
+      <span class="card-title">CA net · historique 6 semaines</span>
+      <span class="card-src">Lightspeed · données réelles</span>
+    </div>
+    <div class="card-body">
+      <div class="chart-h160"><canvas id="histChart"></canvas></div>
+    </div>
+  </div>
+
+  <!-- BLOC 2 : CA HT PAR JOUR -->
+  <div class="card" id="bloc-1">
+    <div class="card-header">
+      <div class="card-num">2</div>
       <span class="card-title" id="day-chart-title">Chiffre d'affaires HT · par jour</span>
       <span class="card-src">Lightspeed · données réelles</span>
     </div>
@@ -219,19 +232,7 @@ footer { max-width: 1040px; margin: 32px auto 0; padding-top: 20px; border-top: 
     </div>
   </div>
 
-  <!-- BLOC 1b : HISTORIQUE CA 6 SEMAINES -->
-  <div class="card" id="bloc-hist">
-    <div class="card-header">
-      <div class="card-num">2</div>
-      <span class="card-title">CA net · historique 6 semaines</span>
-      <span class="card-src">Lightspeed · données réelles</span>
-    </div>
-    <div class="card-body">
-      <div class="chart-h160"><canvas id="histChart"></canvas></div>
-    </div>
-  </div>
-
-  <!-- BLOC 2 : COUVERTS & REMPLISSAGE -->
+  <!-- BLOC 3 : COUVERTS & REMPLISSAGE -->
   <div class="card" id="bloc-2">
     <div class="card-header">
       <div class="card-num">3</div>
@@ -267,7 +268,7 @@ footer { max-width: 1040px; margin: 32px auto 0; padding-top: 20px; border-top: 
     </div>
   </div>
 
-  <!-- BLOC 3 : TICKET MOYEN -->
+  <!-- BLOC 4 : TICKET MOYEN -->
   <div class="card" id="bloc-3">
     <div class="card-header">
       <div class="card-num">4</div>
@@ -287,7 +288,7 @@ footer { max-width: 1040px; margin: 32px auto 0; padding-top: 20px; border-top: 
     </div>
   </div>
 
-  <!-- BLOC 4 : NOTE GOOGLE -->
+  <!-- BLOC 5 : NOTE GOOGLE -->
   <div class="card" id="bloc-4">
     <div class="card-header">
       <div class="card-num">5</div>
@@ -315,6 +316,10 @@ footer { max-width: 1040px; margin: 32px auto 0; padding-top: 20px; border-top: 
       <div class="chart-h120" style="margin-bottom:20px;"><canvas id="googleDayChart"></canvas></div>
       <!-- Graphe 2 : moyenne hebdomadaire pondérée sur 6 semaines -->
       <div class="section-sep">Note hebdomadaire · 6 dernières semaines (moyenne pondérée)</div>
+      <div class="cleg">
+        <div class="cleg-item"><span class="cleg-line" style="background:#f9c74f;height:2.5px;"></span>Note</div>
+        <div class="cleg-item"><span style="width:12px;height:12px;border-radius:2px;background:rgba(139,26,26,0.25);display:inline-block;"></span>Nb d'avis</div>
+      </div>
       <div class="chart-h120"><canvas id="googleChart"></canvas></div>
     </div>
   </div>
@@ -350,14 +355,16 @@ footer { max-width: 1040px; margin: 32px auto 0; padding-top: 20px; border-top: 
     </div>
   </div>
 
-    <!-- BLOC CA-1 : CA PAR JOUR + HISTORIQUE -->
+    <!-- BLOC CA-1 : HISTORIQUE + CA PAR JOUR -->
   <div class="card" id="bloc-ca-1">
     <div class="card-header">
       <div class="card-num">1</div>
-      <span class="card-title">CA · par jour &amp; historique</span>
+      <span class="card-title">CA · historique &amp; par jour</span>
       <span class="card-src">Lightspeed · données réelles</span>
     </div>
     <div class="card-body">
+      <div class="section-sep">CA net · historique 6 semaines</div>
+      <div class="chart-h160" style="margin-bottom:28px;"><canvas id="caHistChart"></canvas></div>
       <div class="section-sep"><span id="ca1-title">CA HT · par jour</span></div>
       <div class="cleg">
         <div class="cleg-item"><span class="cleg-line" style="background:#8B1A1A;height:2.5px;"></span>Total</div>
@@ -365,10 +372,10 @@ footer { max-width: 1040px; margin: 32px auto 0; padding-top: 20px; border-top: 
         <div class="cleg-item"><span class="cleg-dashed" style="border-color:#bf3d7a;"></span>Événements 🎉</div>
         <div class="cleg-item"><span class="cleg-dashed" style="border-color:rgba(140,136,130,0.55);"></span>Période préc.</div>
       </div>
-      <div class="chart-h160" style="margin-bottom:28px;"><canvas id="ca1Chart"></canvas></div>
+      <div class="chart-h160" style="margin-bottom:20px;"><canvas id="ca1Chart"></canvas></div>
       <!-- Clients vs Événements -->
       <div class="section-sep">Clients &amp; Événements</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px;">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
         <div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:14px 16px;display:flex;align-items:center;gap:14px;">
           <div style="font-size:26px;line-height:1;flex-shrink:0;">🍽️</div>
           <div>
@@ -386,8 +393,6 @@ footer { max-width: 1040px; margin: 32px auto 0; padding-top: 20px; border-top: 
           </div>
         </div>
       </div>
-      <div class="section-sep">CA net · historique 6 semaines</div>
-      <div class="chart-h160"><canvas id="caHistChart"></canvas></div>
     </div>
   </div>
 
@@ -497,13 +502,56 @@ footer { max-width: 1040px; margin: 32px auto 0; padding-top: 20px; border-top: 
 
 </div><!-- /ca -->
 
+<!-- ══════════════════════════════════════════ ONGLET : OPÉRATIONS -->
+<div id="operations" class="view">
+
+  <!-- BLOC RH -->
+  <div class="card" id="bloc-rh">
+    <div class="card-header">
+      <div class="card-num">1</div>
+      <span class="card-title">RH · productivité (CA / heure travaillée)</span>
+      <span class="card-src">Skello + Lightspeed</span>
+    </div>
+    <div class="card-body">
+      <div class="kpi-strip" style="margin-bottom:16px;">
+        <div class="kpi-cell">
+          <div class="kpi-n" data-n="1">Heures travaillées</div>
+          <div class="kpi-cell-val" id="rh-h-tot">—</div>
+          <div style="margin-top:4px;font-size:10px;color:var(--muted);" id="rh-h-sub">—</div>
+        </div>
+        <div class="kpi-cell">
+          <div class="kpi-n" data-n="2">CA / h · total</div>
+          <div class="kpi-cell-val" id="rh-cah-tot">—</div>
+        </div>
+        <div class="kpi-cell">
+          <div class="kpi-n" data-n="3">CA / h · salle</div>
+          <div class="kpi-cell-val" id="rh-cah-salle">—</div>
+        </div>
+        <div class="kpi-cell">
+          <div class="kpi-n" data-n="4">CA / h · cuisine</div>
+          <div class="kpi-cell-val" id="rh-cah-cuisine">—</div>
+        </div>
+      </div>
+      <div class="section-sep">CA / heure travaillée · par jour</div>
+      <div class="cleg">
+        <div class="cleg-item"><span class="cleg-line" style="background:#8B1A1A;height:2.5px;"></span>Total</div>
+        <div class="cleg-item"><span class="cleg-dashed" style="border-color:#C8963C;"></span>Salle</div>
+        <div class="cleg-item"><span class="cleg-dashed" style="border-color:#bf3d7a;"></span>Cuisine</div>
+      </div>
+      <div class="chart-h160" style="margin-bottom:8px;"><canvas id="rhDayChart"></canvas></div>
+      <div class="section-sep">CA / heure travaillée · total · 6 dernières semaines</div>
+      <div class="chart-h120"><canvas id="rhWeekChart"></canvas></div>
+      <div style="font-size:11px;color:var(--muted);margin-top:16px;padding-top:12px;border-top:1px solid var(--border);">Le bloc Annulations / Rabais / Offerts sera ajouté ici (données à venir).</div>
+    </div>
+  </div>
+
+</div><!-- /operations -->
+
 <footer>
   <span id="footer-lbl">Rosario · Dashboard · S13 · 23–29 mars 2026</span>
   <div class="src-list">
     <span class="src-i"><span class="src-dot"></span>Lightspeed (réel)</span>
-    <span class="src-i"><span class="src-dot mock"></span>Zenchef (à connecter)</span>
     <span class="src-i"><span class="src-dot mock"></span>Skello (à connecter)</span>
-    <span class="src-i"><span class="src-dot mock"></span>Pennylane (à connecter)</span>
     <span class="src-i"><span class="src-dot"></span>Google (avis)</span>
   </div>
 </footer>
@@ -520,7 +568,6 @@ footer { max-width: 1040px; margin: 32px auto 0; padding-top: 20px; border-top: 
 const SHEET_ID = '1IKHeZaPg2Hc-XExx_namZzH9ylIoUAmPjr3QtnShT2Q';
 const CSV_BASE = 'https://docs.google.com/spreadsheets/d/' + SHEET_ID + '/gviz/tq?tqx=out:csv&sheet=';
 
-// Fetch CSV and parse to array of objects
 async function fetchSheet(tabName) {
   const url = CSV_BASE + encodeURIComponent(tabName);
   const r = await fetch(url);
@@ -550,12 +597,10 @@ function parseCSVLine(line) {
 
 function n(v) { return parseFloat(String(v).replace(',','.')) || 0; }
 
-// ── Grouper les lignes par semaine ISO (lun→dim) ──
 function getWeekKey(dateStr) {
-  // dateStr = "20260613"
   const y = +dateStr.slice(0,4), m = +dateStr.slice(4,6)-1, d = +dateStr.slice(6,8);
   const dt = new Date(y, m, d);
-  const day = dt.getDay() || 7; // 1=lun, 7=dim
+  const day = dt.getDay() || 7;
   const monday = new Date(dt); monday.setDate(dt.getDate() - day + 1);
   const yy = monday.getFullYear();
   const start = new Date(yy, 0, 1);
@@ -564,24 +609,35 @@ function getWeekKey(dateStr) {
 }
 
 function weekLabel(rows) {
-  // rows = array of KPI rows for a week
   const dates = rows.map(r => r['Date']).sort();
   const first = dates[0], last = dates[dates.length-1];
   const fmt = s => s.slice(6,8)+'/'+s.slice(4,6);
   return fmt(first) + ' – ' + fmt(last);
 }
 
-// ── Construction des structures WEEKS / METRICS depuis le Sheet ──
 async function loadLiveData() {
   try {
     console.log('🔄 Chargement données...');
     const PRIV_URL = 'https://docs.google.com/spreadsheets/d/1lwaRa3K_VjiZbN6uhCv86VUl7gJ0prmsXaF-v1c66pI/gviz/tq?tqx=out:csv&sheet=Privatisations';
-    const [kpiRows, top10Rows, privRaw] = await Promise.all([
+    const [kpiRows, top10Rows, privRaw, hoursRows] = await Promise.all([
       fetchSheet('KPI_Journaliers'),
       fetchSheet('Top10_Journaliers'),
       fetch(PRIV_URL).then(r => r.text()).catch(() => ''),
+      fetchSheet('Heures_RH').catch(() => []),
     ]);
-    console.log('📊 KPI:', kpiRows.length, 'jours · Top10:', top10Rows.length, ' · Priv raw:', privRaw.length, 'chars');
+
+    // Heures RH par jour et par équipe (alimenté par le script Skello)
+    const hoursByDay = {};
+    (hoursRows || []).forEach(r => {
+      const d = String(r['Date'] || '').replace(/\D/g,'');
+      if (d.length !== 8) return;
+      const eq = String(r['Equipe'] || r['Équipe'] || '').toLowerCase();
+      const h = n(r['Heures']);
+      if (!hoursByDay[d]) hoursByDay[d] = { salle: 0, cuisine: 0 };
+      if (eq.includes('cuis')) hoursByDay[d].cuisine += h;
+      else if (eq.includes('salle')) hoursByDay[d].salle += h;
+    });
+    window.LIVE_HOURS = hoursByDay;
 
     // Parser le CSV privatisations
     const privRows = [];
@@ -597,21 +653,16 @@ async function loadLiveData() {
       lines.slice(1).forEach(line => {
         const vals = parseCSVLine(line);
         const statut = (vals[iStatut] || '').toLowerCase();
-        // Ne garder que les privatisations confirmées (colonne Statut)
         if (!statut.includes('confirm')) return;
-        // Exclure les lignes avec "Lightspeed" en colonne L (Extras LS = index 11)
         const extrasLS = (vals[11] || '').toLowerCase().trim();
         if (extrasLS === 'lightspeed') return;
         const dateStr = vals[iDate] || '';
         let dateKey = '';
-        // Format DD/MM/YYYY
         if (dateStr.match(/\d{1,2}\/\d{1,2}\/\d{4}/)) {
           const [d,m,y] = dateStr.split('/');
           dateKey = y + m.padStart(2,'0') + d.padStart(2,'0');
-        // Format YYYY-MM-DD
         } else if (dateStr.match(/\d{4}-\d{2}-\d{2}/)) {
           dateKey = dateStr.replace(/-/g,'');
-        // Format "27-nov." ou "27-nov" ou "27-Nov."
         } else if (dateStr.match(/\d{1,2}[-\s](\w+)\.?/)) {
           const MONTHS = {jan:1,fév:2,feb:2,mar:3,avr:4,apr:4,mai:5,may:5,jun:6,jui:6,jul:7,aoû:8,aug:8,sep:9,oct:10,nov:11,déc:12,dec:12};
           const parts = dateStr.toLowerCase().replace('.','').split(/[-\s]/);
@@ -632,11 +683,9 @@ async function loadLiveData() {
         if (!total) return;
         privRows.push({ date: dateKey, cuisine, alcool, total, pax });
       });
-      console.log('✅ Privatisations confirmées parsées:', privRows.length, 'lignes valides');
     }
 
-    // Ne conserver que les événements déjà passés.
-    // Référence : dernier jour de données réelles (Lightspeed), borné par la date du jour.
+    // Ne conserver que les événements déjà passés
     const today = new Date();
     const todayKey = '' + today.getFullYear() + String(today.getMonth()+1).padStart(2,'0') + String(today.getDate()).padStart(2,'0');
     const lastDataKey = kpiRows.length ? kpiRows.map(r => String(r['Date']||'')).filter(d => d.length === 8).sort().slice(-1)[0] : '';
@@ -644,7 +693,6 @@ async function loadLiveData() {
     const privPast = privRows.filter(r => r.date <= cutoffKey);
     window.LIVE_PRIV_ROWS = privPast;
 
-    // Agréger par semaine
     const privByWeek = {};
     privPast.forEach(r => {
       const wk = getWeekKey(r.date);
@@ -656,7 +704,6 @@ async function loadLiveData() {
     });
     window.LIVE_PRIV_BY_WEEK = privByWeek;
 
-    // Agréger par mois (pour la vue mensuelle)
     const privByMonth = {};
     privPast.forEach(r => {
       const mk = r.date.slice(0,4) + '-' + r.date.slice(4,6);
@@ -666,19 +713,16 @@ async function loadLiveData() {
     });
     window.LIVE_PRIV_BY_MONTH = privByMonth;
 
-    if (!kpiRows.length) { console.log('Sheet vide, données fictives conservées'); return; }
+    if (!kpiRows.length) { console.log('Sheet vide'); return; }
 
-    // Groupe par semaine
     const byWeek = {};
     kpiRows.forEach(row => {
       const wk = getWeekKey(row['Date']);
       if (!byWeek[wk]) byWeek[wk] = [];
       byWeek[wk].push(row);
     });
-
     const weekKeys = Object.keys(byWeek).sort();
 
-    // Rebuild WEEKS array
     const liveWEEKS = weekKeys.map((wk, i) => {
       const rows = byWeek[wk];
       const ca = rows.reduce((s,r) => s + n(r['CA_Net_Total']), 0);
@@ -688,7 +732,6 @@ async function loadLiveData() {
       return { key: wk, lbl: wk + ' · ' + weekLabel(rows), ca: Math.round(ca + privWkCa), prev_ca: Math.round(prev_ca_week || 0) || null };
     });
 
-    // Rebuild METRICS_W
     const liveMETRICS_W = weekKeys.map(wk => {
       const rows = byWeek[wk];
       const sum = (col) => rows.reduce((s,r) => s + n(r[col]), 0);
@@ -712,7 +755,6 @@ async function loadLiveData() {
       };
     });
 
-    // Rebuild day-by-day for current week (last week in data)
     const lastWk = weekKeys[weekKeys.length - 1];
     const lastWkRows = byWeek[lastWk].sort((a,b) => a['Date'].localeCompare(b['Date']));
     const DAY_NAMES = ['Dim','Lun','Mar','Mer','Jeu','Ven','Sam'];
@@ -722,7 +764,6 @@ async function loadLiveData() {
       return { lbl: DAY_NAMES[dt.getDay()] + ' ' + d.slice(6,8), total: n(row['CA_Net_Total']), date: d };
     });
 
-    // Top10 de la semaine courante, agrégé par article
     const foodAgg = {}, boissAgg = {};
     top10Rows.filter(r => byWeek[lastWk]?.some(kr => kr['Date'] === r['Date'])).forEach(r => {
       const key = r['Article'], ca = n(r['CA']), qty = n(r['Quantite']);
@@ -734,31 +775,22 @@ async function loadLiveData() {
         boissAgg[key].ca += ca; boissAgg[key].qty += qty;
       }
     });
-    const liveTop10Food  = Object.values(foodAgg).sort((a,b)=>b.ca-a.ca).slice(0,10);
-    const liveTop10Bois  = Object.values(boissAgg).sort((a,b)=>b.ca-a.ca).slice(0,10);
+    const liveTop10Food = Object.values(foodAgg).sort((a,b)=>b.ca-a.ca).slice(0,10);
+    const liveTop10Bois = Object.values(boissAgg).sort((a,b)=>b.ca-a.ca).slice(0,10);
 
-    // ── Override des structures globales ──
-    WEEKS.length = 0;
-    liveWEEKS.forEach(w => WEEKS.push(w));
+    WEEKS.length = 0;     liveWEEKS.forEach(w => WEEKS.push(w));
+    METRICS_W.length = 0; liveMETRICS_W.forEach(m => METRICS_W.push(m));
 
-    METRICS_W.length = 0;
-    liveMETRICS_W.forEach(m => METRICS_W.push(m));
-
-    // ── Rebuild MONTHS par mois calendaire ──
     const byMonth = {};
     kpiRows.forEach(row => {
       const d = String(row['Date'] || '');
       if (d.length < 6) return;
-      const mk = d.slice(0,4) + '-' + d.slice(4,6); // "2026-02"
+      const mk = d.slice(0,4) + '-' + d.slice(4,6);
       if (!byMonth[mk]) byMonth[mk] = [];
       byMonth[mk].push(row);
     });
     const monthKeys = Object.keys(byMonth).sort();
-    const liveMonthNames = {
-      '01':'Janvier','02':'Février','03':'Mars','04':'Avril','05':'Mai',
-      '06':'Juin','07':'Juillet','08':'Août','09':'Septembre',
-      '10':'Octobre','11':'Novembre','12':'Décembre'
-    };
+    const liveMonthNames = {'01':'Janvier','02':'Février','03':'Mars','04':'Avril','05':'Mai','06':'Juin','07':'Juillet','08':'Août','09':'Septembre','10':'Octobre','11':'Novembre','12':'Décembre'};
     const liveMONTHS = monthKeys.map((mk, i) => {
       const rows = byMonth[mk];
       const ca = rows.reduce((s,r) => s + n(r['CA_Net_Total']), 0);
@@ -768,8 +800,6 @@ async function loadLiveData() {
       const [y, m] = mk.split('-');
       return { key: mk, lbl: liveMonthNames[m] + ' ' + y, ca: Math.round(ca + privMoCa), prev_ca: prev_ca ? Math.round(prev_ca) : null };
     });
-
-    // Rebuild METRICS_M par mois
     const liveMETRICS_M = monthKeys.map(mk => {
       const rows = byMonth[mk];
       const sum = (col) => rows.reduce((s,r) => s + n(r[col]), 0);
@@ -792,29 +822,20 @@ async function loadLiveData() {
         tktBoissons: cov > 0 ? +(sum('CA_Boissons_HT') / cov).toFixed(2) : 0,
       };
     });
+    MONTHS.length = 0;    liveMONTHS.forEach(m => MONTHS.push(m));
+    METRICS_M.length = 0; liveMETRICS_M.forEach(m => METRICS_M.push(m));
 
-    MONTHS.length = 0;
-    liveMONTHS.forEach(m => MONTHS.push(m));
-    METRICS_M.length = 0;
-    liveMETRICS_M.forEach(m => METRICS_M.push(m));
+    S13.length = 0; liveCURRENT.forEach(d => S13.push(d));
 
-    // Override S13 (semaine courante, jour par jour)
-    S13.length = 0;
-    liveCURRENT.forEach(d => S13.push(d));
-
-    // Stocke les données détaillées pour renderPeriod
     window.LIVE_BY_WEEK = byWeek;
     window.LIVE_BY_MONTH = byMonth;
 
-    // Rafraîchit l'affichage
     idx = WEEKS.length - 1;
     renderPeriod();
     updateTop10UI(liveTop10Food, liveTop10Bois);
 
-    // Masque le loader
     const loader = document.getElementById('loader');
     if (loader) loader.style.display = 'none';
-
     console.log('✅ Données live chargées:', liveWEEKS.length, 'semaines,', kpiRows.length, 'jours');
 
   } catch(e) {
@@ -829,46 +850,27 @@ function updateTop10UI(food, bois) {
   const boisEl = document.getElementById('top10-bev-list');
   if (foodEl && food.length) {
     foodEl.innerHTML = food.map((p,i) => `
-      <div class="plat">
-        <span class="plat-num">${i+1}</span>
-        <span class="plat-name">${p.name}</span>
-        <span class="plat-qty">${Math.round(p.qty)} vtes</span>
-        <span class="plat-ca">${Math.round(p.ca).toLocaleString('fr-FR')} €</span>
-      </div>`).join('');
+      <div class="plat"><span class="plat-num">${i+1}</span><span class="plat-name">${p.name}</span><span class="plat-qty">${Math.round(p.qty)} vtes</span><span class="plat-ca">${Math.round(p.ca).toLocaleString('fr-FR')} €</span></div>`).join('');
   }
   if (boisEl && bois.length) {
     boisEl.innerHTML = bois.map((p,i) => `
-      <div class="plat">
-        <span class="plat-num">${i+1}</span>
-        <span class="plat-name">${p.name}</span>
-        <span class="plat-qty">${Math.round(p.qty)} vtes</span>
-        <span class="plat-ca">${Math.round(p.ca).toLocaleString('fr-FR')} €</span>
-      </div>`).join('');
+      <div class="plat"><span class="plat-num">${i+1}</span><span class="plat-name">${p.name}</span><span class="plat-qty">${Math.round(p.qty)} vtes</span><span class="plat-ca">${Math.round(p.ca).toLocaleString('fr-FR')} €</span></div>`).join('');
   }
-
-  // Cartouches KPI strip (top 3)
   const kpiFood = document.getElementById('kpi-top-food');
   if (kpiFood && food.length) {
     const styles = ['font-weight:500;color:var(--text)', 'color:var(--text)', 'color:var(--muted)'];
-    kpiFood.innerHTML = food.slice(0,3).map((p,i) =>
-      `<div style="font-size:11px;${styles[i]}">${i+1}. ${p.name}</div>`
-    ).join('');
+    kpiFood.innerHTML = food.slice(0,3).map((p,i) => `<div style="font-size:11px;${styles[i]}">${i+1}. ${p.name}</div>`).join('');
   }
   const kpiBois = document.getElementById('kpi-top-bois');
   if (kpiBois && bois.length) {
     const styles = ['font-weight:500;color:var(--text)', 'color:var(--text)', 'color:var(--muted)'];
-    kpiBois.innerHTML = bois.slice(0,3).map((p,i) =>
-      `<div style="font-size:11px;${styles[i]}">${i+1}. ${p.name}</div>`
-    ).join('');
+    kpiBois.innerHTML = bois.slice(0,3).map((p,i) => `<div style="font-size:11px;${styles[i]}">${i+1}. ${p.name}</div>`).join('');
   }
 }
 
 // ── Note Google ──
-// Note actuelle recalculée sur tous les avis (onglet Note_Jour, fallback Google_Rating) ;
-// graphes "par jour" (semaine complète) et "hebdo pondéré" depuis Note_Jour.
 async function loadGoogleRating() {
   try {
-    // Note globale officielle (fallback) + nombre d'avis
     let officialNote = 0, officialReviews = 0;
     const rows = await fetchSheet('Google_Rating').catch(() => []);
     if (rows.length) {
@@ -877,7 +879,6 @@ async function loadGoogleRating() {
       officialNote    = parseFloat(String(last['Rating'] || last['rating'] || '0').replace(',','.')) || 0;
     }
 
-    // Avis détaillés depuis Note_Jour
     let jour = [];
     try { jour = await fetchSheet('Note_Jour'); } catch(e) { console.log('Onglet Note_Jour absent'); }
     const recs = (jour || []).map(r => {
@@ -889,17 +890,35 @@ async function loadGoogleRating() {
       };
     }).filter(x => x.d.length === 8 && x.nb > 0);
 
-    // ── Note actuelle : recalculée sur tous les avis (2 décimales) ──
+    // ── Note actuelle : moyenne cumulée de tous les avis (2 décimales) ──
     if (recs.length) {
       const totalNb = recs.reduce((s,x)=>s+x.nb,0);
       const avgAll  = totalNb > 0 ? +(recs.reduce((s,x)=>s+x.note*x.nb,0)/totalNb).toFixed(2) : officialNote;
       updateGoogleUI(avgAll, officialReviews || totalNb);
+
+      // Évolution vs semaine précédente : note cumulée fin de cette semaine vs fin de semaine d'avant
+      const currWkKey = WEEKS.length ? WEEKS[WEEKS.length-1].key : getWeekKey(recs[recs.length-1].d);
+      const prevRecs = recs.filter(x => getWeekKey(x.d) < currWkKey);
+      const kdG = document.getElementById('kd-google');
+      if (kdG) {
+        if (prevRecs.length) {
+          const nbP = prevRecs.reduce((s,x)=>s+x.nb,0);
+          const cumPrev = nbP > 0 ? prevRecs.reduce((s,x)=>s+x.note*x.nb,0)/nbP : 0;
+          const delta = avgAll - cumPrev;
+          const abs = Math.abs(delta).toFixed(2).replace('.', ',');
+          kdG.textContent = (delta >= 0 ? '▲ +' : '▼ ') + abs + ' pts vs S préc.';
+          kdG.className = 'kpi-cell-delta ' + (delta >= 0 ? 'up' : 'dn');
+        } else {
+          kdG.textContent = '—';
+          kdG.className = 'kpi-cell-delta neu';
+        }
+      }
     } else {
       if (officialNote > 0) updateGoogleUI(officialNote, officialReviews);
-      return; // pas de détail Note_Jour → graphes vides
+      return;
     }
 
-    // ── Graphe 1 : note par jour · semaine complète (lun→dim, jours sans avis laissés vides) ──
+    // ── Graphe 1 : note par jour · semaine complète ──
     const currWk = WEEKS.length > 0 ? WEEKS[WEEKS.length-1] : null;
     if (currWk) {
       const DN = ['Dim','Lun','Mar','Mer','Jeu','Ven','Sam'];
@@ -912,9 +931,9 @@ async function loadGoogleRating() {
         const recByDay = {}; recs.forEach(x => recByDay[x.d] = x);
         const labels = [], notes = [], counts = [];
         for (let i = 0; i < 7; i++) {
-          const d = new Date(monday); d.setDate(monday.getDate() + i);
-          const key = '' + d.getFullYear() + String(d.getMonth()+1).padStart(2,'0') + String(d.getDate()).padStart(2,'0');
-          labels.push(DN[d.getDay()] + ' ' + String(d.getDate()).padStart(2,'0'));
+          const dd = new Date(monday); dd.setDate(monday.getDate() + i);
+          const key = '' + dd.getFullYear() + String(dd.getMonth()+1).padStart(2,'0') + String(dd.getDate()).padStart(2,'0');
+          labels.push(DN[dd.getDay()] + ' ' + String(dd.getDate()).padStart(2,'0'));
           notes.push(recByDay[key] ? recByDay[key].note : null);
           counts.push(recByDay[key] ? recByDay[key].nb : null);
         }
@@ -922,13 +941,14 @@ async function loadGoogleRating() {
       }
     }
 
-    // ── Graphe 2 : moyenne hebdomadaire pondérée · 6 dernières semaines ──
+    // ── Graphe 2 : moyenne hebdo pondérée · 6 dernières semaines (note + nb avis) ──
     const byWk = {};
     recs.forEach(x => { const wk = getWeekKey(x.d); if (!byWk[wk]) byWk[wk] = { sum:0, nb:0 }; byWk[wk].sum += x.note*x.nb; byWk[wk].nb += x.nb; });
     const wkKeys = Object.keys(byWk).sort().slice(-6);
     const wkLbls = wkKeys.map(k => 'S' + k.slice(-2));
     const wkAvgs = wkKeys.map(k => byWk[k].nb > 0 ? +(byWk[k].sum / byWk[k].nb).toFixed(2) : null);
-    updateGoogleChart(wkLbls, wkAvgs);
+    const wkCnts = wkKeys.map(k => byWk[k].nb);
+    updateGoogleChart(wkLbls, wkAvgs, wkCnts);
 
   } catch(e) {
     console.warn('Note Google non disponible:', e.message);
@@ -945,7 +965,6 @@ function updateGoogleUI(note, reviews) {
   if (countEl) countEl.textContent = reviews.toLocaleString('fr-FR') + ' avis';
   if (countDetailEl) countDetailEl.textContent = reviews.toLocaleString('fr-FR') + ' avis';
   if (kvEl)    kvEl.innerHTML       = noteStr + ' <span style="color:#f9c74f;">★</span>';
-
   const starsEl = document.getElementById('google-stars');
   if (starsEl) {
     starsEl.innerHTML = [1,2,3,4,5].map(i => {
@@ -956,15 +975,16 @@ function updateGoogleUI(note, reviews) {
   }
 }
 
-// Graphe hebdomadaire (moyenne pondérée) — ligne
-function updateGoogleChart(labels, notes) {
+// Graphe hebdo — note (ligne) + nb avis (barres)
+function updateGoogleChart(labels, notes, counts) {
   if (!googleChart || !labels.length) return;
   googleChart.data.labels = labels;
   googleChart.data.datasets[0].data = notes;
+  googleChart.data.datasets[1].data = counts;
   googleChart.update();
 }
 
-// Graphe par jour — note (ligne) + nombre d'avis (barres)
+// Graphe par jour — note (ligne) + nb avis (barres)
 function updateGoogleDayChart(labels, notes, counts) {
   if (!googleDayChart || !labels.length) return;
   googleDayChart.data.labels = labels;
@@ -973,16 +993,14 @@ function updateGoogleDayChart(labels, notes, counts) {
   googleDayChart.update();
 }
 
-// Lance le chargement après initialisation des graphes
 window.addEventListener('load', () => {
   setTimeout(loadLiveData, 300);
   setTimeout(loadGoogleRating, 600);
 });
 
 
-/* ════════════ DONNÉES — vides au départ, remplies par loadLiveData() ════════════ */
-
-let S13 = [];          // semaine courante, jour par jour
+/* ════════════ DONNÉES — vides au départ ════════════ */
+let S13 = [];
 let WEEKS    = [];
 let MONTHS   = [];
 let METRICS_W = [];
@@ -990,12 +1008,12 @@ let METRICS_M = [];
 
 /* ════════════ INITIALISATIONS GRAPHES ════════════ */
 
-// ── Plugin : libellés de valeur au-dessus des points/barres ──
 const rosarioBarPlugin = {
   id: 'rosarioBar',
   afterDatasetsDraw(chart) {
     const { ctx, data } = chart;
     if (!data.labels || data.labels.length < 2) return;
+    const cid = chart.canvas?.id;
 
     ctx.save();
     ctx.font = '600 10px Sora, sans-serif';
@@ -1004,29 +1022,28 @@ const rosarioBarPlugin = {
     ctx.fillStyle = '#1a1916';
 
     // Graphe comparatif : ticket moyen au-dessus de chaque barre
-    if (chart.canvas?.id === 'cmpChart') {
+    if (cid === 'cmpChart') {
       data.datasets.forEach((ds, di) => {
         const meta = chart.getDatasetMeta(di);
         if (meta.hidden) return;
         ds.data.forEach((val, i) => {
           if (!val) return;
-          const pt = meta.data[i];
-          if (!pt) return;
+          const pt = meta.data[i]; if (!pt) return;
           ctx.fillText(val.toFixed(1) + ' €', pt.x, pt.y - 6);
         });
       });
-      ctx.restore();
-      return;
+      ctx.restore(); return;
     }
 
-    // Graphe Note par jour : note au-dessus des points, nb d'avis au centre des barres
-    if (chart.canvas?.id === 'googleDayChart') {
+    // Graphes Note Google (par jour & hebdo) : note au-dessus des points, nb d'avis dans la barre
+    if (cid === 'googleDayChart' || cid === 'googleChart') {
+      const dec = cid === 'googleChart' ? 2 : 1;
       const noteMeta = chart.getDatasetMeta(0);
       ctx.textBaseline = 'bottom'; ctx.fillStyle = '#1a1916';
       data.datasets[0].data.forEach((val, i) => {
         if (val == null) return;
         const pt = noteMeta.data[i]; if (!pt) return;
-        ctx.fillText(Number(val).toFixed(1).replace('.', ','), pt.x, pt.y - 8);
+        ctx.fillText(Number(val).toFixed(dec).replace('.', ','), pt.x, pt.y - 8);
       });
       const barMeta = chart.getDatasetMeta(1);
       ctx.textBaseline = 'middle'; ctx.fillStyle = '#8B1A1A';
@@ -1035,26 +1052,19 @@ const rosarioBarPlugin = {
         const bar = barMeta.data[i]; if (!bar) return;
         ctx.fillText(String(val), bar.x, (bar.y + bar.base) / 2);
       });
-      ctx.restore();
-      return;
+      ctx.restore(); return;
     }
 
-    // Format selon le type de graphe
-    const cid    = chart.canvas?.id;
-    const isCov  = cid === 'covChart';
-    const isNote = cid === 'googleChart' || cid === 'googleDayChart';
-    const fmt = v => isNote
-      ? v.toFixed(2).replace('.', ',')
-      : isCov
+    // Format générique
+    const isCov = cid === 'covChart';
+    const fmt = v => isCov
       ? (v >= 1000 ? (v/1000).toFixed(1)+'k' : Math.round(v).toString())
       : (v >= 1000 ? (v/1000).toFixed(1)+'k €' : Math.round(v)+' €');
 
-    // Dataset "Note" si présent (graphes Google), sinon "Total", sinon index 0
     let mainIdx = 0;
     data.datasets.forEach((ds, i) => { if (ds.label === 'Total' || ds.label === 'Note') mainIdx = i; });
     const mainDs   = data.datasets[mainIdx];
     const mainMeta = chart.getDatasetMeta(mainIdx);
-
     for (let i = 0; i < data.labels.length; i++) {
       const val = mainDs?.data[i];
       if (!val) continue;
@@ -1062,7 +1072,6 @@ const rosarioBarPlugin = {
       if (!pt) continue;
       ctx.fillText(fmt(val), pt.x, pt.y - 10);
     }
-
     ctx.restore();
   }
 };
@@ -1074,13 +1083,9 @@ function makeChart(id, type, datasets, opts) {
   return new Chart(el, {
     type,
     data: { labels: [], datasets },
-    options: { responsive: true, maintainAspectRatio: false,
-      barPercentage: 0.55,
-      categoryPercentage: 0.7,
+    options: { responsive: true, maintainAspectRatio: false, barPercentage: 0.55, categoryPercentage: 0.7,
       layout: { padding: { top: 28 } },
-      plugins: { legend: { display: false },
-        tooltip: { backgroundColor:'#fff', borderColor:'#e4e1d9', borderWidth:1,
-          titleColor:'#1a1916', bodyColor:'#8a8680', padding:10 } },
+      plugins: { legend: { display: false }, tooltip: { backgroundColor:'#fff', borderColor:'#e4e1d9', borderWidth:1, titleColor:'#1a1916', bodyColor:'#8a8680', padding:10 } },
       ...opts }
   });
 }
@@ -1100,24 +1105,17 @@ const dayChart = new Chart(document.getElementById('dayChart'), {
     { label:'Mensuel', type:'bar',  backgroundColor:[], borderColor:'#8B1A1A', borderWidth:1, borderRadius:4, hidden:true, order:2, data:[] },
   ]},
   options:{ responsive:true, maintainAspectRatio:false, barPercentage:0.55, categoryPercentage:0.7, layout:{padding:{top:28}}, interaction:{mode:'index',intersect:false},
-    plugins:{ legend:{display:false}, tooltip:{ backgroundColor:'#fff', borderColor:'#e4e1d9', borderWidth:1, titleColor:'#1a1916', bodyColor:'#8a8680', padding:10,
-      callbacks:{label:c=>`  ${c.dataset.label} : ${Math.round(c.parsed.y).toLocaleString('fr-FR')} €`} } },
+    plugins:{ legend:{display:false}, tooltip:{ backgroundColor:'#fff', borderColor:'#e4e1d9', borderWidth:1, titleColor:'#1a1916', bodyColor:'#8a8680', padding:10, callbacks:{label:c=>`  ${c.dataset.label} : ${Math.round(c.parsed.y).toLocaleString('fr-FR')} €`} } },
     scales:{ x:{offset:true,grid:{display:false},ticks:{font:{family:'Sora',size:10}}}, y:{grid:{color:'rgba(0,0,0,.05)'},ticks:{font:{family:'Sora',size:10},callback:v=>Math.round(v/1000)+'k€'}} } }
 });
 
 const tktChart   = makeChart('tktChart', 'bar',
   [{label:'Ticket moyen',data:[],backgroundColor:'rgba(139,26,26,0.75)',borderRadius:4,borderSkipped:false}],
-  { ...barOpts(v=>v.toFixed(1)+' €'), scales:{ x:{grid:{display:false},ticks:{font:{family:'Sora',size:10}}}, y:{min:0,grid:{color:'rgba(0,0,0,.05)'},ticks:{font:{family:'Sora',size:10},callback:v=>v.toFixed(0)+' €'}} } }
-);
+  { ...barOpts(v=>v.toFixed(1)+' €'), scales:{ x:{grid:{display:false},ticks:{font:{family:'Sora',size:10}}}, y:{min:0,grid:{color:'rgba(0,0,0,.05)'},ticks:{font:{family:'Sora',size:10},callback:v=>v.toFixed(0)+' €'}} } });
 
-const histChart  = makeChart('histChart','bar', [{label:'CA net',data:[],backgroundColor:'rgba(139,26,26,0.75)',borderRadius:4}],
-  barOpts(v=>(v/1000).toFixed(0)+'k €'));
-
-const caHistChart= makeChart('caHistChart','bar',[{label:'CA net',data:[],backgroundColor:'rgba(139,26,26,0.75)',borderRadius:4}],
-  barOpts(v=>(v/1000).toFixed(0)+'k €'));
-
-const covChart   = makeChart('covChart','bar',[{label:'Couverts',data:[],backgroundColor:'rgba(139,26,26,0.55)',borderRadius:4}],
-  barOpts(v=>v.toString()));
+const histChart  = makeChart('histChart','bar', [{label:'CA net',data:[],backgroundColor:'rgba(139,26,26,0.75)',borderRadius:4}], barOpts(v=>(v/1000).toFixed(0)+'k €'));
+const caHistChart= makeChart('caHistChart','bar',[{label:'CA net',data:[],backgroundColor:'rgba(139,26,26,0.75)',borderRadius:4}], barOpts(v=>(v/1000).toFixed(0)+'k €'));
+const covChart   = makeChart('covChart','bar',[{label:'Couverts',data:[],backgroundColor:'rgba(139,26,26,0.55)',borderRadius:4}], barOpts(v=>v.toString()));
 
 const ca1Chart   = new Chart(document.getElementById('ca1Chart'), {
   type:'line',
@@ -1141,28 +1139,53 @@ const cmpChart = makeChart('cmpChart','bar',
   [{label:'A',data:[],backgroundColor:'rgba(139,26,26,0.75)',borderRadius:3,borderSkipped:false},{label:'B',data:[],backgroundColor:'rgba(200,150,60,0.75)',borderRadius:3,borderSkipped:false}],
   { scales:{ x:{grid:{display:false},ticks:{font:{family:'Sora',size:10}}}, y:{min:0,grid:{color:'rgba(0,0,0,.05)'},ticks:{font:{family:'Sora',size:10},callback:v=>v.toFixed(0)+' €'}} } });
 
-// Graphe Note hebdomadaire (moyenne pondérée) — ligne
-const googleChart= makeChart('googleChart','line',
-  [{label:'Note Google',data:[],borderColor:'#f9c74f',borderWidth:2,pointBackgroundColor:'#f9c74f',pointRadius:3,tension:0.35,fill:true,backgroundColor:'rgba(249,199,79,0.08)'}],
-  {scales:{x:{grid:{display:false},ticks:{font:{family:'Sora',size:9}}},y:{min:3.5,max:5,grid:{color:'rgba(0,0,0,.05)'},ticks:{font:{family:'Sora',size:9},callback:v=>v.toFixed(1)}}}});
+// Note hebdo — combo (note ligne + nb avis barres)
+const googleChart = new Chart(document.getElementById('googleChart'), {
+  type:'bar',
+  data:{ labels:[], datasets:[
+    { label:'Note', type:'line', yAxisID:'y', data:[], borderColor:'#f9c74f', borderWidth:2, pointBackgroundColor:'#f9c74f', pointRadius:3.5, tension:0.35, fill:false, spanGaps:false, order:0 },
+    { label:'Nb avis', type:'bar', yAxisID:'y1', data:[], backgroundColor:'rgba(139,26,26,0.25)', borderRadius:3, order:1 },
+  ]},
+  options:{ responsive:true, maintainAspectRatio:false, layout:{padding:{top:20}}, interaction:{mode:'index',intersect:false}, barPercentage:0.55, categoryPercentage:0.7,
+    plugins:{ legend:{display:false}, tooltip:{ backgroundColor:'#fff', borderColor:'#e4e1d9', borderWidth:1, titleColor:'#1a1916', bodyColor:'#8a8680', padding:10,
+      callbacks:{ label:c => c.dataset.label === 'Note' ? '  Note : ' + Number(c.parsed.y).toFixed(2).replace('.',',') : '  Avis : ' + c.parsed.y } } },
+    scales:{ x:{grid:{display:false},ticks:{font:{family:'Sora',size:9}}},
+      y:{position:'left',min:3.5,max:5,grid:{color:'rgba(0,0,0,.05)'},ticks:{font:{family:'Sora',size:9},callback:v=>v.toFixed(1)}},
+      y1:{position:'right',min:0,grid:{display:false},ticks:{font:{family:'Sora',size:9},precision:0}} } }
+});
 
-// Graphe Note par jour — note (ligne, axe gauche 3.5–5) + nb d'avis (barres étroites, axe droit)
+// Note par jour — combo (note ligne + nb avis barres, largeur normale)
 const googleDayChart = new Chart(document.getElementById('googleDayChart'), {
   type:'bar',
   data:{ labels:[], datasets:[
     { label:'Note', type:'line', yAxisID:'y', data:[], borderColor:'#f9c74f', borderWidth:2, pointBackgroundColor:'#f9c74f', pointRadius:4, tension:0.35, fill:false, spanGaps:false, order:0 },
-    { label:'Nb avis', type:'bar', yAxisID:'y1', data:[], backgroundColor:'rgba(139,26,26,0.25)', borderRadius:3, order:1, maxBarThickness:14 },
+    { label:'Nb avis', type:'bar', yAxisID:'y1', data:[], backgroundColor:'rgba(139,26,26,0.25)', borderRadius:3, order:1 },
   ]},
-  options:{ responsive:true, maintainAspectRatio:false, layout:{padding:{top:20}}, interaction:{mode:'index',intersect:false},
+  options:{ responsive:true, maintainAspectRatio:false, layout:{padding:{top:20}}, interaction:{mode:'index',intersect:false}, barPercentage:0.55, categoryPercentage:0.7,
     plugins:{ legend:{display:false}, tooltip:{ backgroundColor:'#fff', borderColor:'#e4e1d9', borderWidth:1, titleColor:'#1a1916', bodyColor:'#8a8680', padding:10,
-      callbacks:{ label:c => c.dataset.label === 'Note' ? '  Note : ' + Number(c.parsed.y).toFixed(2).replace('.',',') : '  Avis : ' + c.parsed.y } } },
-    scales:{
-      x:{grid:{display:false},ticks:{font:{family:'Sora',size:9}}},
+      callbacks:{ label:c => c.dataset.label === 'Note' ? '  Note : ' + Number(c.parsed.y).toFixed(1).replace('.',',') : '  Avis : ' + c.parsed.y } } },
+    scales:{ x:{grid:{display:false},ticks:{font:{family:'Sora',size:9}}},
       y:{position:'left',min:3.5,max:5,grid:{color:'rgba(0,0,0,.05)'},ticks:{font:{family:'Sora',size:9},callback:v=>v.toFixed(1)}},
-      y1:{position:'right',min:0,grid:{display:false},ticks:{font:{family:'Sora',size:9},precision:0}}
-    }
-  }
+      y1:{position:'right',min:0,grid:{display:false},ticks:{font:{family:'Sora',size:9},precision:0}} } }
 });
+
+// RH — CA/heure par jour (total plein, salle/cuisine pointillé)
+const rhDayChart = new Chart(document.getElementById('rhDayChart'), {
+  type:'line',
+  data:{ labels:[], datasets:[
+    { label:'CA/h total', type:'line', data:[], borderColor:'#8B1A1A', borderWidth:2.6, pointBackgroundColor:'#8B1A1A', pointRadius:3.5, tension:0.3, fill:false, spanGaps:true, order:0 },
+    { label:'Salle', type:'line', data:[], borderColor:'#C8963C', borderWidth:1.8, borderDash:[5,4], pointRadius:0, tension:0.3, fill:false, spanGaps:true, order:1 },
+    { label:'Cuisine', type:'line', data:[], borderColor:'#bf3d7a', borderWidth:1.8, borderDash:[5,4], pointRadius:0, tension:0.3, fill:false, spanGaps:true, order:1 },
+  ]},
+  options:{ responsive:true, maintainAspectRatio:false, layout:{padding:{top:28}}, interaction:{mode:'index',intersect:false},
+    plugins:{ legend:{display:false}, tooltip:{ backgroundColor:'#fff', borderColor:'#e4e1d9', borderWidth:1, titleColor:'#1a1916', bodyColor:'#8a8680', padding:10,
+      callbacks:{ label:c => '  ' + c.dataset.label + ' : ' + Math.round(c.parsed.y) + ' €' } } },
+    scales:{ x:{grid:{display:false},ticks:{font:{family:'Sora',size:10}}}, y:{grid:{color:'rgba(0,0,0,.05)'},ticks:{font:{family:'Sora',size:10},callback:v=>Math.round(v)+' €'}} } }
+});
+
+// RH — CA/heure total · 6 dernières périodes
+const rhWeekChart = makeChart('rhWeekChart','bar',
+  [{label:'CA/h',data:[],backgroundColor:'rgba(139,26,26,0.75)',borderRadius:4}], barOpts(v=>Math.round(v)+' €'));
 
 
 /* ════════════ PERIOD PICKER ════════════ */
@@ -1171,7 +1194,7 @@ function currentList() { return gran === 'week' ? WEEKS : MONTHS; }
 
 function renderPeriod() {
   const list = currentList();
-  if (!list || list.length === 0) return; // attendre les données
+  if (!list || list.length === 0) return;
   const p    = list[idx];
   const pi   = idx > 0 ? list[idx - 1] : null;
   const m    = gran === 'week' ? METRICS_W[idx] : (METRICS_M.length ? METRICS_M : METRICS_W)[idx] || METRICS_W[Math.min(idx, METRICS_W.length-1)];
@@ -1195,20 +1218,17 @@ function renderPeriod() {
   const setd = (id, txt, cls) => { s(id, txt); sc(id, 'kpi-cell-delta ' + cls); };
   const fmt  = v => Math.round(v).toLocaleString('fr-FR');
 
-  // ── NAV ──
   document.getElementById('pnav-lbl').textContent = p.lbl;
   document.getElementById('hdr-sub').textContent  = p.lbl + ' · Dashboard Rosario';
   const footerEl = document.getElementById('footer-lbl'); if (footerEl) footerEl.textContent = 'Rosario · Dashboard · ' + p.lbl;
   document.querySelectorAll('.pnav-btn')[0].style.opacity = idx === 0 ? '.3' : '1';
   document.querySelectorAll('.pnav-btn')[1].style.opacity = idx === list.length-1 ? '.3' : '1';
 
-  // ── CA Total = Lightspeed + Privatisations (semaine ou mois selon la vue) ──
   const privWkForCA = ((gran === 'week' ? window.LIVE_PRIV_BY_WEEK : window.LIVE_PRIV_BY_MONTH) || {})[p.key] || { total: 0, pax: 0 };
   const caLS     = m.caNet || p.ca;
   const caNet    = caLS + Math.round(privWkForCA.total);
   const tktTotal = m.couverts > 0 ? +(caNet / m.couverts).toFixed(2) : +((m.tktMidi||0)*0.32 + (m.tktSoir||0)*0.68).toFixed(2);
 
-  // ── KPI STRIP ──
   const caFmt = fmtPct(caNet, p.prev_ca);
   s('kv-ca',   fmt(caNet) + ' €');
   setd('kd-ca', caFmt.txt + (p.prev_ca ? ' ' + unit : ''), caFmt.cls);
@@ -1227,7 +1247,6 @@ function renderPeriod() {
   const ann  = Math.round(caNet / days * 360 / 10000) / 100;
   s('ann-val', '∼ ' + ann.toFixed(2).replace('.',',') + ' M€');
 
-  // ── BLOC Couverts & remplissage ──
   s('rk-cov',  fmt(m.couverts));
   s('rk-fill', Math.round(m.rempli) + ' %');
   setDelta('rk-cov-d',  fmtPct(m.couverts, mi?.couverts));
@@ -1237,53 +1256,41 @@ function renderPeriod() {
   s('fill-midi-val', fillMidi > 0 ? fillMidi + ' %' : '—');
   s('fill-soir-val', fillSoir > 0 ? fillSoir + ' %' : '—');
 
-  // ── GRAPHES HISTORIQUE (6 périodes) ──
   const allList    = gran === 'week' ? WEEKS : MONTHS;
   const metricsArr = gran === 'week' ? METRICS_W : (METRICS_M.length ? METRICS_M : METRICS_W);
   const histSlice  = allList.slice(Math.max(0, idx - 5), idx + 1);
   const histM      = metricsArr.slice(Math.max(0, idx - 5), idx + 1);
   const histLbls   = histSlice.map(w => w.lbl.split(' · ')[0].trim());
   const histVals   = histSlice.map(w => w.ca);
+  // Couleurs : période sélectionnée (dernière) en foncé, historique plus clair
+  const selBg = histSlice.map((_, i) => i === histSlice.length-1 ? '#8B1A1A' : 'rgba(139,26,26,0.4)');
 
-  // Événements (privatisations) par période — pour le ticket moyen Clients/Événements
   const privByPeriod = ((gran === 'week' ? window.LIVE_PRIV_BY_WEEK : window.LIVE_PRIV_BY_MONTH) || {});
   const histEvCA  = histSlice.map(w => Math.round((privByPeriod[w.key]?.total) || 0));
   const histEvPax = histSlice.map(w => (privByPeriod[w.key]?.pax) || 0);
 
-  try { // ── Mises à jour graphes (protégées) ──
-  if (histChart)   { histChart.data.labels = histLbls; histChart.data.datasets[0].data = histVals; histChart.update(); }
-  if (caHistChart) { caHistChart.data.labels = histLbls; caHistChart.data.datasets[0].data = histVals; caHistChart.update(); }
-  if (covChart)    { covChart.data.labels = histLbls.map((lbl, i) => [lbl, (histM[i]?.rempli != null ? Math.round(histM[i].rempli) + ' %' : '')]); covChart.data.datasets[0].data = histM.map(mm => mm?.couverts || 0); covChart.update(); }
+  try {
+  if (histChart)   { histChart.data.labels = histLbls; histChart.data.datasets[0].data = histVals; histChart.data.datasets[0].backgroundColor = selBg; histChart.update(); }
+  if (caHistChart) { caHistChart.data.labels = histLbls; caHistChart.data.datasets[0].data = histVals; caHistChart.data.datasets[0].backgroundColor = selBg; caHistChart.update(); }
+  if (covChart)    { covChart.data.labels = histLbls.map((lbl, i) => [lbl, (histM[i]?.rempli != null ? Math.round(histM[i].rempli) + ' %' : '')]); covChart.data.datasets[0].data = histM.map(mm => mm?.couverts || 0); covChart.data.datasets[0].backgroundColor = selBg; covChart.update(); }
 
-  // ── GRAPHE CA PAR JOUR (dayChart) ──
   if (!dayChart) { console.warn('dayChart not found'); return; }
   if (gran === 'week') {
     const prevW = idx > 0 ? WEEKS[idx-1] : null;
     const weights = [0.11, 0.13, 0.14, 0.13, 0.15, 0.22, 0.12];
     const DN = ['Dim','Lun','Mar','Mer','Jeu','Ven','Sam'];
     let labels, total;
-
     const byWeek = window.LIVE_BY_WEEK;
     const selWkKey = WEEKS[idx]?.key;
-    const selWkRows = byWeek && selWkKey && byWeek[selWkKey]
-      ? byWeek[selWkKey].sort((a,b) => a['Date'].localeCompare(b['Date']))
-      : [];
-
+    const selWkRows = byWeek && selWkKey && byWeek[selWkKey] ? byWeek[selWkKey].sort((a,b) => a['Date'].localeCompare(b['Date'])) : [];
     if (selWkRows.length > 0) {
       labels = selWkRows.map(r => { const d=r['Date']; const dt=new Date(+d.slice(0,4),+d.slice(4,6)-1,+d.slice(6,8)); return DN[dt.getDay()]+' '+d.slice(6,8); });
       total  = selWkRows.map(r => n(r['CA_Net_Total']));
-    } else {
-      labels = [p.lbl.split(' · ')[0]];
-      total  = [p.ca];
-    }
+    } else { labels = [p.lbl.split(' · ')[0]]; total = [p.ca]; }
     const prevTotal = prevW ? labels.map((_, i) => Math.round(prevW.ca * (weights[i] || 0.14))) : [];
-
     const privByDay = {};
-    (window.LIVE_PRIV_ROWS || []).forEach(r => {
-      if (selWkRows.length > 0 && selWkRows.some(sr => sr['Date'] === r.date)) privByDay[r.date] = (privByDay[r.date] || 0) + r.total;
-    });
+    (window.LIVE_PRIV_ROWS || []).forEach(r => { if (selWkRows.length > 0 && selWkRows.some(sr => sr['Date'] === r.date)) privByDay[r.date] = (privByDay[r.date] || 0) + r.total; });
     const privData = selWkRows.length > 0 ? selWkRows.map(r => privByDay[r['Date']] || 0) : labels.map(() => 0);
-
     dayChart.data.labels = labels;
     const totalWithEvents = total.map((v, i) => v + (privData[i] || 0));
     dayChart.data.datasets[0].data = totalWithEvents; dayChart.data.datasets[0].hidden = false;
@@ -1291,21 +1298,15 @@ function renderPeriod() {
     dayChart.data.datasets[2].data = privData;        dayChart.data.datasets[2].hidden = !privData.some(v=>v>0);
     dayChart.data.datasets[3].data = prevTotal;       dayChart.data.datasets[3].hidden = prevTotal.length === 0;
     dayChart.data.datasets[4].data = [];              dayChart.data.datasets[4].hidden = true;
-
     s('day-chart-title', "Chiffre d'affaires HT · par jour");
   } else {
-    // Vue mois : tous les jours du mois sélectionné
     const byMonthD = window.LIVE_BY_MONTH;
-    const moRows = byMonthD && byMonthD[p.key]
-      ? byMonthD[p.key].slice().sort((a,b) => a['Date'].localeCompare(b['Date']))
-      : [];
+    const moRows = byMonthD && byMonthD[p.key] ? byMonthD[p.key].slice().sort((a,b) => a['Date'].localeCompare(b['Date'])) : [];
     if (moRows.length > 0) {
       const labels = moRows.map(r => r['Date'].slice(6,8));
       const total  = moRows.map(r => n(r['CA_Net_Total']));
       const privByDayM = {};
-      (window.LIVE_PRIV_ROWS || []).forEach(r => {
-        if (moRows.some(sr => sr['Date'] === r.date)) privByDayM[r.date] = (privByDayM[r.date] || 0) + r.total;
-      });
+      (window.LIVE_PRIV_ROWS || []).forEach(r => { if (moRows.some(sr => sr['Date'] === r.date)) privByDayM[r.date] = (privByDayM[r.date] || 0) + r.total; });
       const privDataM = moRows.map(r => privByDayM[r['Date']] || 0);
       const totalWithEventsM = total.map((v, i) => v + (privDataM[i] || 0));
       dayChart.data.labels = labels;
@@ -1321,34 +1322,28 @@ function renderPeriod() {
       dayChart.data.labels = slice.map(mm => mm.lbl);
       [0,1,2,3].forEach(i => { dayChart.data.datasets[i].data = []; dayChart.data.datasets[i].hidden = true; });
       dayChart.data.datasets[4].data = slice.map(mm => mm.ca);
-      dayChart.data.datasets[4].backgroundColor = slice.map((_, i) => i === slice.length-1 ? '#8B1A1A' : 'rgba(139,26,26,0.25)');
+      dayChart.data.datasets[4].backgroundColor = slice.map((_, i) => i === slice.length-1 ? '#8B1A1A' : 'rgba(139,26,26,0.4)');
       dayChart.data.datasets[4].hidden = false;
       s('day-chart-title', "Chiffre d'affaires HT · 6 derniers mois");
     }
   }
   dayChart.update('active');
 
-  // ── GRAPHE TICKET MOYEN (tktChart) ──
   if (tktChart) { tktChart.data.labels = histLbls;
-    tktChart.data.datasets[0].data = histM.map(mm => {
-      const c = mm?.couverts || 0;
-      return c > 0 ? +((mm?.caNet||0)/c).toFixed(2) : 0;
-    });
+    tktChart.data.datasets[0].data = histM.map(mm => { const c = mm?.couverts || 0; return c > 0 ? +((mm?.caNet||0)/c).toFixed(2) : 0; });
+    tktChart.data.datasets[0].backgroundColor = selBg;
     tktChart.update('active'); }
 
-  } catch(chartErr) { console.warn('Chart update error:', chartErr.message, chartErr.stack?.split('\n')[1]); }
+  } catch(chartErr) { console.warn('Chart update error:', chartErr.message); }
 
-  // ── ANALYSE CA — KPI strip ──
   s('ca-kv1', fmt(caNet) + ' €');
   const caPctCA = p.prev_ca ? ((p.ca-p.prev_ca)/p.prev_ca*100).toFixed(1) : null;
   setd('ca-kd1', caPctCA ? `${+caPctCA>=0?'▲ +':'▼ '}${caPctCA} % ${unit}` : '—', caPctCA ? (+caPctCA>=0?'up':'dn') : 'neu');
   s('ca-kv2', tktTotal.toFixed(2) + ' €');
   setd('ca-kd2', `Déj. ${(m.tktMidi||0).toFixed(2)} € · Dîner ${(m.tktSoir||0).toFixed(2)} €`, 'neu');
 
-  // ca1Chart (par jour / par mois)
   if (typeof updateCa1Chart === 'function') updateCa1Chart(p, m);
 
-  // Clients (Lightspeed) vs Événements (Privatisations)
   const caClients = caLS;
   const caEvents  = Math.round(privWkForCA.total);
   const evPax     = privWkForCA.pax || 0;
@@ -1362,110 +1357,130 @@ function renderPeriod() {
   s('ca-events-sub', caGrand > 0 ? Math.round(caEvents/caGrand*100) + ' % du CA total' : (caEvents === 0 ? 'Aucun événement' : '—'));
   s('svc-events-sub', caGrand > 0 ? Math.round(caEvents/caGrand*100) + ' % du CA total' : (caEvents === 0 ? 'Aucun événement' : '—'));
 
-  // Cuisine vs Boissons (alimente updateCompare)
   const caFood = m.caFood || Math.round(caNet * 0.75);
   const caBev  = m.caBoissons || Math.round(caNet * 0.25);
 
-  // ── Bloc CA-2 : Ticket moyen total ──
   s('ca2-tkt-big', tktTotal.toFixed(2) + ' €');
   const ca2TktPrev = mi && mi.couverts > 0 ? +((mi.caNet||0)/mi.couverts).toFixed(2) : null;
   s('ca2-tkt-delta', ca2TktPrev ? (tktTotal >= ca2TktPrev ? '▲ +' : '▼ ') + Math.abs(tktTotal - ca2TktPrev).toFixed(2) + ' € vs S préc.' : '—');
   if (ca2TktChart) {
     ca2TktChart.data.labels = histLbls;
-    ca2TktChart.data.datasets[0].data = histM.map(mm => {
-      const c = mm?.couverts || 0;
-      return c > 0 ? +((mm?.caNet||0)/c).toFixed(2) : 0;
-    });
+    ca2TktChart.data.datasets[0].data = histM.map(mm => { const c = mm?.couverts || 0; return c > 0 ? +((mm?.caNet||0)/c).toFixed(2) : 0; });
+    ca2TktChart.data.datasets[0].backgroundColor = selBg;
     ca2TktChart.update('active');
   }
 
-  // ── Données pour updateCompare() ──
-  // TM Clients   = CA Lightspeed / (couverts Lightspeed − # pax événements)
-  // TM Événement = CA événements / # pax événements
   const clientsCov = m.couverts - evPax;
   window.CMP_DATA = {
-    histLbls,
-    histM,
-    histEvCA,
-    histEvPax,
+    histLbls, histM, histEvCA, histEvPax,
     caMidi: m.caNetMidi || Math.round(caLS * 0.24),
     caSoir: m.caNetSoir || Math.round(caLS * 0.76),
-    caFood, caBev,
-    caClients, caEvents,
-    tktMidi:   m.tktMidi   || 0,
-    tktSoir:   m.tktSoir   || 0,
-    tktFood:   m.tktFood   || 0,
-    tktBoissons: m.tktBoissons || 0,
+    caFood, caBev, caClients, caEvents,
+    tktMidi: m.tktMidi || 0, tktSoir: m.tktSoir || 0, tktFood: m.tktFood || 0, tktBoissons: m.tktBoissons || 0,
     tktClients: clientsCov > 0 ? +(caClients / clientsCov).toFixed(2) : 0,
     tktEvents:  evPax > 0 ? +(caEvents / evPax).toFixed(2) : 0,
   };
   updateCompare();
+
+  if (typeof updateRH === 'function') updateRH();
 }
 
-// ── Comparateur du bloc CA-2 ──
 function updateCompare() {
   const sel = document.getElementById('ca2-compare-select');
   if (!sel || !window.CMP_DATA) return;
   const mode = sel.value;
   const d = window.CMP_DATA;
-
   const s   = (id, v) => { const e = document.getElementById(id); if (e) e.textContent = v; };
   const fmt = v => Math.round(v).toLocaleString('fr-FR');
-
   const cfg = {
-    dejdin: {
-      title: 'Déjeuner vs Dîner',
-      a: { icon:'☀️', lbl:'Déjeuner', ca:d.caMidi, tkt:d.tktMidi },
-      b: { icon:'🌙', lbl:'Dîner',    ca:d.caSoir, tkt:d.tktSoir },
-      histA: d.histM.map(mm => mm?.tktMidi || 0),
-      histB: d.histM.map(mm => mm?.tktSoir || 0),
-    },
-    cuisbois: {
-      title: 'Cuisine vs Boissons',
-      a: { icon:'🍽️', lbl:'Cuisine',  ca:d.caFood, tkt:d.tktFood },
-      b: { icon:'🍷', lbl:'Boissons', ca:d.caBev,  tkt:d.tktBoissons },
-      histA: d.histM.map(mm => mm?.tktFood || 0),
-      histB: d.histM.map(mm => mm?.tktBoissons || 0),
-    },
-    cliev: {
-      title: 'Clients vs Événements',
-      a: { icon:'🍽️', lbl:'Clients',     ca:d.caClients, tkt:d.tktClients },
-      b: { icon:'🎉', lbl:'Événements',  ca:d.caEvents,  tkt:d.tktEvents },
-      // TM par période : Clients = CA / (couverts − pax évén.) ; Événements = CA évén. / pax évén.
+    dejdin: { title: 'Déjeuner vs Dîner',
+      a: { icon:'☀️', lbl:'Déjeuner', ca:d.caMidi, tkt:d.tktMidi }, b: { icon:'🌙', lbl:'Dîner', ca:d.caSoir, tkt:d.tktSoir },
+      histA: d.histM.map(mm => mm?.tktMidi || 0), histB: d.histM.map(mm => mm?.tktSoir || 0) },
+    cuisbois: { title: 'Cuisine vs Boissons',
+      a: { icon:'🍽️', lbl:'Cuisine', ca:d.caFood, tkt:d.tktFood }, b: { icon:'🍷', lbl:'Boissons', ca:d.caBev, tkt:d.tktBoissons },
+      histA: d.histM.map(mm => mm?.tktFood || 0), histB: d.histM.map(mm => mm?.tktBoissons || 0) },
+    cliev: { title: 'Clients vs Événements',
+      a: { icon:'🍽️', lbl:'Clients', ca:d.caClients, tkt:d.tktClients }, b: { icon:'🎉', lbl:'Événements', ca:d.caEvents, tkt:d.tktEvents },
       histA: d.histM.map((mm,i) => { const cc = (mm?.couverts||0) - (d.histEvPax[i]||0); return cc > 0 ? +((mm?.caNet||0)/cc).toFixed(2) : 0; }),
-      histB: d.histEvPax.map((pax,i) => pax > 0 ? +((d.histEvCA[i]||0)/pax).toFixed(2) : 0),
-    },
+      histB: d.histEvPax.map((pax,i) => pax > 0 ? +((d.histEvCA[i]||0)/pax).toFixed(2) : 0) },
   }[mode];
   if (!cfg) return;
-
   const caTot = (cfg.a.ca + cfg.b.ca) || 1;
-
-  s('cmp-ca-title',   'CA · ' + cfg.title);
+  s('cmp-ca-title', 'CA · ' + cfg.title);
   s('cmp-hist-title', 'Évolution comparée · ' + cfg.title);
-  s('cmp-tkt-title',  'Ticket moyen · ' + cfg.title);
-
+  s('cmp-tkt-title', 'Ticket moyen · ' + cfg.title);
   s('cmp-a-icon', cfg.a.icon); s('cmp-a-lbl', cfg.a.lbl);
   s('cmp-a-ca', fmt(cfg.a.ca) + ' €'); s('cmp-a-sub', Math.round(cfg.a.ca/caTot*100) + ' % du CA');
   s('cmp-b-icon', cfg.b.icon); s('cmp-b-lbl', cfg.b.lbl);
   s('cmp-b-ca', fmt(cfg.b.ca) + ' €'); s('cmp-b-sub', Math.round(cfg.b.ca/caTot*100) + ' % du CA');
-
-  s('cmp-leg-a', cfg.a.lbl);
-  s('cmp-leg-b', cfg.b.lbl);
-
-  // Graphe comparé (ticket moyen)
+  s('cmp-leg-a', cfg.a.lbl); s('cmp-leg-b', cfg.b.lbl);
   if (cmpChart) {
     cmpChart.data.labels = d.histLbls;
-    cmpChart.data.datasets[0].label = cfg.a.lbl;
-    cmpChart.data.datasets[0].data  = cfg.histA;
-    cmpChart.data.datasets[1].label = cfg.b.lbl;
-    cmpChart.data.datasets[1].data  = cfg.histB;
+    cmpChart.data.datasets[0].label = cfg.a.lbl; cmpChart.data.datasets[0].data = cfg.histA;
+    cmpChart.data.datasets[1].label = cfg.b.lbl; cmpChart.data.datasets[1].data = cfg.histB;
     cmpChart.update('active');
   }
-
   s('cmp-tkt-a-icon', cfg.a.icon); s('cmp-tkt-a-lbl', cfg.a.lbl);
   s('cmp-tkt-a-val', cfg.a.tkt > 0 ? cfg.a.tkt.toFixed(2) + ' €' : '—');
   s('cmp-tkt-b-icon', cfg.b.icon); s('cmp-tkt-b-lbl', cfg.b.lbl);
   s('cmp-tkt-b-val', cfg.b.tkt > 0 ? cfg.b.tkt.toFixed(2) + ' €' : '—');
+}
+
+// ── Bloc RH : CA / heure travaillée ──
+function updateRH() {
+  if (!rhDayChart || !rhWeekChart) return;
+  const hours = window.LIVE_HOURS || {};
+  const byP = ((gran === 'week' ? window.LIVE_BY_WEEK : window.LIVE_BY_MONTH) || {});
+  const list = gran === 'week' ? WEEKS : MONTHS;
+  const metricsArr = gran === 'week' ? METRICS_W : (METRICS_M.length ? METRICS_M : METRICS_W);
+  const p = list[idx]; if (!p) return;
+  const s = (id, v) => { const e = document.getElementById(id); if (e) e.textContent = v; };
+  const DN = ['Dim','Lun','Mar','Mer','Jeu','Ven','Sam'];
+
+  // Détail par jour de la période sélectionnée
+  const rows = (byP[p.key] || []).slice().sort((a,b) => a['Date'].localeCompare(b['Date']));
+  const labels = [], tot = [], sal = [], cui = [];
+  let sumCA = 0, sumS = 0, sumC = 0;
+  rows.forEach(r => {
+    const dkey = r['Date'];
+    const ca = n(r['CA_Net_Total']);
+    const h = hours[dkey] || { salle: 0, cuisine: 0 };
+    const th = h.salle + h.cuisine;
+    const dt = new Date(+dkey.slice(0,4), +dkey.slice(4,6)-1, +dkey.slice(6,8));
+    labels.push(gran === 'week' ? DN[dt.getDay()] + ' ' + dkey.slice(6,8) : dkey.slice(6,8));
+    tot.push(th > 0 ? +(ca/th).toFixed(0) : null);
+    sal.push(h.salle > 0 ? +(ca/h.salle).toFixed(0) : null);
+    cui.push(h.cuisine > 0 ? +(ca/h.cuisine).toFixed(0) : null);
+    sumCA += ca; sumS += h.salle; sumC += h.cuisine;
+  });
+  const totH = sumS + sumC;
+  s('rh-h-tot', totH > 0 ? Math.round(totH) + ' h' : '—');
+  s('rh-h-sub', totH > 0 ? 'salle ' + Math.round(sumS) + ' · cuisine ' + Math.round(sumC) : 'heures à venir');
+  s('rh-cah-tot', totH > 0 ? Math.round(sumCA/totH) + ' €' : '—');
+  s('rh-cah-salle', sumS > 0 ? Math.round(sumCA/sumS) + ' €' : '—');
+  s('rh-cah-cuisine', sumC > 0 ? Math.round(sumCA/sumC) + ' €' : '—');
+
+  rhDayChart.data.labels = labels;
+  rhDayChart.data.datasets[0].data = tot;
+  rhDayChart.data.datasets[1].data = sal;
+  rhDayChart.data.datasets[2].data = cui;
+  rhDayChart.update();
+
+  // Historique CA/h total · 6 dernières périodes
+  const start = Math.max(0, idx - 5);
+  const slice = list.slice(start, idx + 1);
+  const sliceM = metricsArr.slice(start, idx + 1);
+  const wlbls = slice.map(w => w.lbl.split(' · ')[0].trim());
+  const wvals = slice.map((w, i) => {
+    const prows = byP[w.key] || [];
+    let h = 0; prows.forEach(r => { const hh = hours[r['Date']]; if (hh) h += hh.salle + hh.cuisine; });
+    const ca = (sliceM[i]?.caNet) || 0;
+    return h > 0 ? +(ca/h).toFixed(0) : null;
+  });
+  rhWeekChart.data.labels = wlbls;
+  rhWeekChart.data.datasets[0].data = wvals;
+  rhWeekChart.data.datasets[0].backgroundColor = slice.map((_, i) => i === slice.length-1 ? '#8B1A1A' : 'rgba(139,26,26,0.4)');
+  rhWeekChart.update();
 }
 
 function setGran(g, el) {
@@ -1481,21 +1496,15 @@ function navPeriod(dir) {
   renderPeriod();
 }
 
-// ── Saut vers la période (semaine/mois) contenant la date choisie ──
 function jumpToDate(val) {
   if (!val) return;
-  const d = val.replace(/-/g, ''); // YYYYMMDD
+  const d = val.replace(/-/g, '');
   const list = currentList();
   let target = -1;
-  if (gran === 'week') {
-    const wk = getWeekKey(d);
-    target = list.findIndex(p => p.key === wk);
-  } else {
-    const mk = d.slice(0,4) + '-' + d.slice(4,6);
-    target = list.findIndex(p => p.key === mk);
-  }
+  if (gran === 'week') { const wk = getWeekKey(d); target = list.findIndex(p => p.key === wk); }
+  else { const mk = d.slice(0,4) + '-' + d.slice(4,6); target = list.findIndex(p => p.key === mk); }
   if (target >= 0) { idx = target; renderPeriod(); }
-  else { console.warn('Date hors de la plage de données chargées :', val); }
+  else { console.warn('Date hors plage :', val); }
 }
 
 function updateCa1Chart(p, m) {
@@ -1507,22 +1516,16 @@ function updateCa1Chart(p, m) {
     let labels, total;
     const byWeek2 = window.LIVE_BY_WEEK;
     const selKey2 = WEEKS[idx]?.key;
-    const selRows2 = byWeek2 && selKey2 && byWeek2[selKey2]
-      ? byWeek2[selKey2].sort((a,b)=>a['Date'].localeCompare(b['Date'])) : [];
+    const selRows2 = byWeek2 && selKey2 && byWeek2[selKey2] ? byWeek2[selKey2].sort((a,b)=>a['Date'].localeCompare(b['Date'])) : [];
     if (selRows2.length > 0) {
       labels=selRows2.map(r=>{const d=r['Date'];const dt=new Date(+d.slice(0,4),+d.slice(4,6)-1,+d.slice(6,8));return DN[dt.getDay()]+' '+d.slice(6,8);});
       total=selRows2.map(r=>n(r['CA_Net_Total']));
-    } else {
-      labels=[p.lbl.split(' · ')[0]]; total=[p.ca];
-    }
+    } else { labels=[p.lbl.split(' · ')[0]]; total=[p.ca]; }
     const prev = prevW && S13.length > 0 ? S13.map((_,i) => Math.round(prevW.ca*(weights[i]||0.14))) : (prevW ? weights.map(w=>Math.round(prevW.ca*w)) : []);
     const privByDay = {};
-    (window.LIVE_PRIV_ROWS || []).forEach(r => {
-      if (selRows2.some(sr => sr['Date'] === r.date)) privByDay[r.date] = (privByDay[r.date]||0)+r.total;
-    });
+    (window.LIVE_PRIV_ROWS || []).forEach(r => { if (selRows2.some(sr => sr['Date'] === r.date)) privByDay[r.date] = (privByDay[r.date]||0)+r.total; });
     const privData = selRows2.length>0 ? selRows2.map(r=>privByDay[r['Date']]||0) : labels.map(()=>0);
     const totalWithPriv = total.map((v,i) => v + (privData[i]||0));
-
     ca1Chart.data.labels = labels;
     [0,1,2,3].forEach(i=>ca1Chart.data.datasets[i].hidden=false);
     ca1Chart.data.datasets[0].data=totalWithPriv;
@@ -1532,21 +1535,15 @@ function updateCa1Chart(p, m) {
     ca1Chart.data.datasets[3].data=prev;
     ca1Chart.data.datasets[3].hidden = prev.length===0;
     ca1Chart.data.datasets[4].data=[]; ca1Chart.data.datasets[4].hidden=true;
-
     document.getElementById('ca1-title') && (document.getElementById('ca1-title').textContent="CA HT · par jour");
   } else {
-    // Vue mois : tous les jours du mois sélectionné
     const byMonth2 = window.LIVE_BY_MONTH;
-    const moRows2 = byMonth2 && byMonth2[p.key]
-      ? byMonth2[p.key].slice().sort((a,b)=>a['Date'].localeCompare(b['Date']))
-      : [];
+    const moRows2 = byMonth2 && byMonth2[p.key] ? byMonth2[p.key].slice().sort((a,b)=>a['Date'].localeCompare(b['Date'])) : [];
     if (moRows2.length > 0) {
       const labels = moRows2.map(r => r['Date'].slice(6,8));
       const total  = moRows2.map(r => n(r['CA_Net_Total']));
       const privByDayM2 = {};
-      (window.LIVE_PRIV_ROWS || []).forEach(r => {
-        if (moRows2.some(sr => sr['Date'] === r.date)) privByDayM2[r.date] = (privByDayM2[r.date]||0)+r.total;
-      });
+      (window.LIVE_PRIV_ROWS || []).forEach(r => { if (moRows2.some(sr => sr['Date'] === r.date)) privByDayM2[r.date] = (privByDayM2[r.date]||0)+r.total; });
       const privDataM2 = moRows2.map(r => privByDayM2[r['Date']]||0);
       const totalWithPrivM = total.map((v,i)=> v + (privDataM2[i]||0));
       ca1Chart.data.labels = labels;
@@ -1564,7 +1561,7 @@ function updateCa1Chart(p, m) {
       ca1Chart.data.labels = slice.map(m=>m.lbl);
       [0,1,2,3].forEach(i=>{ca1Chart.data.datasets[i].data=[]; ca1Chart.data.datasets[i].hidden=true;});
       ca1Chart.data.datasets[4].data = slice.map(m=>m.ca);
-      ca1Chart.data.datasets[4].backgroundColor = slice.map((_,i)=>i===slice.length-1?'#8B1A1A':'rgba(139,26,26,0.25)');
+      ca1Chart.data.datasets[4].backgroundColor = slice.map((_,i)=>i===slice.length-1?'#8B1A1A':'rgba(139,26,26,0.4)');
       ca1Chart.data.datasets[4].hidden = false;
       document.getElementById('ca1-title') && (document.getElementById('ca1-title').textContent="CA HT · 6 derniers mois");
     }
@@ -1572,7 +1569,6 @@ function updateCa1Chart(p, m) {
   ca1Chart.update('active');
 }
 
-/* ════════════ SCROLL TO BLOC ════════════ */
 function scrollToBloc(n) {
   const el = document.getElementById('bloc-' + n);
   if (!el) return;
@@ -1582,15 +1578,12 @@ function scrollToBloc(n) {
   setTimeout(() => { el.style.outline = ''; el.style.outlineOffset = ''; }, 1200);
 }
 
-/* ════════════ TABS ════════════ */
 function showTab(id, el) {
   document.querySelectorAll('.view').forEach(v => v.classList.remove('on'));
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('on'));
   document.getElementById(id).classList.add('on');
   el.classList.add('on');
 }
-
-// renderPeriod() est appelé par loadLiveData() après chargement
 </script>
 </body>
 </html>
