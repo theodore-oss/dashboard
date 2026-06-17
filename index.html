@@ -864,26 +864,23 @@ function updateTop10UI(food, bois) {
 }
 
 // ── Note Google ──
-// Note actuelle (globale) depuis l'onglet Google_Rating ; note par jour & hebdo
-// depuis l'onglet Note_Jour (alimenté par le script Outscraper).
+// Note actuelle recalculée sur tous les avis (onglet Note_Jour, fallback Google_Rating) ;
+// graphes "par jour" (semaine complète) et "hebdo pondéré" depuis Note_Jour.
 async function loadGoogleRating() {
   try {
-    // 1) Note actuelle (globale) + nombre d'avis
+    // Note globale officielle (fallback) + nombre d'avis
+    let officialNote = 0, officialReviews = 0;
     const rows = await fetchSheet('Google_Rating').catch(() => []);
     if (rows.length) {
       const last = rows[rows.length - 1];
-      const reviews = parseInt(String(last['Reviews'] || last['reviews'] || '0').replace(/\D/g,'')) || 0;
-      const lastNote = parseFloat(String(last['Rating'] || last['rating'] || '0').replace(',','.')) || 0;
-      if (lastNote > 0) updateGoogleUI(lastNote, reviews);
+      officialReviews = parseInt(String(last['Reviews'] || last['reviews'] || '0').replace(/\D/g,'')) || 0;
+      officialNote    = parseFloat(String(last['Rating'] || last['rating'] || '0').replace(',','.')) || 0;
     }
 
-    // 2) Note par jour & hebdo depuis Note_Jour
+    // Avis détaillés depuis Note_Jour
     let jour = [];
     try { jour = await fetchSheet('Note_Jour'); } catch(e) { console.log('Onglet Note_Jour absent'); }
-    if (!jour || !jour.length) return;
-
-    // Normaliser : { d:'YYYYMMDD', note, nb }
-    const recs = jour.map(r => {
+    const recs = (jour || []).map(r => {
       const d = String(r['Date'] || '').replace(/\D/g,'');
       return {
         d,
@@ -891,15 +888,38 @@ async function loadGoogleRating() {
         nb:   parseInt(String(r['Nb_Avis'] || '0').replace(/\D/g,'')) || 0,
       };
     }).filter(x => x.d.length === 8 && x.nb > 0);
-    if (!recs.length) return;
 
-    // ── Graphe 1 : note par jour · semaine ISO courante (note=courbe, nb avis=barres) ──
+    // ── Note actuelle : recalculée sur tous les avis (2 décimales) ──
+    if (recs.length) {
+      const totalNb = recs.reduce((s,x)=>s+x.nb,0);
+      const avgAll  = totalNb > 0 ? +(recs.reduce((s,x)=>s+x.note*x.nb,0)/totalNb).toFixed(2) : officialNote;
+      updateGoogleUI(avgAll, officialReviews || totalNb);
+    } else {
+      if (officialNote > 0) updateGoogleUI(officialNote, officialReviews);
+      return; // pas de détail Note_Jour → graphes vides
+    }
+
+    // ── Graphe 1 : note par jour · semaine complète (lun→dim, jours sans avis laissés vides) ──
     const currWk = WEEKS.length > 0 ? WEEKS[WEEKS.length-1] : null;
     if (currWk) {
       const DN = ['Dim','Lun','Mar','Mer','Jeu','Ven','Sam'];
-      const wkRecs = recs.filter(x => getWeekKey(x.d) === currWk.key).sort((a,b)=>a.d.localeCompare(b.d));
-      const lbls = wkRecs.map(x => { const dt=new Date(+x.d.slice(0,4),+x.d.slice(4,6)-1,+x.d.slice(6,8)); return DN[dt.getDay()]+' '+x.d.slice(6,8); });
-      updateGoogleDayChart(lbls, wkRecs.map(x=>x.note), wkRecs.map(x=>x.nb));
+      const wkRows = (window.LIVE_BY_WEEK || {})[currWk.key] || [];
+      const ref = wkRows.length ? wkRows[0]['Date'] : (recs.find(x=>getWeekKey(x.d)===currWk.key)?.d);
+      if (ref) {
+        const dt = new Date(+ref.slice(0,4), +ref.slice(4,6)-1, +ref.slice(6,8));
+        const day = dt.getDay() || 7;
+        const monday = new Date(dt); monday.setDate(dt.getDate() - day + 1);
+        const recByDay = {}; recs.forEach(x => recByDay[x.d] = x);
+        const labels = [], notes = [], counts = [];
+        for (let i = 0; i < 7; i++) {
+          const d = new Date(monday); d.setDate(monday.getDate() + i);
+          const key = '' + d.getFullYear() + String(d.getMonth()+1).padStart(2,'0') + String(d.getDate()).padStart(2,'0');
+          labels.push(DN[d.getDay()] + ' ' + String(d.getDate()).padStart(2,'0'));
+          notes.push(recByDay[key] ? recByDay[key].note : null);
+          counts.push(recByDay[key] ? recByDay[key].nb : null);
+        }
+        updateGoogleDayChart(labels, notes, counts);
+      }
     }
 
     // ── Graphe 2 : moyenne hebdomadaire pondérée · 6 dernières semaines ──
@@ -920,7 +940,7 @@ function updateGoogleUI(note, reviews) {
   const countEl = document.getElementById('google-count');
   const countDetailEl = document.getElementById('google-count-detail');
   const kvEl    = document.getElementById('kv-google');
-  const noteStr = note.toFixed(1).replace('.', ',');
+  const noteStr = note.toFixed(2).replace('.', ',');
   if (noteEl)  noteEl.textContent  = noteStr;
   if (countEl) countEl.textContent = reviews.toLocaleString('fr-FR') + ' avis';
   if (countDetailEl) countDetailEl.textContent = reviews.toLocaleString('fr-FR') + ' avis';
@@ -999,12 +1019,32 @@ const rosarioBarPlugin = {
       return;
     }
 
+    // Graphe Note par jour : note au-dessus des points, nb d'avis au centre des barres
+    if (chart.canvas?.id === 'googleDayChart') {
+      const noteMeta = chart.getDatasetMeta(0);
+      ctx.textBaseline = 'bottom'; ctx.fillStyle = '#1a1916';
+      data.datasets[0].data.forEach((val, i) => {
+        if (val == null) return;
+        const pt = noteMeta.data[i]; if (!pt) return;
+        ctx.fillText(Number(val).toFixed(1).replace('.', ','), pt.x, pt.y - 8);
+      });
+      const barMeta = chart.getDatasetMeta(1);
+      ctx.textBaseline = 'middle'; ctx.fillStyle = '#8B1A1A';
+      data.datasets[1].data.forEach((val, i) => {
+        if (!val) return;
+        const bar = barMeta.data[i]; if (!bar) return;
+        ctx.fillText(String(val), bar.x, (bar.y + bar.base) / 2);
+      });
+      ctx.restore();
+      return;
+    }
+
     // Format selon le type de graphe
     const cid    = chart.canvas?.id;
     const isCov  = cid === 'covChart';
     const isNote = cid === 'googleChart' || cid === 'googleDayChart';
     const fmt = v => isNote
-      ? v.toFixed(1).replace('.', ',')
+      ? v.toFixed(2).replace('.', ',')
       : isCov
       ? (v >= 1000 ? (v/1000).toFixed(1)+'k' : Math.round(v).toString())
       : (v >= 1000 ? (v/1000).toFixed(1)+'k €' : Math.round(v)+' €');
@@ -1106,16 +1146,16 @@ const googleChart= makeChart('googleChart','line',
   [{label:'Note Google',data:[],borderColor:'#f9c74f',borderWidth:2,pointBackgroundColor:'#f9c74f',pointRadius:3,tension:0.35,fill:true,backgroundColor:'rgba(249,199,79,0.08)'}],
   {scales:{x:{grid:{display:false},ticks:{font:{family:'Sora',size:9}}},y:{min:3.5,max:5,grid:{color:'rgba(0,0,0,.05)'},ticks:{font:{family:'Sora',size:9},callback:v=>v.toFixed(1)}}}});
 
-// Graphe Note par jour — note (ligne, axe gauche 3.5–5) + nb d'avis (barres, axe droit)
+// Graphe Note par jour — note (ligne, axe gauche 3.5–5) + nb d'avis (barres étroites, axe droit)
 const googleDayChart = new Chart(document.getElementById('googleDayChart'), {
   type:'bar',
   data:{ labels:[], datasets:[
-    { label:'Note', type:'line', yAxisID:'y', data:[], borderColor:'#f9c74f', borderWidth:2, pointBackgroundColor:'#f9c74f', pointRadius:4, tension:0.35, fill:false, order:0 },
-    { label:'Nb avis', type:'bar', yAxisID:'y1', data:[], backgroundColor:'rgba(139,26,26,0.25)', borderRadius:3, order:1 },
+    { label:'Note', type:'line', yAxisID:'y', data:[], borderColor:'#f9c74f', borderWidth:2, pointBackgroundColor:'#f9c74f', pointRadius:4, tension:0.35, fill:false, spanGaps:false, order:0 },
+    { label:'Nb avis', type:'bar', yAxisID:'y1', data:[], backgroundColor:'rgba(139,26,26,0.25)', borderRadius:3, order:1, maxBarThickness:14 },
   ]},
   options:{ responsive:true, maintainAspectRatio:false, layout:{padding:{top:20}}, interaction:{mode:'index',intersect:false},
     plugins:{ legend:{display:false}, tooltip:{ backgroundColor:'#fff', borderColor:'#e4e1d9', borderWidth:1, titleColor:'#1a1916', bodyColor:'#8a8680', padding:10,
-      callbacks:{ label:c => c.dataset.label === 'Note' ? '  Note : ' + Number(c.parsed.y).toFixed(1).replace('.',',') : '  Avis : ' + c.parsed.y } } },
+      callbacks:{ label:c => c.dataset.label === 'Note' ? '  Note : ' + Number(c.parsed.y).toFixed(2).replace('.',',') : '  Avis : ' + c.parsed.y } } },
     scales:{
       x:{grid:{display:false},ticks:{font:{family:'Sora',size:9}}},
       y:{position:'left',min:3.5,max:5,grid:{color:'rgba(0,0,0,.05)'},ticks:{font:{family:'Sora',size:9},callback:v=>v.toFixed(1)}},
