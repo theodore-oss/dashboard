@@ -35,12 +35,6 @@ body { font-family: 'Sora', sans-serif; background: var(--bg); color: var(--text
 .pnav-btn { width: 28px; height: 28px; border-radius: 50%; border: 1px solid var(--border); background: var(--surface); color: var(--muted); font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-family: 'Sora', sans-serif; transition: all .2s; flex-shrink: 0; }
 .pnav-btn:hover { border-color: var(--accent); color: var(--accent); }
 .pnav-lbl { font-size: 12px; font-weight: 500; color: var(--text); min-width: 200px; text-align: center; padding: 4px 10px; border-radius: 6px; border: 1px solid transparent; white-space: nowrap; }
-.period-custom { display: none; align-items: center; gap: 8px; }
-.period-custom.show { display: flex; }
-.period-custom input[type="date"] { font-family: 'Sora', sans-serif; font-size: 11px; color: var(--text); background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 5px 10px; outline: none; }
-.period-custom input[type="date"]:focus { border-color: var(--accent); }
-.period-custom span { font-size: 11px; color: var(--muted); }
-.period-custom button { padding: 5px 12px; font-size: 11px; font-weight: 500; background: var(--accent); color: #fff; border: none; border-radius: 6px; cursor: pointer; font-family: 'Sora', sans-serif; }
 
 .ann-badge { display: inline-flex; align-items: center; gap: 8px; background: var(--accent); color: #fff; padding: 6px 16px; border-radius: 100px; font-size: 12px; font-weight: 500; }
 .ann-dot { width: 6px; height: 6px; border-radius: 50%; background: #f9c74f; animation: pulse 2s infinite; }
@@ -60,7 +54,6 @@ body { font-family: 'Sora', sans-serif; background: var(--bg); color: var(--text
 .card-title { font-size: 13px; font-weight: 600; flex: 1; }
 .card-src { font-size: 10px; color: var(--muted); }
 .card-body { padding: 20px; }
-.mock-tag { font-size: 10px; padding: 1px 6px; background: var(--gold-l); border: 1px solid #e8c97a; border-radius: 4px; color: var(--gold); margin-left: 6px; }
 
 /* ── GRIDS ── */
 .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
@@ -70,44 +63,21 @@ body { font-family: 'Sora', sans-serif; background: var(--bg); color: var(--text
 .kpi-strip { display: grid; grid-template-columns: repeat(4,1fr); gap: 1px; background: var(--border); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; margin-bottom: 16px; box-shadow: var(--shadow); }
 .kpi-cell { background: var(--surface); padding: 16px 18px; cursor: default; transition: background .15s; }
 .kpi-cell[onclick]:hover { background: #f0ece4; }
-.kpi-cell.active { background: var(--accent-l); }
 .kpi-n { font-size: 9px; font-weight: 600; color: var(--accent); letter-spacing: .06em; text-transform: uppercase; margin-bottom: 4px; display: flex; align-items: center; gap: 5px; }
 .kpi-n::before { content: attr(data-n); width: 16px; height: 16px; border-radius: 50%; background: var(--accent); color: #fff; font-size: 9px; display: flex; align-items: center; justify-content: center; font-weight: 600; flex-shrink: 0; }
-.kpi-cell-lbl { font-size: 10px; font-weight: 500; color: var(--muted); text-transform: uppercase; letter-spacing: .07em; margin-bottom: 5px; }
 .kpi-cell-val { font-size: 24px; font-weight: 600; color: var(--accent); line-height: 1; margin-bottom: 4px; }
 .kpi-cell-delta { font-size: 11px; font-weight: 400; }
 .up { color: var(--ok); } .dn { color: var(--danger); } .neu { color: var(--muted); }
 
-
-
 /* ── CHART WRAPPERS ── */
 .chart-h160 { position: relative; height: 160px; }
-.chart-h140 { position: relative; height: 140px; }
 .chart-h120 { position: relative; height: 120px; }
 
 /* ── SVC SPLIT ── */
 .svc-split { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 16px; }
 
-/* ── RESA KPIS ── */
-.resa-kpis { display: grid; grid-template-columns: repeat(4,1fr); gap: 10px; margin-bottom: 20px; }
-.rk { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 12px; text-align: center; }
-.rk-val { font-size: 20px; font-weight: 600; color: var(--accent); display: block; line-height: 1; }
-.rk-val.ok { color: var(--ok); } .rk-val.bad { color: var(--danger); }
-.rk-lbl { font-size: 9px; font-weight: 500; color: var(--muted); text-transform: uppercase; letter-spacing: .07em; display: block; margin-top: 3px; }
-.rk-delta { font-size: 9px; display: block; margin-top: 3px; font-weight: 400; }
-
 /* ── SECTION DIVIDER (inside card) ── */
 .section-sep { font-size: 10px; font-weight: 500; color: var(--muted); text-transform: uppercase; letter-spacing: .1em; margin: 18px 0 12px; padding-top: 16px; border-top: 1px solid var(--border); }
-
-/* ── RATIO LIST ── */
-.ratio-list { display: flex; flex-direction: column; gap: 13px; }
-.rl-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 4px; }
-.rl-nm { font-size: 12px; color: var(--text); }
-.rl-val { font-size: 14px; font-weight: 600; }
-.rl-val.gd { color: var(--ok); } .rl-val.wn { color: var(--gold); } .rl-val.bd { color: var(--danger); }
-.rl-sub { font-size: 10px; color: var(--muted); text-align: right; margin-top: 2px; }
-.rl-track { height: 4px; background: var(--bg); border-radius: 2px; overflow: hidden; border: 1px solid var(--border); }
-.rl-fill { height: 100%; border-radius: 2px; }
 
 /* ── TOP PLATS ── */
 .plats { display: flex; flex-direction: column; }
@@ -118,9 +88,6 @@ body { font-family: 'Sora', sans-serif; background: var(--bg); color: var(--text
 .plat-name { flex: 1; font-size: 13px; }
 .plat-qty { font-size: 11px; color: var(--muted); width: 65px; text-align: right; }
 .plat-ca { font-size: 13px; font-weight: 600; color: var(--accent); width: 64px; text-align: right; }
-
-/* ── INFO BOX ── */
-.info-box { padding: 10px 14px; background: var(--gold-l); border: 1px solid #e8c97a; border-radius: 8px; font-size: 11px; color: #7a5c1a; line-height: 1.6; margin-top: 12px; }
 
 /* ── CHART LEGEND ── */
 .cleg { display: flex; gap: 16px; justify-content: flex-end; margin-bottom: 10px; }
@@ -143,21 +110,9 @@ footer { max-width: 1040px; margin: 32px auto 0; padding-top: 20px; border-top: 
 .src-dot.mock { background: var(--gold); }
 
 @media(max-width:900px){
-  .kpi-strip,.resa-kpis{ grid-template-columns: repeat(2,1fr); }
+  .kpi-strip{ grid-template-columns: repeat(2,1fr); }
   .grid-2,.grid-3 { grid-template-columns: 1fr; }
 }
-
-  /* ── LOADER ── */
-  #loader {
-    position: fixed; inset: 0; background: #f7f6f3;
-    display: flex; flex-direction: column; align-items: center; justify-content: center;
-    z-index: 9999; gap: 16px;
-  }
-  .loader-logo { font-size: 28px; font-style: italic; font-family: Georgia, serif; color: var(--accent); font-weight: bold; }
-  .loader-bar  { width: 200px; height: 3px; background: var(--border); border-radius: 2px; overflow: hidden; }
-  .loader-fill { height: 100%; background: var(--accent); border-radius: 2px; animation: load 1.5s ease-in-out infinite; }
-  @keyframes load { 0%{width:0%} 60%{width:80%} 100%{width:100%} }
-  .loader-txt  { font-size: 12px; color: var(--muted); }
 </style>
 </head>
 <body>
@@ -174,7 +129,6 @@ footer { max-width: 1040px; margin: 32px auto 0; padding-top: 20px; border-top: 
       <div class="period-granularity">
         <button class="pgran on" onclick="setGran('week',this)">Semaine</button>
         <button class="pgran"    onclick="setGran('month',this)">Mois</button>
-
       </div>
       <div class="period-nav">
         <button class="pnav-btn" onclick="navPeriod(-1)">‹</button>
@@ -184,12 +138,6 @@ footer { max-width: 1040px; margin: 32px auto 0; padding-top: 20px; border-top: 
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="pointer-events:none;"><rect x="3" y="4" width="18" height="18" rx="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
           <input type="date" id="jump-date" onchange="jumpToDate(this.value)" title="Choisir une date" style="position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;border:none;padding:0;margin:0;">
         </div>
-      </div>
-      <div class="period-custom" id="period-custom">
-        <input type="date" id="date-from" value="2025-10-17">
-        <span>→</span>
-        <input type="date" id="date-to" value="2026-03-29">
-        <button onclick="applyCustom()">Appliquer</button>
       </div>
     </div>
     <div class="ann-badge">
@@ -203,8 +151,6 @@ footer { max-width: 1040px; margin: 32px auto 0; padding-top: 20px; border-top: 
 <div class="tabs">
   <button class="tab on" onclick="showTab('overview',this)">Vue d'ensemble</button>
   <button class="tab" onclick="showTab('ca',this)">Analyse CA</button>
-
-
 </div>
 
 <!-- ══════════════════════════════════════════ VUE D'ENSEMBLE -->
@@ -621,7 +567,7 @@ function weekLabel(rows) {
   return fmt(first) + ' – ' + fmt(last);
 }
 
-// ── Construction des structures WEEKS, METRICS_W, TKT_WEEKS depuis le Sheet ──
+// ── Construction des structures WEEKS / METRICS depuis le Sheet ──
 async function loadLiveData() {
   try {
     console.log('🔄 Chargement données...');
@@ -634,7 +580,6 @@ async function loadLiveData() {
     console.log('📊 KPI:', kpiRows.length, 'jours · Top10:', top10Rows.length, ' · Priv raw:', privRaw.length, 'chars');
 
     // Parser le CSV privatisations
-    // Colonnes: Client Date Service Statut #pax Cuisine_HT Alcool_HT Total_HT ...
     const privRows = [];
     if (privRaw) {
       const lines = privRaw.trim().split('\n');
@@ -666,11 +611,9 @@ async function loadLiveData() {
           const parts = dateStr.toLowerCase().replace('.','').split(/[-\s]/);
           const day = parts[0].padStart(2,'0');
           const mon = MONTHS[parts[1]?.slice(0,3)];
-          // Déterminer l'année depuis iAnne header ou année courante
           const iAnnee = headers.findIndex(h => h.toLowerCase().includes('ann'));
           const iMois  = headers.findIndex(h => h.toLowerCase() === 'mois');
           const yr = vals[iAnnee] || new Date().getFullYear();
-          // Préférer la colonne Mois si disponible (plus fiable que l'abréviation)
           const monNum = iMois >= 0 && vals[iMois] ? parseInt(vals[iMois]) : mon;
           if (monNum && day) dateKey = String(yr) + String(monNum).padStart(2,'0') + day;
         }
@@ -683,13 +626,15 @@ async function loadLiveData() {
         privRows.push({ date: dateKey, cuisine, alcool, total });
       });
       console.log('✅ Privatisations parsées:', privRows.length, 'lignes valides');
-
     }
 
-    // Stocker globalement — ne conserver que les événements déjà passés (aujourd'hui ou avant)
+    // Ne conserver que les événements déjà passés.
+    // Référence : dernier jour de données réelles (Lightspeed), borné par la date du jour.
     const today = new Date();
     const todayKey = '' + today.getFullYear() + String(today.getMonth()+1).padStart(2,'0') + String(today.getDate()).padStart(2,'0');
-    const privPast = privRows.filter(r => r.date <= todayKey);
+    const lastDataKey = kpiRows.length ? kpiRows.map(r => String(r['Date']||'')).filter(d => d.length === 8).sort().slice(-1)[0] : '';
+    const cutoffKey = (lastDataKey && lastDataKey < todayKey) ? lastDataKey : todayKey;
+    const privPast = privRows.filter(r => r.date <= cutoffKey);
     window.LIVE_PRIV_ROWS = privPast;
 
     // Agréger par semaine
@@ -719,10 +664,7 @@ async function loadLiveData() {
     const liveWEEKS = weekKeys.map((wk, i) => {
       const rows = byWeek[wk];
       const ca = rows.reduce((s,r) => s + n(r['CA_Net_Total']), 0);
-      // Privatisations pour cette semaine
       const privWkCa = (window.LIVE_PRIV_BY_WEEK || {})[wk]?.total || 0;
-      const prev_ca = i > 0 ? weekKeys.slice(0,i).reduce((s,k) =>
-        s + byWeek[k].reduce((ss,r) => ss + n(r['CA_Net_Total']), 0), 0) / i : null;
       const prevWk = i > 0 ? weekKeys[i-1] : null;
       const prev_ca_week = prevWk ? byWeek[prevWk].reduce((s,r) => s + n(r['CA_Net_Total']), 0) : null;
       return { key: wk, lbl: wk + ' · ' + weekLabel(rows), ca: Math.round(ca + privWkCa), prev_ca: Math.round(prev_ca_week || 0) || null };
@@ -732,8 +674,6 @@ async function loadLiveData() {
     const liveMETRICS_W = weekKeys.map(wk => {
       const rows = byWeek[wk];
       const sum = (col) => rows.reduce((s,r) => s + n(r[col]), 0);
-      const avg = (col) => rows.length ? sum(col)/rows.length : 0;
-      const caNet   = sum('CA_Net_Total');
       const cov     = sum('Couverts_Total');
       const covMidi = sum('Couverts_Midi');
       const covSoir = sum('Couverts_Soir');
@@ -744,22 +684,14 @@ async function loadLiveData() {
         rempliSoir: Math.round(covSoir > 0 ? covSoir / (89 * rows.length) * 100 : 0),
         tktMidi:    covMidi > 0 ? +(sum('CA_Net_Midi') / covMidi).toFixed(2) : 0,
         tktSoir:    covSoir > 0 ? +(sum('CA_Net_Soir') / covSoir).toFixed(2) : 0,
-        foodCost:   28,
-        primeCost:  62,
         caNet:      +sum('CA_Net_Total').toFixed(0),
         caNetMidi:  +sum('CA_Net_Midi').toFixed(0),
         caNetSoir:  +sum('CA_Net_Soir').toFixed(0),
         caFood:     +sum('CA_Food_HT').toFixed(0),
-        caBoissons:   +sum('CA_Boissons_HT').toFixed(0),
+        caBoissons: +sum('CA_Boissons_HT').toFixed(0),
         tktFood:    cov > 0 ? +(sum('CA_Food_HT') / cov).toFixed(2) : 0,
-        tktBoissons:  cov > 0 ? +(sum('CA_Boissons_HT') / cov).toFixed(2) : 0,
+        tktBoissons: cov > 0 ? +(sum('CA_Boissons_HT') / cov).toFixed(2) : 0,
       };
-    });
-
-    // Rebuild TKT_WEEKS
-    const liveTKT_WEEKS = weekKeys.map((wk, i) => {
-      const m = liveMETRICS_W[i];
-      return { lbl: wk, dej: m.tktMidi, soir: m.tktSoir };
     });
 
     // Rebuild day-by-day for current week (last week in data)
@@ -769,28 +701,10 @@ async function loadLiveData() {
     const liveCURRENT = lastWkRows.map(row => {
       const d = row['Date'];
       const dt = new Date(+d.slice(0,4), +d.slice(4,6)-1, +d.slice(6,8));
-      return {
-        lbl:   DAY_NAMES[dt.getDay()] + ' ' + d.slice(6,8),
-        midi:  n(row['CA_Net_Midi']),
-        soir:  n(row['CA_Net_Soir']),
-        total: n(row['CA_Net_Total']),
-        date:  d,
-      };
+      return { lbl: DAY_NAMES[dt.getDay()] + ' ' + d.slice(6,8), total: n(row['CA_Net_Total']), date: d };
     });
 
-    // Previous week for comparison
-    const prevWkKey = weekKeys.length > 1 ? weekKeys[weekKeys.length-2] : null;
-    const livePREV = prevWkKey
-      ? byWeek[prevWkKey].sort((a,b) => a['Date'].localeCompare(b['Date']))
-          .map(r => n(r['CA_Net_Total']))
-      : [];
-
-    // Top10 for current week
-    const lastDate = lastWkRows[lastWkRows.length-1]?.['Date'];
-    const wkTop10 = top10Rows.filter(r => {
-      const d = r['Date']; return d >= lastWk.replace('W','') && byWeek[lastWk]?.some(kr => kr['Date'] === d);
-    });
-    // Aggregate by article
+    // Top10 de la semaine courante, agrégé par article
     const foodAgg = {}, boissAgg = {};
     top10Rows.filter(r => byWeek[lastWk]?.some(kr => kr['Date'] === r['Date'])).forEach(r => {
       const key = r['Article'], ca = n(r['CA']), qty = n(r['Quantite']);
@@ -805,17 +719,14 @@ async function loadLiveData() {
     const liveTop10Food  = Object.values(foodAgg).sort((a,b)=>b.ca-a.ca).slice(0,10);
     const liveTop10Bois  = Object.values(boissAgg).sort((a,b)=>b.ca-a.ca).slice(0,10);
 
-    // ── Override des constantes globales ──
+    // ── Override des structures globales ──
     WEEKS.length = 0;
     liveWEEKS.forEach(w => WEEKS.push(w));
 
     METRICS_W.length = 0;
     liveMETRICS_W.forEach(m => METRICS_W.push(m));
 
-    TKT_WEEKS.length = 0;
-    liveTKT_WEEKS.forEach(t => TKT_WEEKS.push(t));
-
-    // ── Rebuild MONTHS par mois calendaire (évite le problème de chevauchement) ──
+    // ── Rebuild MONTHS par mois calendaire ──
     const byMonth = {};
     kpiRows.forEach(row => {
       const d = String(row['Date'] || '');
@@ -833,7 +744,6 @@ async function loadLiveData() {
     const liveMONTHS = monthKeys.map((mk, i) => {
       const rows = byMonth[mk];
       const ca = rows.reduce((s,r) => s + n(r['CA_Net_Total']), 0);
-      // Privatisations pour ce mois (somme des semaines appartenant au mois)
       const mkKey = mk.replace('-','');
       const privMoCa = Object.entries(window.LIVE_PRIV_BY_WEEK || {}).reduce((sum, [wkKey, wkData]) => {
         const wkRows = byWeek[wkKey] || [];
@@ -859,14 +769,13 @@ async function loadLiveData() {
         rempliSoir: Math.round(covSoir > 0 ? covSoir / (89 * rows.length) * 100 : 0),
         tktMidi:    covMidi > 0 ? +(sum('CA_Net_Midi') / covMidi).toFixed(2) : 0,
         tktSoir:    covSoir > 0 ? +(sum('CA_Net_Soir') / covSoir).toFixed(2) : 0,
-        foodCost:   28, primeCost: 62,
         caNet:      +sum('CA_Net_Total').toFixed(0),
         caNetMidi:  +sum('CA_Net_Midi').toFixed(0),
         caNetSoir:  +sum('CA_Net_Soir').toFixed(0),
         caFood:     +sum('CA_Food_HT').toFixed(0),
-        caBoissons:   +sum('CA_Boissons_HT').toFixed(0),
+        caBoissons: +sum('CA_Boissons_HT').toFixed(0),
         tktFood:    cov > 0 ? +(sum('CA_Food_HT') / cov).toFixed(2) : 0,
-        tktBoissons:  cov > 0 ? +(sum('CA_Boissons_HT') / cov).toFixed(2) : 0,
+        tktBoissons: cov > 0 ? +(sum('CA_Boissons_HT') / cov).toFixed(2) : 0,
       };
     });
 
@@ -875,30 +784,17 @@ async function loadLiveData() {
     METRICS_M.length = 0;
     liveMETRICS_M.forEach(m => METRICS_M.push(m));
 
-    // Override S13 (semaine courante)
+    // Override S13 (semaine courante, jour par jour)
     S13.length = 0;
     liveCURRENT.forEach(d => S13.push(d));
 
-    // Override S12 (semaine précédente)
-    S12.length = 0;
-    livePREV.forEach(v => S12.push(v));
-
-    // Stocke byWeek globalement pour renderPeriod
+    // Stocke les données détaillées pour renderPeriod
     window.LIVE_BY_WEEK = byWeek;
     window.LIVE_BY_MONTH = byMonth;
-    window.LIVE_DAY_NAMES = DAY_NAMES;
-
-    // Stocke top10 globalement
-    window.LIVE_TOP10_FOOD  = liveTop10Food;
-    window.LIVE_TOP10_BOIS  = liveTop10Bois;
-    window.LIVE_METRICS     = liveMETRICS_W;
-    window.LIVE_WEEKS       = liveWEEKS;
 
     // Rafraîchit l'affichage
     idx = WEEKS.length - 1;
     renderPeriod();
-
-    // Met à jour le top 10 dans l'onglet CA
     updateTop10UI(liveTop10Food, liveTop10Bois);
 
     // Masque le loader
@@ -909,14 +805,12 @@ async function loadLiveData() {
 
   } catch(e) {
     console.warn('⚠️ Erreur chargement données live:', e.message, e.stack);
-    // Masque le loader même en cas d'erreur
     const loader = document.getElementById('loader');
     if (loader) loader.style.display = 'none';
   }
 }
 
 function updateTop10UI(food, bois) {
-  // Met à jour le top 10 food
   const foodEl = document.getElementById('top10-food-list');
   const boisEl = document.getElementById('top10-bev-list');
   if (foodEl && food.length) {
@@ -938,7 +832,7 @@ function updateTop10UI(food, bois) {
       </div>`).join('');
   }
 
-  // Mise à jour cartouche KPI strip
+  // Cartouches KPI strip (top 3)
   const kpiFood = document.getElementById('kpi-top-food');
   if (kpiFood && food.length) {
     const styles = ['font-weight:500;color:var(--text)', 'color:var(--text)', 'color:var(--muted)'];
@@ -953,63 +847,45 @@ function updateTop10UI(food, bois) {
       `<div style="font-size:11px;${styles[i]}">${i+1}. ${p.name}</div>`
     ).join('');
   }
-  // Top 5 overview
-  const top5El = document.getElementById('bloc-6');
-  if (top5El && food.length) {
-    const top5 = food.slice(0,5);
-    const platsEl = top5El.querySelector('.plats');
-    if (platsEl) platsEl.innerHTML = top5.map((p,i) => `
-      <div class="plat">
-        <span class="plat-num">${i+1}</span>
-        <span class="plat-name">${p.name}</span>
-        <span class="plat-qty">${Math.round(p.qty)} ventes</span>
-        <span class="plat-ca">${Math.round(p.ca).toLocaleString('fr-FR')} €</span>
-      </div>`).join('');
-  }
 }
 
-// ── Note Google scrape ──
+// ── Note Google ──
 async function loadGoogleRating() {
   try {
-    if (!googleChart) { console.log('googleChart not initialized yet'); }
     const rows = await fetchSheet('Google_Rating');
     if (!rows.length) { console.log('Pas de note Google dans le Sheet'); return; }
 
-    // Dernière note = note actuelle
     const last    = rows[rows.length - 1];
     const reviews = parseInt(String(last['Reviews'] || last['reviews'] || '0').replace(/\D/g,'')) || 0;
     const lastNote = parseFloat(String(last['Rating'] || last['rating'] || '0').replace(',','.')) || 0;
 
-    // Moyenne de la semaine : les 7 dernières entrées max
+    // Moyenne des 7 dernières entrées
     const sample  = rows.slice(-7);
     const ratings = sample.map(r => parseFloat(String(r['Rating']||r['rating']||'0').replace(',','.')) || 0).filter(v => v > 0);
     const avg     = ratings.length ? +(ratings.reduce((a,b)=>a+b,0)/ratings.length).toFixed(1) : lastNote;
 
     if (avg > 0) {
       updateGoogleUI(avg, reviews);
-      // Alimente le graphe avec l'historique réel
+      // Historique réel de la note
       const dateLabels = rows.map(r => String(r['Date']||'').slice(6,8)+'/'+String(r['Date']||'').slice(4,6));
       const notes = rows.map(r => parseFloat(String(r['Rating']||r['rating']||'0').replace(',','.')) || null);
       const validPairs = dateLabels.map((l,i) => ({l, n:notes[i]})).filter(x => x.n > 0);
       updateGoogleChart(validPairs.map(x=>x.l), validPairs.map(x=>x.n));
 
-      // Graphe 2 : note par jour de la semaine courante
-      // Filtre les notes de la semaine ISO courante (WEEKS[idx])
+      // Note par jour de la semaine courante
       const currWk = WEEKS.length > 0 ? WEEKS[WEEKS.length-1] : null;
       if (currWk && googleDayChart) {
-        const DAY_NAMES = ['Dim','Lun','Mar','Mer','Jeu','Ven','Sam'];
+        const DN = ['Dim','Lun','Mar','Mer','Jeu','Ven','Sam'];
         const wkNotes = rows.filter(r => {
           const d = String(r['Date']||'');
           if (d.length < 8) return false;
-          const dt = new Date(+d.slice(0,4), +d.slice(4,6)-1, +d.slice(6,8));
-          const wk = getWeekKey(d);
-          return wk === currWk.key;
+          return getWeekKey(d) === currWk.key;
         });
         if (wkNotes.length > 0) {
           const dayLbls = wkNotes.map(r => {
             const d = String(r['Date']||'');
             const dt = new Date(+d.slice(0,4), +d.slice(4,6)-1, +d.slice(6,8));
-            return DAY_NAMES[dt.getDay()] + ' ' + d.slice(6,8);
+            return DN[dt.getDay()] + ' ' + d.slice(6,8);
           });
           const dayNts = wkNotes.map(r => parseFloat(String(r['Rating']||r['rating']||'0').replace(',','.')) || null);
           updateGoogleDayChart(dayLbls, dayNts);
@@ -1032,7 +908,6 @@ function updateGoogleUI(note, reviews) {
   if (countDetailEl) countDetailEl.textContent = reviews.toLocaleString('fr-FR') + ' avis';
   if (kvEl)    kvEl.textContent    = noteStr + ' ★';
 
-  // Étoiles
   const starsEl = document.getElementById('google-stars');
   if (starsEl) {
     starsEl.innerHTML = [1,2,3,4,5].map(i => {
@@ -1059,7 +934,6 @@ function updateGoogleDayChart(dayLabels, dayNotes) {
 
 // Lance le chargement après initialisation des graphes
 window.addEventListener('load', () => {
-  // Toujours tenter le chargement - loadLiveData gère l'auth
   setTimeout(loadLiveData, 300);
   setTimeout(loadGoogleRating, 600);
 });
@@ -1067,24 +941,15 @@ window.addEventListener('load', () => {
 
 /* ════════════ DONNÉES — vides au départ, remplies par loadLiveData() ════════════ */
 
-// Semaine courante (jours)
-let S13 = [];
-let S12 = [];
-
-// Historique semaines & mois
+let S13 = [];          // semaine courante, jour par jour
 let WEEKS    = [];
 let MONTHS   = [];
 let METRICS_W = [];
-let TKT_WEEKS = [];
 let METRICS_M = [];
-
-// Métriques mensuelles (remplies par loadLiveData)
-// window.LIVE_METRICS_M = [];
 
 /* ════════════ INITIALISATIONS GRAPHES ════════════ */
 
-
-// ── Plugin : valeurs + flèches d'évolution sur les graphes barres ──
+// ── Plugin : libellés de valeur au-dessus des points/barres ──
 const rosarioBarPlugin = {
   id: 'rosarioBar',
   afterDatasetsDraw(chart) {
@@ -1092,13 +957,13 @@ const rosarioBarPlugin = {
     if (!data.labels || data.labels.length < 2) return;
 
     ctx.save();
+    ctx.font = '600 10px Sora, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'bottom';
+    ctx.fillStyle = '#1a1916';
 
-    // ── Graphe comparatif : libellé du ticket moyen au-dessus de chaque barre ──
+    // Graphe comparatif : ticket moyen au-dessus de chaque barre
     if (chart.canvas?.id === 'cmpChart') {
-      ctx.font = '600 10px Sora, sans-serif';
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'bottom';
-      ctx.fillStyle = '#1a1916';
       data.datasets.forEach((ds, di) => {
         const meta = chart.getDatasetMeta(di);
         if (meta.hidden) return;
@@ -1113,7 +978,7 @@ const rosarioBarPlugin = {
       return;
     }
 
-    // Format helpers
+    // Format selon le type de graphe
     const cid    = chart.canvas?.id;
     const isCov  = cid === 'covChart';
     const isNote = cid === 'googleChart' || cid === 'googleDayChart';
@@ -1123,20 +988,13 @@ const rosarioBarPlugin = {
       ? (v >= 1000 ? (v/1000).toFixed(1)+'k' : Math.round(v).toString())
       : (v >= 1000 ? (v/1000).toFixed(1)+'k €' : Math.round(v)+' €');
 
-    // ── Trouver le dataset "Total" (label=Total ou index 0) ──
+    // Dataset "Total" (label=Total ou index 0)
     let totalDsIdx = 0;
     data.datasets.forEach((ds, i) => { if (ds.label === 'Total') totalDsIdx = i; });
     const totalDs   = data.datasets[totalDsIdx];
     const totalMeta = chart.getDatasetMeta(totalDsIdx);
-    const nbBars    = data.labels.length;
 
-    // ── Afficher la valeur du dataset Total au-dessus de chaque point ──
-    ctx.font = '600 10px Sora, sans-serif';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'bottom';
-    ctx.fillStyle = '#1a1916';
-
-    for (let i = 0; i < nbBars; i++) {
+    for (let i = 0; i < data.labels.length; i++) {
       const val = totalDs?.data[i];
       if (!val) continue;
       const pt = totalMeta?.data[i];
@@ -1222,8 +1080,6 @@ const cmpChart = makeChart('cmpChart','bar',
   [{label:'A',data:[],backgroundColor:'rgba(139,26,26,0.75)',borderRadius:3,borderSkipped:false},{label:'B',data:[],backgroundColor:'rgba(200,150,60,0.75)',borderRadius:3,borderSkipped:false}],
   { scales:{ x:{grid:{display:false},ticks:{font:{family:'Sora',size:10}}}, y:{min:0,grid:{color:'rgba(0,0,0,.05)'},ticks:{font:{family:'Sora',size:10},callback:v=>v.toFixed(0)+' €'}} } });
 
-// fbTktChart supprimé (fusionné dans cmpChart)
-
 const googleChart= makeChart('googleChart','line',
   [{label:'Note Google',data:[],borderColor:'#f9c74f',borderWidth:2,pointBackgroundColor:'#f9c74f',pointRadius:3,tension:0.35,fill:true,backgroundColor:'rgba(249,199,79,0.08)'}],
   {scales:{x:{grid:{display:false},ticks:{font:{family:'Sora',size:9}}},y:{min:4,max:5,grid:{color:'rgba(0,0,0,.05)'},ticks:{font:{family:'Sora',size:9},callback:v=>v.toFixed(1)}}}});
@@ -1231,7 +1087,6 @@ const googleChart= makeChart('googleChart','line',
 const googleDayChart = makeChart('googleDayChart','bar',
   [{label:'Note',data:[],backgroundColor:'rgba(249,199,79,0.75)',borderRadius:3,borderSkipped:false}],
   {layout:{padding:{top:20}},scales:{x:{grid:{display:false},ticks:{font:{family:'Sora',size:9}}},y:{min:3.5,max:5,grid:{color:'rgba(0,0,0,.05)'},ticks:{font:{family:'Sora',size:9},callback:v=>v.toFixed(1)}}}});
-
 
 
 /* ════════════ PERIOD PICKER ════════════ */
@@ -1271,7 +1126,7 @@ function renderPeriod() {
   document.querySelectorAll('.pnav-btn')[0].style.opacity = idx === 0 ? '.3' : '1';
   document.querySelectorAll('.pnav-btn')[1].style.opacity = idx === list.length-1 ? '.3' : '1';
 
-  // ── CA Total = Lightspeed + Privatisations (calculé AVANT toute utilisation) ──
+  // ── CA Total = Lightspeed + Privatisations ──
   const privWkForCA = (window.LIVE_PRIV_BY_WEEK || {})[p.key] || { total: 0 };
   const caLS     = m.caNet || p.ca;
   const caNet    = caLS + Math.round(privWkForCA.total);
@@ -1296,36 +1151,25 @@ function renderPeriod() {
   const ann  = Math.round(caNet / days * 360 / 10000) / 100;
   s('ann-val', '∼ ' + ann.toFixed(2).replace('.',',') + ' M€');
 
-  // Note Google (strip)
-  // mis à jour par loadGoogleRating()
-
-  // ── BLOC 2 : Couverts & remplissage ──
+  // ── BLOC Couverts & remplissage ──
   s('rk-cov',  fmt(m.couverts));
   s('rk-fill', Math.round(m.rempli) + ' %');
   setDelta('rk-cov-d',  fmtPct(m.couverts, mi?.couverts));
   setDelta('rk-fill-d', fmtPts(m.rempli,   mi?.rempli));
-  // Remplissage par service : utilise les données réelles si dispo
   const fillMidi = m.rempliMidi || 0;
   const fillSoir = m.rempliSoir || 0;
   s('fill-midi-val', fillMidi > 0 ? fillMidi + ' %' : '—');
   s('fill-soir-val', fillSoir > 0 ? fillSoir + ' %' : '—');
-  const barMidi = document.getElementById('fill-midi-bar');
-  const barSoir = document.getElementById('fill-soir-bar');
-  if (barMidi) barMidi.style.width = Math.min(fillMidi, 100) + '%';
-  if (barSoir) barSoir.style.width = Math.min(fillSoir, 100) + '%';
 
   // ── GRAPHES HISTORIQUE (6 périodes) ──
-  const allList  = gran === 'week' ? WEEKS : MONTHS;
+  const allList    = gran === 'week' ? WEEKS : MONTHS;
   const metricsArr = gran === 'week' ? METRICS_W : (METRICS_M.length ? METRICS_M : METRICS_W);
   const histSlice  = allList.slice(Math.max(0, idx - 5), idx + 1);
   const histM      = metricsArr.slice(Math.max(0, idx - 5), idx + 1);
-  const histLbls   = histSlice.map(w => {
-    const parts = w.lbl.split(' · ');
-    return parts[0].trim();
-  });
-  const histVals = histSlice.map(w => w.ca);
+  const histLbls   = histSlice.map(w => w.lbl.split(' · ')[0].trim());
+  const histVals   = histSlice.map(w => w.ca);
 
-  try { // ── Chart updates (guarded) ──
+  try { // ── Mises à jour graphes (protégées) ──
   if (histChart)   { histChart.data.labels = histLbls; histChart.data.datasets[0].data = histVals; histChart.update(); }
   if (caHistChart) { caHistChart.data.labels = histLbls; caHistChart.data.datasets[0].data = histVals; caHistChart.update(); }
   if (covChart)    { covChart.data.labels = histLbls.map((lbl, i) => [lbl, (histM[i]?.rempli != null ? Math.round(histM[i].rempli) + ' %' : '')]); covChart.data.datasets[0].data = histM.map(mm => mm?.couverts || 0); covChart.update(); }
@@ -1334,12 +1178,10 @@ function renderPeriod() {
   if (!dayChart) { console.warn('dayChart not found'); return; }
   if (gran === 'week') {
     const prevW = idx > 0 ? WEEKS[idx-1] : null;
-    const weights  = [0.11, 0.13, 0.14, 0.13, 0.15, 0.22, 0.12];
+    const weights = [0.11, 0.13, 0.14, 0.13, 0.15, 0.22, 0.12];
     const DN = ['Dim','Lun','Mar','Mer','Jeu','Ven','Sam'];
-    const dayNames = ['Lun','Mar','Mer','Jeu','Ven','Sam','Dim'];
-    let labels, total, midi, soir;
+    let labels, total;
 
-    // Reconstruire les données du jour depuis byWeek selon la semaine sélectionnée
     const byWeek = window.LIVE_BY_WEEK;
     const selWkKey = WEEKS[idx]?.key;
     const selWkRows = byWeek && selWkKey && byWeek[selWkKey]
@@ -1349,40 +1191,29 @@ function renderPeriod() {
     if (selWkRows.length > 0) {
       labels = selWkRows.map(r => { const d=r['Date']; const dt=new Date(+d.slice(0,4),+d.slice(4,6)-1,+d.slice(6,8)); return DN[dt.getDay()]+' '+d.slice(6,8); });
       total  = selWkRows.map(r => n(r['CA_Net_Total']));
-      midi   = selWkRows.map(r => n(r['CA_Net_Midi']));
-      soir   = selWkRows.map(r => n(r['CA_Net_Soir']));
     } else {
-      // Pas de données quotidiennes — afficher une seule barre avec le CA total
       labels = [p.lbl.split(' · ')[0]];
       total  = [p.ca];
-      midi   = [0];
-      soir   = [0];
     }
     const prevTotal = prevW ? labels.map((_, i) => Math.round(prevW.ca * (weights[i] || 0.14))) : [];
 
-    // Données privatisations par jour pour la semaine sélectionnée
     const privByDay = {};
     (window.LIVE_PRIV_ROWS || []).forEach(r => {
-      if (selWkRows.length > 0) {
-        // Vérifier si la date est dans la semaine sélectionnée
-        if (selWkRows.some(sr => sr['Date'] === r.date)) privByDay[r.date] = (privByDay[r.date] || 0) + r.total;
-      }
+      if (selWkRows.length > 0 && selWkRows.some(sr => sr['Date'] === r.date)) privByDay[r.date] = (privByDay[r.date] || 0) + r.total;
     });
-    const privData = selWkRows.length > 0
-      ? selWkRows.map(r => privByDay[r['Date']] || 0)
-      : labels.map(() => 0);
+    const privData = selWkRows.length > 0 ? selWkRows.map(r => privByDay[r['Date']] || 0) : labels.map(() => 0);
+
     dayChart.data.labels = labels;
-    // Total = Lightspeed + Événements
     const totalWithEvents = total.map((v, i) => v + (privData[i] || 0));
     dayChart.data.datasets[0].data = totalWithEvents; dayChart.data.datasets[0].hidden = false;
     dayChart.data.datasets[1].data = total;           dayChart.data.datasets[1].hidden = false;
     dayChart.data.datasets[2].data = privData;        dayChart.data.datasets[2].hidden = !privData.some(v=>v>0);
-    dayChart.data.datasets[3].data = prevTotal; dayChart.data.datasets[3].hidden = prevTotal.length === 0;
-    dayChart.data.datasets[4].data = [];       dayChart.data.datasets[4].hidden = true;
+    dayChart.data.datasets[3].data = prevTotal;       dayChart.data.datasets[3].hidden = prevTotal.length === 0;
+    dayChart.data.datasets[4].data = [];              dayChart.data.datasets[4].hidden = true;
 
     s('day-chart-title', "Chiffre d'affaires HT · par jour");
   } else {
-    // Vue mois : afficher tous les jours du mois sélectionné
+    // Vue mois : tous les jours du mois sélectionné
     const byMonthD = window.LIVE_BY_MONTH;
     const moRows = byMonthD && byMonthD[p.key]
       ? byMonthD[p.key].slice().sort((a,b) => a['Date'].localeCompare(b['Date']))
@@ -1416,18 +1247,17 @@ function renderPeriod() {
   }
   dayChart.update('active');
 
-  // ── GRAPHE TICKET MOYEN (tktChart) — Vue d'ensemble ──
+  // ── GRAPHE TICKET MOYEN (tktChart) ──
   if (tktChart) { tktChart.data.labels = histLbls;
     tktChart.data.datasets[0].data = histM.map(mm => {
       const c = mm?.couverts || 0;
-      return c > 0 ? +((mm?.caNet||0)/c).toFixed(2) : +(mm?.tktMoy||0).toFixed(2);
+      return c > 0 ? +((mm?.caNet||0)/c).toFixed(2) : 0;
     });
     tktChart.update('active'); }
 
   } catch(chartErr) { console.warn('Chart update error:', chartErr.message, chartErr.stack?.split('\n')[1]); }
 
-  // ── ANALYSE CA ──
-  // CA kpi strip
+  // ── ANALYSE CA — KPI strip ──
   s('ca-kv1', fmt(caNet) + ' €');
   const caPctCA = p.prev_ca ? ((p.ca-p.prev_ca)/p.prev_ca*100).toFixed(1) : null;
   setd('ca-kd1', caPctCA ? `${+caPctCA>=0?'▲ +':'▼ '}${caPctCA} % ${unit}` : '—', caPctCA ? (+caPctCA>=0?'up':'dn') : 'neu');
@@ -1438,15 +1268,7 @@ function renderPeriod() {
   if (typeof updateCa1Chart === 'function') updateCa1Chart(p, m);
 
   // Clients (Lightspeed) vs Événements (Privatisations)
-  const caMidi  = m.caNetMidi || Math.round(caNet * 0.24);
-  const caSoir  = m.caNetSoir || Math.round(caNet * 0.76);
-  const pctMidi = caNet > 0 ? Math.round(caMidi / caNet * 100) : 0;
-  const pctSoir = caNet > 0 ? Math.round(caSoir / caNet * 100) : 0;
-  s('dej-ca-sub', pctMidi + ' % du CA · ' + (m.tktMidi||0).toFixed(2) + ' € / cvt');
-  s('din-ca-sub', pctSoir + ' % du CA · ' + (m.tktSoir||0).toFixed(2) + ' € / cvt');
-
-  // Clients vs Événements dans le bloc 1 Vue d'ensemble
-  const caClients = caLS; // Lightspeed uniquement
+  const caClients = caLS;
   const caEvents  = Math.round(privWkForCA.total);
   const caGrand   = caClients + caEvents;
   s('ca-clients-val', fmt(caClients) + ' €');
@@ -1458,14 +1280,11 @@ function renderPeriod() {
   s('ca-events-sub', caGrand > 0 ? Math.round(caEvents/caGrand*100) + ' % du CA total' : (caEvents === 0 ? 'Aucun événement' : '—'));
   s('svc-events-sub', caGrand > 0 ? Math.round(caEvents/caGrand*100) + ' % du CA total' : (caEvents === 0 ? 'Aucun événement' : '—'));
 
-  // Cuisine vs Boissons
+  // Cuisine vs Boissons (alimente updateCompare)
   const caFood = m.caFood || Math.round(caNet * 0.75);
   const caBev  = m.caBoissons || Math.round(caNet * 0.25);
-  const caFB   = caFood + caBev || 1;
-  s('fb-food-sub', Math.round(caFood/caFB*100) + ' % du CA');
-  s('fb-bev-sub',  Math.round(caBev/caFB*100) + ' % du CA');
 
-  // ── Bloc CA-2 : Ticket moyen total (identique vue d'ensemble) ──
+  // ── Bloc CA-2 : Ticket moyen total ──
   s('ca2-tkt-big', tktTotal.toFixed(2) + ' €');
   const ca2TktPrev = mi && mi.couverts > 0 ? +((mi.caNet||0)/mi.couverts).toFixed(2) : null;
   s('ca2-tkt-delta', ca2TktPrev ? (tktTotal >= ca2TktPrev ? '▲ +' : '▼ ') + Math.abs(tktTotal - ca2TktPrev).toFixed(2) + ' € vs S préc.' : '—');
@@ -1478,39 +1297,34 @@ function renderPeriod() {
     ca2TktChart.update('active');
   }
 
-  // ── Stocker les données pour updateCompare() ──
+  // ── Données pour updateCompare() ──
   window.CMP_DATA = {
     histLbls,
     histM,
-    // CA période courante
     caMidi: m.caNetMidi || Math.round(caLS * 0.24),
     caSoir: m.caNetSoir || Math.round(caLS * 0.76),
     caFood, caBev,
     caClients, caEvents,
-    // TM période courante
     tktMidi:   m.tktMidi   || 0,
     tktSoir:   m.tktSoir   || 0,
     tktFood:   m.tktFood   || 0,
     tktBoissons: m.tktBoissons || 0,
     tktClients: m.couverts > 0 ? +(caClients/m.couverts).toFixed(2) : 0,
-    tktEvents:  0, // pas de couverts dédiés aux événements
-    couverts: m.couverts || 0,
+    tktEvents:  0,
   };
   updateCompare();
 }
 
-// ── Comparateur du bloc CA-2 (Déj/Dîn · Cuisine/Bois · Clients/Évén) ──
+// ── Comparateur du bloc CA-2 ──
 function updateCompare() {
   const sel = document.getElementById('ca2-compare-select');
   if (!sel || !window.CMP_DATA) return;
   const mode = sel.value;
   const d = window.CMP_DATA;
 
-  // Helpers locaux (s et fmt sont locales à renderPeriod)
   const s   = (id, v) => { const e = document.getElementById(id); if (e) e.textContent = v; };
   const fmt = v => Math.round(v).toLocaleString('fr-FR');
 
-  // Configuration par mode
   const cfg = {
     dejdin: {
       title: 'Déjeuner vs Dîner',
@@ -1531,29 +1345,26 @@ function updateCompare() {
       a: { icon:'🍽️', lbl:'Clients',     ca:d.caClients, tkt:d.tktClients },
       b: { icon:'🎉', lbl:'Événements',  ca:d.caEvents,  tkt:d.tktEvents },
       histA: d.histM.map(mm => (mm?.couverts > 0 ? +((mm?.caNet||0)/mm.couverts).toFixed(2) : 0)),
-      histB: d.histM.map(() => 0), // pas de ticket moyen dédié aux événements
+      histB: d.histM.map(() => 0),
     },
   }[mode];
   if (!cfg) return;
 
   const caTot = (cfg.a.ca + cfg.b.ca) || 1;
 
-  // Titres
   s('cmp-ca-title',   'CA · ' + cfg.title);
   s('cmp-hist-title', 'Évolution comparée · ' + cfg.title);
   s('cmp-tkt-title',  'Ticket moyen · ' + cfg.title);
 
-  // Cartouches CA
   s('cmp-a-icon', cfg.a.icon); s('cmp-a-lbl', cfg.a.lbl);
   s('cmp-a-ca', fmt(cfg.a.ca) + ' €'); s('cmp-a-sub', Math.round(cfg.a.ca/caTot*100) + ' % du CA');
   s('cmp-b-icon', cfg.b.icon); s('cmp-b-lbl', cfg.b.lbl);
   s('cmp-b-ca', fmt(cfg.b.ca) + ' €'); s('cmp-b-sub', Math.round(cfg.b.ca/caTot*100) + ' % du CA');
 
-  // Légende graphe
   s('cmp-leg-a', cfg.a.lbl);
   s('cmp-leg-b', cfg.b.lbl);
 
-  // Graphe historique comparé (ticket moyen)
+  // Graphe comparé (ticket moyen)
   if (cmpChart) {
     cmpChart.data.labels = d.histLbls;
     cmpChart.data.datasets[0].label = cfg.a.lbl;
@@ -1563,7 +1374,6 @@ function updateCompare() {
     cmpChart.update('active');
   }
 
-  // Cartouches TM
   s('cmp-tkt-a-icon', cfg.a.icon); s('cmp-tkt-a-lbl', cfg.a.lbl);
   s('cmp-tkt-a-val', cfg.a.tkt > 0 ? cfg.a.tkt.toFixed(2) + ' €' : '—');
   s('cmp-tkt-b-icon', cfg.b.icon); s('cmp-tkt-b-lbl', cfg.b.lbl);
@@ -1574,34 +1384,13 @@ function setGran(g, el) {
   gran = g;
   document.querySelectorAll('.pgran').forEach(b => b.classList.remove('on'));
   el.classList.add('on');
-  const custom = document.getElementById('period-custom');
-  if (g === 'custom') { custom.classList.add('show'); return; }
-  custom.classList.remove('show');
   idx = currentList().length - 1;
   renderPeriod();
 }
 
 function navPeriod(dir) {
-  if (gran === 'custom') return;
   idx = Math.max(0, Math.min(currentList().length - 1, idx + dir));
   renderPeriod();
-}
-
-function applyCustom() {
-  const from = document.getElementById('date-from').value;
-  const to   = document.getElementById('date-to').value;
-  if (!from || !to) return;
-  const fmt = d => new Date(d).toLocaleDateString('fr-FR', { day:'numeric', month:'short', year:'numeric' });
-  const days = Math.round((new Date(to) - new Date(from)) / 86400000) + 1;
-  const approxCA = Math.round(days * 5200);
-  document.getElementById('pnav-lbl').textContent = fmt(from) + ' – ' + fmt(to);
-  document.getElementById('hdr-sub').textContent  = fmt(from) + ' → ' + fmt(to) + ' · Dashboard Rosario';
-  document.getElementById('period-custom').classList.remove('show');
-  document.getElementById('kv-ca').textContent = approxCA.toLocaleString('fr-FR') + ' €';
-  document.getElementById('kd-ca').textContent = days + ' jours sélectionnés';
-  document.getElementById('kd-ca').className   = 'kpi-cell-delta neu';
-  const ann = Math.round(approxCA / days * 360 / 10000) / 100;
-  document.getElementById('ann-val').textContent = '∼ ' + ann.toFixed(2).replace('.',',') + ' M€';
 }
 
 // ── Saut vers la période (semaine/mois) contenant la date choisie ──
@@ -1626,43 +1415,39 @@ function updateCa1Chart(p, m) {
   if (gran === 'week') {
     const prevW = idx > 0 ? WEEKS[idx-1] : null;
     const weights = [0.11,0.13,0.14,0.13,0.15,0.22,0.12];
-    const dayNames = ['Lun','Mar','Mer','Jeu','Ven','Sam','Dim'];
-    const DN2 = ['Dim','Lun','Mar','Mer','Jeu','Ven','Sam'];
-    let labels, total, midi, soir;
+    const DN = ['Dim','Lun','Mar','Mer','Jeu','Ven','Sam'];
+    let labels, total;
     const byWeek2 = window.LIVE_BY_WEEK;
     const selKey2 = WEEKS[idx]?.key;
     const selRows2 = byWeek2 && selKey2 && byWeek2[selKey2]
       ? byWeek2[selKey2].sort((a,b)=>a['Date'].localeCompare(b['Date'])) : [];
     if (selRows2.length > 0) {
-      labels=selRows2.map(r=>{const d=r['Date'];const dt=new Date(+d.slice(0,4),+d.slice(4,6)-1,+d.slice(6,8));return DN2[dt.getDay()]+' '+d.slice(6,8);});
+      labels=selRows2.map(r=>{const d=r['Date'];const dt=new Date(+d.slice(0,4),+d.slice(4,6)-1,+d.slice(6,8));return DN[dt.getDay()]+' '+d.slice(6,8);});
       total=selRows2.map(r=>n(r['CA_Net_Total']));
-      midi=selRows2.map(r=>n(r['CA_Net_Midi']));
-      soir=selRows2.map(r=>n(r['CA_Net_Soir']));
     } else {
-      labels=[p.lbl.split(' · ')[0]]; total=[p.ca]; midi=[0]; soir=[0];
+      labels=[p.lbl.split(' · ')[0]]; total=[p.ca];
     }
     const prev = prevW && S13.length > 0 ? S13.map((_,i) => Math.round(prevW.ca*(weights[i]||0.14))) : (prevW ? weights.map(w=>Math.round(prevW.ca*w)) : []);
-    // Privatisations pour ca1Chart
-    const privByDay2b = {};
+    const privByDay = {};
     (window.LIVE_PRIV_ROWS || []).forEach(r => {
-      if (selRows2.some(sr => sr['Date'] === r.date)) privByDay2b[r.date] = (privByDay2b[r.date]||0)+r.total;
+      if (selRows2.some(sr => sr['Date'] === r.date)) privByDay[r.date] = (privByDay[r.date]||0)+r.total;
     });
-    const privData2b = selRows2.length>0 ? selRows2.map(r=>privByDay2b[r['Date']]||0) : labels.map(()=>0);
-    const totalWithPriv = total.map((v,i) => v + (privData2b[i]||0));
+    const privData = selRows2.length>0 ? selRows2.map(r=>privByDay[r['Date']]||0) : labels.map(()=>0);
+    const totalWithPriv = total.map((v,i) => v + (privData[i]||0));
 
     ca1Chart.data.labels = labels;
     [0,1,2,3].forEach(i=>ca1Chart.data.datasets[i].hidden=false);
-    ca1Chart.data.datasets[0].data=totalWithPriv; // Total = LS + Privs
-    ca1Chart.data.datasets[1].data=total;          // Clients = LS seulement
-    ca1Chart.data.datasets[2].data=privData2b;     // Événements = Privs
-    ca1Chart.data.datasets[2].hidden=!privData2b.some(v=>v>0);
+    ca1Chart.data.datasets[0].data=totalWithPriv;
+    ca1Chart.data.datasets[1].data=total;
+    ca1Chart.data.datasets[2].data=privData;
+    ca1Chart.data.datasets[2].hidden=!privData.some(v=>v>0);
     ca1Chart.data.datasets[3].data=prev;
     ca1Chart.data.datasets[3].hidden = prev.length===0;
     ca1Chart.data.datasets[4].data=[]; ca1Chart.data.datasets[4].hidden=true;
 
     document.getElementById('ca1-title') && (document.getElementById('ca1-title').textContent="CA HT · par jour");
   } else {
-    // Vue mois : afficher tous les jours du mois sélectionné
+    // Vue mois : tous les jours du mois sélectionné
     const byMonth2 = window.LIVE_BY_MONTH;
     const moRows2 = byMonth2 && byMonth2[p.key]
       ? byMonth2[p.key].slice().sort((a,b)=>a['Date'].localeCompare(b['Date']))
@@ -1717,7 +1502,7 @@ function showTab(id, el) {
   el.classList.add('on');
 }
 
-// renderPeriod() appelé par loadLiveData() après chargement
+// renderPeriod() est appelé par loadLiveData() après chargement
 </script>
 </body>
 </html>
