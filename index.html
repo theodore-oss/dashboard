@@ -686,12 +686,15 @@ async function loadLiveData() {
 
     }
 
-    // Stocker globalement
-    window.LIVE_PRIV_ROWS = privRows;
+    // Stocker globalement — ne conserver que les événements déjà passés (aujourd'hui ou avant)
+    const today = new Date();
+    const todayKey = '' + today.getFullYear() + String(today.getMonth()+1).padStart(2,'0') + String(today.getDate()).padStart(2,'0');
+    const privPast = privRows.filter(r => r.date <= todayKey);
+    window.LIVE_PRIV_ROWS = privPast;
 
     // Agréger par semaine
     const privByWeek = {};
-    privRows.forEach(r => {
+    privPast.forEach(r => {
       const wk = getWeekKey(r.date);
       if (!privByWeek[wk]) privByWeek[wk] = { total: 0, cuisine: 0, alcool: 0 };
       privByWeek[wk].total   += r.total;
