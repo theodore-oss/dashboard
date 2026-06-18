@@ -104,10 +104,12 @@ body { font-family: 'Sora', sans-serif; background: var(--bg); color: var(--text
 
 /* ── FOOTER ── */
 footer { max-width: 1040px; margin: 32px auto 0; padding-top: 20px; border-top: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; font-size: 11px; color: var(--muted); }
-.src-list { display: flex; gap: 14px; }
+.src-list { display: flex; gap: 14px; align-items: center; }
 .src-i { display: flex; align-items: center; gap: 4px; font-size: 10px; }
 .src-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); }
 .src-dot.mock { background: var(--gold); }
+.src-link { color: var(--accent); text-decoration: none; font-weight: 500; border-right: 1px solid var(--border); padding-right: 14px; }
+.src-link:hover { text-decoration: underline; }
 
 @media(max-width:900px){
   .kpi-strip{ grid-template-columns: repeat(2,1fr); }
@@ -541,7 +543,49 @@ footer { max-width: 1040px; margin: 32px auto 0; padding-top: 20px; border-top: 
       <div class="chart-h160" style="margin-bottom:8px;"><canvas id="rhDayChart"></canvas></div>
       <div class="section-sep">CA / heure travaillée · total · 6 dernières semaines</div>
       <div class="chart-h120"><canvas id="rhWeekChart"></canvas></div>
-      <div style="font-size:11px;color:var(--muted);margin-top:16px;padding-top:12px;border-top:1px solid var(--border);">Le bloc Annulations / Rabais / Offerts sera ajouté ici (données à venir).</div>
+    </div>
+  </div>
+
+  <!-- BLOC ANNULATIONS / RABAIS / OFFERTS -->
+  <div class="card" id="bloc-ann">
+    <div class="card-header">
+      <div class="card-num">2</div>
+      <span class="card-title">Annulations · Rabais · Offerts</span>
+      <span class="card-src">Lightspeed · données réelles</span>
+    </div>
+    <div class="card-body">
+      <div class="kpi-strip" style="margin-bottom:16px;">
+        <div class="kpi-cell">
+          <div class="kpi-n" data-n="1">Annulé</div>
+          <div class="kpi-cell-val" id="ann-annule-val">— €</div>
+          <div style="margin-top:4px;font-size:10px;color:var(--muted);" id="ann-annule-sub">—</div>
+        </div>
+        <div class="kpi-cell">
+          <div class="kpi-n" data-n="2">Rabais</div>
+          <div class="kpi-cell-val" id="ann-rabais-val">— €</div>
+          <div style="margin-top:4px;font-size:10px;color:var(--muted);" id="ann-rabais-sub">—</div>
+        </div>
+        <div class="kpi-cell">
+          <div class="kpi-n" data-n="3">Offert</div>
+          <div class="kpi-cell-val" id="ann-offert-val">— €</div>
+          <div style="margin-top:4px;font-size:10px;color:var(--muted);" id="ann-offert-sub">—</div>
+        </div>
+        <div class="kpi-cell">
+          <div class="kpi-n" data-n="4">Total / CA</div>
+          <div class="kpi-cell-val" id="ann-total-val">— €</div>
+          <div style="margin-top:4px;font-size:10px;color:var(--muted);" id="ann-total-sub">—</div>
+        </div>
+      </div>
+      <div class="section-sep">Par jour · annulé · rabais · offert</div>
+      <div class="cleg">
+        <div class="cleg-item"><span style="width:12px;height:12px;border-radius:2px;background:#8B1A1A;display:inline-block;"></span>Annulé</div>
+        <div class="cleg-item"><span style="width:12px;height:12px;border-radius:2px;background:#C8963C;display:inline-block;"></span>Rabais</div>
+        <div class="cleg-item"><span style="width:12px;height:12px;border-radius:2px;background:#bf3d7a;display:inline-block;"></span>Offert</div>
+      </div>
+      <div class="chart-h160" style="margin-bottom:6px;"><canvas id="annChart"></canvas></div>
+      <div style="font-size:10px;color:var(--muted);text-align:center;margin-bottom:4px;">Clique sur une journée pour voir le détail</div>
+      <div id="ann-detail" style="display:none;"></div>
+      <div style="font-size:11px;color:var(--muted);margin-top:8px;padding-top:12px;border-top:1px solid var(--border);" id="ann-empty">En attente des données (onglets <strong>Annulations_Detail</strong> et <strong>Rabais_Detail</strong>, alimentés par le script).</div>
     </div>
   </div>
 
@@ -550,6 +594,7 @@ footer { max-width: 1040px; margin: 32px auto 0; padding-top: 20px; border-top: 
 <footer>
   <span id="footer-lbl">Rosario · Dashboard · S13 · 23–29 mars 2026</span>
   <div class="src-list">
+    <a href="methodologie.html" class="src-link">Méthodologie &amp; sources ↗</a>
     <span class="src-i"><span class="src-dot"></span>Lightspeed (réel)</span>
     <span class="src-i"><span class="src-dot mock"></span>Skello (à connecter)</span>
     <span class="src-i"><span class="src-dot"></span>Google (avis)</span>
@@ -850,11 +895,11 @@ function updateTop10UI(food, bois) {
   const boisEl = document.getElementById('top10-bev-list');
   if (foodEl && food.length) {
     foodEl.innerHTML = food.map((p,i) => `
-      <div class="plat"><span class="plat-num">${i+1}</span><span class="plat-name">${p.name}</span><span class="plat-qty">${Math.round(p.qty)} vtes</span><span class="plat-ca">${Math.round(p.ca).toLocaleString('fr-FR')} €</span></div>`).join('');
+      <div class="plat"><span class="plat-num">${i+1}</span><span class="plat-name">${p.name}</span><span class="plat-qty">${Math.round(p.qty)} unités</span><span class="plat-ca">${Math.round(p.ca).toLocaleString('fr-FR')} €</span></div>`).join('');
   }
   if (boisEl && bois.length) {
     boisEl.innerHTML = bois.map((p,i) => `
-      <div class="plat"><span class="plat-num">${i+1}</span><span class="plat-name">${p.name}</span><span class="plat-qty">${Math.round(p.qty)} vtes</span><span class="plat-ca">${Math.round(p.ca).toLocaleString('fr-FR')} €</span></div>`).join('');
+      <div class="plat"><span class="plat-num">${i+1}</span><span class="plat-name">${p.name}</span><span class="plat-qty">${Math.round(p.qty)} unités</span><span class="plat-ca">${Math.round(p.ca).toLocaleString('fr-FR')} €</span></div>`).join('');
   }
   const kpiFood = document.getElementById('kpi-top-food');
   if (kpiFood && food.length) {
@@ -993,9 +1038,60 @@ function updateGoogleDayChart(labels, notes, counts) {
   googleDayChart.update();
 }
 
+// ── Annulations / Rabais / Offerts ──
+async function loadAnnulations() {
+  try {
+    const [annRows, remRows] = await Promise.all([
+      fetchSheet('Annulations_Detail').catch(() => []),
+      fetchSheet('Rabais_Detail').catch(() => []),
+    ]);
+
+    // Annulations : détail par article (lignes Somme ≠ 0, montant en valeur absolue)
+    const annByDay = {};
+    (annRows || []).forEach(r => {
+      const d = String(r['Date'] || '').replace(/\D/g,'').slice(0,8);
+      if (d.length !== 8) return;
+      const montant = Math.abs(n(r['Montant']));
+      if (montant === 0) return;
+      if (!annByDay[d]) annByDay[d] = { montant: 0, count: 0, rows: [] };
+      annByDay[d].montant += montant;
+      annByDay[d].count   += 1;
+      annByDay[d].rows.push({
+        article: r['Article'] || '',
+        table:   r['Table'] || r['Nom'] || '',
+        creePar: r['Créé par'] || r['Cree par'] || r['CreePar'] || '',
+        qte:     n(r['Qté'] || r['Qte'] || r['Quantité'] || r['Quantite']),
+        montant, motif: r['Motif'] || ''
+      });
+    });
+    window.LIVE_ANN_BYDAY = annByDay;
+
+    // Rabais / Offerts : détail par produit (colonne Type)
+    const remByDay = {};
+    (remRows || []).forEach(r => {
+      const d = String(r['Date'] || '').replace(/\D/g,'').slice(0,8);
+      if (d.length !== 8) return;
+      const type = String(r['Type'] || '').toLowerCase().includes('offert') ? 'offert' : 'rabais';
+      const montant = Math.abs(n(r['Montant']));
+      const qte = n(r['Quantité'] || r['Quantite'] || r['Qté'] || r['Qte']);
+      if (montant === 0 && qte === 0) return;
+      if (!remByDay[d]) remByDay[d] = { rabais: { montant:0, qte:0, rows:[] }, offert: { montant:0, qte:0, rows:[] } };
+      const slot = remByDay[d][type];
+      slot.montant += montant; slot.qte += qte;
+      slot.rows.push({ categorie: r['Catégorie'] || r['Categorie'] || '', article: r['Article'] || '', qte, montant });
+    });
+    window.LIVE_REMISE_BYDAY = remByDay;
+
+    updateAnnulations();
+  } catch(e) {
+    console.warn('Annulations non disponibles:', e.message);
+  }
+}
+
 window.addEventListener('load', () => {
   setTimeout(loadLiveData, 300);
   setTimeout(loadGoogleRating, 600);
+  setTimeout(loadAnnulations, 900);
 });
 
 
@@ -1054,6 +1150,9 @@ const rosarioBarPlugin = {
       });
       ctx.restore(); return;
     }
+
+    // Graphe Annulations : barres empilées, pas de label au-dessus (lecture au survol/clic)
+    if (cid === 'annChart') { ctx.restore(); return; }
 
     // Format générique
     const isCov = cid === 'covChart';
@@ -1187,6 +1286,21 @@ const rhDayChart = new Chart(document.getElementById('rhDayChart'), {
 const rhWeekChart = makeChart('rhWeekChart','bar',
   [{label:'CA/h',data:[],backgroundColor:'rgba(139,26,26,0.75)',borderRadius:4}], barOpts(v=>Math.round(v)+' €'));
 
+// Annulations / Rabais / Offerts — barres empilées par jour
+const annChart = new Chart(document.getElementById('annChart'), {
+  type:'bar',
+  data:{ labels:[], datasets:[
+    { label:'Annulé', data:[], backgroundColor:'#8B1A1A', borderRadius:3, stack:'s' },
+    { label:'Rabais', data:[], backgroundColor:'#C8963C', borderRadius:3, stack:'s' },
+    { label:'Offert', data:[], backgroundColor:'#bf3d7a', borderRadius:3, stack:'s' },
+  ]},
+  options:{ responsive:true, maintainAspectRatio:false, layout:{padding:{top:12}}, interaction:{mode:'index',intersect:false},
+    onClick:(e, els) => { if (els.length) showAnnDetail(annChart.data.labels[els[0].index]); },
+    plugins:{ legend:{display:false}, tooltip:{ backgroundColor:'#fff', borderColor:'#e4e1d9', borderWidth:1, titleColor:'#1a1916', bodyColor:'#8a8680', padding:10,
+      callbacks:{ label:c => '  ' + c.dataset.label + ' : ' + Math.round(c.parsed.y).toLocaleString('fr-FR') + ' €' } } },
+    scales:{ x:{stacked:true,grid:{display:false},ticks:{font:{family:'Sora',size:10}}}, y:{stacked:true,grid:{color:'rgba(0,0,0,.05)'},ticks:{font:{family:'Sora',size:10},callback:v=>Math.round(v)+' €'}} } }
+});
+
 
 /* ════════════ PERIOD PICKER ════════════ */
 let gran = 'week', idx = WEEKS.length - 1;
@@ -1227,6 +1341,7 @@ function renderPeriod() {
   const privWkForCA = ((gran === 'week' ? window.LIVE_PRIV_BY_WEEK : window.LIVE_PRIV_BY_MONTH) || {})[p.key] || { total: 0, pax: 0 };
   const caLS     = m.caNet || p.ca;
   const caNet    = caLS + Math.round(privWkForCA.total);
+  window.CUR_CA  = caNet;
   const tktTotal = m.couverts > 0 ? +(caNet / m.couverts).toFixed(2) : +((m.tktMidi||0)*0.32 + (m.tktSoir||0)*0.68).toFixed(2);
 
   const caFmt = fmtPct(caNet, p.prev_ca);
@@ -1383,6 +1498,7 @@ function renderPeriod() {
   updateCompare();
 
   if (typeof updateRH === 'function') updateRH();
+  if (typeof updateAnnulations === 'function') updateAnnulations();
 }
 
 function updateCompare() {
@@ -1481,6 +1597,106 @@ function updateRH() {
   rhWeekChart.data.datasets[0].data = wvals;
   rhWeekChart.data.datasets[0].backgroundColor = slice.map((_, i) => i === slice.length-1 ? '#8B1A1A' : 'rgba(139,26,26,0.4)');
   rhWeekChart.update();
+}
+
+// ── Bloc Annulations / Rabais / Offerts ──
+function updateAnnulations() {
+  if (!annChart) return;
+  const byP = ((gran === 'week' ? window.LIVE_BY_WEEK : window.LIVE_BY_MONTH) || {});
+  const list = gran === 'week' ? WEEKS : MONTHS;
+  const p = list[idx]; if (!p) return;
+  const annBD = window.LIVE_ANN_BYDAY || {};
+  const remBD = window.LIVE_REMISE_BYDAY || {};
+  const s = (id, v) => { const e = document.getElementById(id); if (e) e.textContent = v; };
+  const DN = ['Dim','Lun','Mar','Mer','Jeu','Ven','Sam'];
+
+  const rows = (byP[p.key] || []).slice().sort((a,b) => a['Date'].localeCompare(b['Date']));
+  const labels = [], annData = [], rabData = [], offData = [];
+  window.ANN_DAYS = [];
+  let sAnn = 0, sAnnN = 0, sRab = 0, sRabQ = 0, sOff = 0, sOffQ = 0;
+  rows.forEach(r => {
+    const d = r['Date'];
+    const dt = new Date(+d.slice(0,4), +d.slice(4,6)-1, +d.slice(6,8));
+    labels.push(gran === 'week' ? DN[dt.getDay()] + ' ' + d.slice(6,8) : d.slice(6,8));
+    window.ANN_DAYS.push(d);
+    const a = annBD[d] || { montant: 0, count: 0 };
+    const rem = remBD[d] || { rabais: { montant:0, qte:0 }, offert: { montant:0, qte:0 } };
+    annData.push(Math.round(a.montant));
+    rabData.push(Math.round(rem.rabais.montant));
+    offData.push(Math.round(rem.offert.montant));
+    sAnn += a.montant; sAnnN += a.count;
+    sRab += rem.rabais.montant; sRabQ += rem.rabais.qte;
+    sOff += rem.offert.montant; sOffQ += rem.offert.qte;
+  });
+
+  const fmt = v => Math.round(v).toLocaleString('fr-FR');
+  s('ann-annule-val', fmt(sAnn) + ' €'); s('ann-annule-sub', Math.round(sAnnN) + ' article' + (sAnnN > 1 ? 's' : ''));
+  s('ann-rabais-val', fmt(sRab) + ' €'); s('ann-rabais-sub', Math.round(sRabQ) + ' unité' + (sRabQ > 1 ? 's' : ''));
+  s('ann-offert-val', fmt(sOff) + ' €'); s('ann-offert-sub', sOffQ > 0 ? Math.round(sOffQ) + ' unité' + (sOffQ > 1 ? 's' : '') : 'aucun');
+  const totRemise = sAnn + sRab + sOff;
+  const ca = window.CUR_CA || 0;
+  s('ann-total-val', fmt(totRemise) + ' €');
+  s('ann-total-sub', ca > 0 ? (totRemise / ca * 100).toFixed(1).replace('.', ',') + ' % du CA' : '—');
+
+  annChart.data.labels = labels;
+  annChart.data.datasets[0].data = annData;
+  annChart.data.datasets[1].data = rabData;
+  annChart.data.datasets[2].data = offData;
+  annChart.update();
+
+  const hasData = totRemise > 0;
+  const emptyEl = document.getElementById('ann-empty');
+  if (emptyEl) emptyEl.style.display = hasData ? 'none' : 'block';
+  const detEl = document.getElementById('ann-detail');
+  if (detEl && !hasData) { detEl.style.display = 'none'; detEl.innerHTML = ''; }
+}
+
+function showAnnDetail(label) {
+  const i = (annChart.data.labels || []).indexOf(label);
+  const d = (window.ANN_DAYS || [])[i];
+  const el = document.getElementById('ann-detail');
+  if (!el || !d) return;
+  const a = (window.LIVE_ANN_BYDAY || {})[d];
+  const rem = (window.LIVE_REMISE_BYDAY || {})[d] || { rabais: { rows: [] }, offert: { rows: [] } };
+  const annRows = (a && a.rows) || [];
+  const rabRows = (rem.rabais && rem.rabais.rows) || [];
+  const offRows = (rem.offert && rem.offert.rows) || [];
+  if (!annRows.length && !rabRows.length && !offRows.length) { el.style.display = 'none'; el.innerHTML = ''; return; }
+  const fmt = v => Math.round(v).toLocaleString('fr-FR');
+  const dt = new Date(+d.slice(0,4), +d.slice(4,6)-1, +d.slice(6,8));
+  const DN = ['dimanche','lundi','mardi','mercredi','jeudi','vendredi','samedi'];
+  const dateLbl = DN[dt.getDay()] + ' ' + d.slice(6,8) + '/' + d.slice(4,6);
+  const pill = (txt, color) => '<span style="display:inline-block;background:' + color + ';color:#fff;padding:2px 9px;border-radius:100px;font-size:10px;font-weight:500;">' + txt + '</span>';
+  let html = '<div style="display:flex;justify-content:space-between;align-items:center;margin:14px 0 8px;">' +
+    '<div style="font-size:12px;font-weight:600;">Détail · ' + dateLbl + '</div>' +
+    '<button onclick="document.getElementById(\'ann-detail\').style.display=\'none\'" style="border:none;background:none;color:var(--muted);cursor:pointer;font-size:15px;font-family:Sora,sans-serif;">✕</button></div>';
+  html += '<table style="width:100%;border-collapse:collapse;font-size:12px;">';
+  html += '<thead><tr style="color:var(--muted);font-size:10px;text-transform:uppercase;letter-spacing:.05em;">' +
+    '<th style="text-align:left;padding:6px 8px;">Type</th><th style="text-align:left;padding:6px 8px;">Article</th>' +
+    '<th style="text-align:left;padding:6px 8px;">Détail</th><th style="text-align:right;padding:6px 8px;">Qté</th>' +
+    '<th style="text-align:right;padding:6px 8px;">Montant</th></tr></thead><tbody>';
+  annRows.forEach(r => {
+    const info = [r.table, r.creePar, r.motif].filter(Boolean).join(' · ');
+    html += '<tr style="border-top:1px solid var(--border);"><td style="padding:7px 8px;">' + pill('Annulé', '#8B1A1A') + '</td>' +
+      '<td style="padding:7px 8px;">' + r.article + '</td><td style="padding:7px 8px;color:var(--muted);">' + info + '</td>' +
+      '<td style="padding:7px 8px;text-align:right;">' + Math.round(r.qte) + '</td>' +
+      '<td style="padding:7px 8px;text-align:right;font-weight:600;color:var(--accent);">−' + fmt(r.montant) + ' €</td></tr>';
+  });
+  rabRows.forEach(r => {
+    html += '<tr style="border-top:1px solid var(--border);"><td style="padding:7px 8px;">' + pill('Rabais', '#C8963C') + '</td>' +
+      '<td style="padding:7px 8px;">' + r.article + '</td><td style="padding:7px 8px;color:var(--muted);">' + r.categorie + '</td>' +
+      '<td style="padding:7px 8px;text-align:right;">' + Math.round(r.qte) + '</td>' +
+      '<td style="padding:7px 8px;text-align:right;font-weight:600;color:var(--accent);">' + fmt(r.montant) + ' €</td></tr>';
+  });
+  offRows.forEach(r => {
+    html += '<tr style="border-top:1px solid var(--border);"><td style="padding:7px 8px;">' + pill('Offert', '#bf3d7a') + '</td>' +
+      '<td style="padding:7px 8px;">' + r.article + '</td><td style="padding:7px 8px;color:var(--muted);">' + r.categorie + '</td>' +
+      '<td style="padding:7px 8px;text-align:right;">' + Math.round(r.qte) + '</td>' +
+      '<td style="padding:7px 8px;text-align:right;font-weight:600;color:var(--accent);">' + fmt(r.montant) + ' €</td></tr>';
+  });
+  html += '</tbody></table>';
+  el.innerHTML = html;
+  el.style.display = 'block';
 }
 
 function setGran(g, el) {
