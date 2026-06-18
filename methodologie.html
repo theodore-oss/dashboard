@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rosario · Méthodologie &amp; sources</title>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root{
+  --bg:#f7f6f3; --surface:#fff; --border:#e4e1d9; --text:#1a1916; --muted:#8a8680;
+  --accent:#8B1A1A; --gold:#C8963C; --pink:#bf3d7a; --ok:#27ae60; --radius:10px;
+  --shadow:0 1px 3px rgba(0,0,0,.06),0 4px 16px rgba(0,0,0,.04);
+}
+body{ font-family:'Sora',sans-serif; background:var(--bg); color:var(--text); line-height:1.65; padding:48px 24px 90px; }
+.wrap{ max-width:880px; margin:0 auto; }
+header.top{ border-bottom:1px solid var(--border); padding-bottom:22px; margin-bottom:34px; }
+header.top h1{ font-size:24px; font-weight:600; letter-spacing:-.3px; }
+header.top p{ font-size:13px; color:var(--muted); font-weight:300; margin-top:6px; }
+.back{ font-size:12px; color:var(--accent); text-decoration:none; }
+.back:hover{ text-decoration:underline; }
+section{ margin-bottom:38px; }
+h2{ font-size:13px; font-weight:600; text-transform:uppercase; letter-spacing:.1em; color:var(--accent); margin-bottom:16px; display:flex; align-items:center; gap:10px; }
+h2 .num{ width:22px; height:22px; border-radius:50%; background:var(--accent); color:#fff; font-size:11px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+h3{ font-size:14px; font-weight:600; margin:18px 0 6px; }
+p{ font-size:14px; margin-bottom:10px; }
+p.lead{ color:var(--muted); }
+.card{ background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); box-shadow:var(--shadow); padding:20px 24px; margin-bottom:16px; }
+ul{ margin:6px 0 12px 0; padding-left:0; list-style:none; }
+li{ font-size:14px; padding:5px 0 5px 18px; position:relative; }
+li::before{ content:''; position:absolute; left:2px; top:13px; width:6px; height:6px; border-radius:50%; background:var(--accent); opacity:.55; }
+code{ font-family:'Sora',monospace; background:#efece4; border:1px solid var(--border); border-radius:4px; padding:1px 6px; font-size:12.5px; }
+table{ width:100%; border-collapse:collapse; font-size:13px; margin:8px 0 14px; }
+th,td{ text-align:left; padding:9px 12px; border-bottom:1px solid var(--border); vertical-align:top; }
+th{ font-size:11px; text-transform:uppercase; letter-spacing:.05em; color:var(--muted); font-weight:500; }
+tr:last-child td{ border-bottom:none; }
+.flow{ display:flex; flex-wrap:wrap; align-items:stretch; gap:0; }
+.fstep{ flex:1; min-width:130px; background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:12px 14px; text-align:center; }
+.fstep .t{ font-size:12px; font-weight:600; color:var(--accent); }
+.fstep .s{ font-size:10.5px; color:var(--muted); margin-top:3px; }
+.farrow{ display:flex; align-items:center; color:var(--muted); font-size:18px; padding:0 8px; }
+.tag{ display:inline-block; font-size:10px; font-weight:500; padding:2px 8px; border-radius:100px; margin-left:6px; }
+.tag.soon{ background:var(--gold-l,#fdf3e3); color:#7a5c1a; border:1px solid #e8c97a; }
+.tag.off{ background:#f1efe8; color:#8a8680; border:1px solid var(--border); }
+.note{ background:#fdf3e3; border:1px solid #e8c97a; border-radius:8px; padding:12px 16px; font-size:13px; color:#7a5c1a; line-height:1.55; }
+.kv{ font-size:13px; }
+.kv b{ font-weight:600; }
+footer{ margin-top:50px; padding-top:18px; border-top:1px solid var(--border); font-size:11px; color:var(--muted); text-align:center; }
+@media(max-width:640px){ .flow{ flex-direction:column; } .farrow{ transform:rotate(90deg); padding:4px 0; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="top">
+  <a class="back" href="index.html">← Retour au dashboard</a>
+  <h1>Méthodologie &amp; sources de données</h1>
+  <p>Comment le dashboard Rosario est construit : d'où viennent les chiffres, comment ils circulent, et comment ils sont calculés. — Mise à jour : juin 2026.</p>
+</header>
+
+<section>
+  <h2><span class="num">1</span> Vue d'ensemble du flux</h2>
+  <p class="lead">Trois familles de sources alimentent un Google Sheet « pivot », lu en direct par la page du dashboard.</p>
+  <div class="flow">
+    <div class="fstep"><div class="t">Sources</div><div class="s">Lightspeed · Skello · Google (avis) · Privatisations</div></div>
+    <div class="farrow">→</div>
+    <div class="fstep"><div class="t">Apps Script</div><div class="s">scripts Google qui parsent &amp; rangent</div></div>
+    <div class="farrow">→</div>
+    <div class="fstep"><div class="t">Google Sheet</div><div class="s">onglets « pivot » normalisés</div></div>
+    <div class="farrow">→</div>
+    <div class="fstep"><div class="t">Dashboard</div><div class="s">page HTML qui lit le Sheet en direct</div></div>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">2</span> Sources de données</h2>
+
+  <div class="card">
+    <h3>Lightspeed Restaurant <span style="font-size:11px;color:var(--muted);font-weight:400;">— quotidien, par e-mail</span></h3>
+    <p>Chaque jour, Lightspeed envoie un e-mail « Votre rapport Lightspeed Restaurant » (depuis <code>no.reply@lightspeedhq.com</code>) avec plusieurs fichiers <code>.xls</code> en pièce jointe. Un Apps Script les récupère automatiquement.</p>
+    <table>
+      <tr><th>Fichier</th><th>Contient</th><th>Utilisé pour</th></tr>
+      <tr><td><code>shift_report</code></td><td>CA net midi / soir / total, couverts, ticket moyen</td><td>KPI principaux</td></tr>
+      <tr><td><code>business_export</code></td><td>CA par catégorie (cuisine, tapas, alcool, boissons, bouteilles), modes de paiement</td><td>Cuisine vs Boissons, ticket food/boissons</td></tr>
+      <tr><td><code>product_breakdown</code></td><td>Ventes par article</td><td>Top 10 produits</td></tr>
+      <tr><td><code>cancellations</code></td><td>Annulations (montant, motif, article…)</td><td>Bloc Annulations <span class="tag soon">à venir</span></td></tr>
+      <tr><td><code>rabais</code></td><td>Remises / offerts</td><td>Bloc Annulations <span class="tag soon">à venir</span></td></tr>
+      <tr><td><code>tickets</code></td><td>CA par heure</td><td>Non utilisé <span class="tag off">en retrait</span></td></tr>
+    </table>
+  </div>
+
+  <div class="card">
+    <h3>Skello <span style="font-size:11px;color:var(--muted);font-weight:400;">— hebdomadaire, export manuel</span></h3>
+    <p>Export <code>.xlsx</code> des heures travaillées. On n'utilise que l'onglet <b>« détails »</b> : une ligne par employé / par jour / par poste, avec la colonne <b>Heures Travaillées</b> (déjà nette de pause). Le <b>poste</b> de chaque ligne est classé en <b>Salle</b> ou <b>Cuisine</b> via une table de correspondance. Déposé chaque lundi pour la semaine précédente.</p>
+  </div>
+
+  <div class="card">
+    <h3>Avis Google <span style="font-size:11px;color:var(--muted);font-weight:400;">— quotidien, via Outscraper</span></h3>
+    <p>L'API publique Google Places ne renvoie que 5 avis et la note arrondie à 0,1. Pour avoir la note <b>par jour</b> et 2 décimales, on passe par <b>Outscraper</b> (API tierce) : un Apps Script récupère les avis (note + date), calcule la <b>moyenne des avis du jour</b>, et l'écrit dans l'onglet <code>Note_Jour</code>.</p>
+  </div>
+
+  <div class="card">
+    <h3>Privatisations <span style="font-size:11px;color:var(--muted);font-weight:400;">— Google Sheet séparé</span></h3>
+    <p>Saisie des événements privatisés : date, statut, nombre de convives (<code># pax</code>), CA cuisine / alcool / total. Seules les lignes <b>« Confirmé »</b> et <b>déjà passées</b> sont comptées (voir §5).</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">3</span> Le Google Sheet « pivot »</h2>
+  <p class="lead">Un Google Sheet « pivot » unique (son identifiant n'est volontairement pas affiché ici) — partagé en lecture pour que le dashboard puisse le lire.</p>
+  <table>
+    <tr><th>Onglet</th><th>Granularité</th><th>Alimenté par</th></tr>
+    <tr><td><code>KPI_Journaliers</code></td><td>1 ligne / jour</td><td>Script Lightspeed</td></tr>
+    <tr><td><code>Top10_Journaliers</code></td><td>1 ligne / produit / jour</td><td>Script Lightspeed</td></tr>
+    <tr><td><code>Google_Rating</code></td><td>1 ligne / jour (note globale)</td><td>Script Lightspeed (Places API) — secondaire</td></tr>
+    <tr><td><code>Note_Jour</code></td><td>1 ligne / jour (note moyenne + nb avis)</td><td>Script Outscraper</td></tr>
+    <tr><td><code>Heures_RH</code> <span class="tag soon">à venir</span></td><td>Date · Équipe · Heures</td><td>Script Skello</td></tr>
+    <tr><td><code>Annulations_Detail</code> <span class="tag soon">à venir</span></td><td>1 ligne / article annulé (Somme ≠ 0)</td><td>Script Lightspeed</td></tr>
+    <tr><td><code>Rabais_Detail</code> <span class="tag soon">à venir</span></td><td>1 ligne / produit · Type Rabais ou Offert</td><td>Script Lightspeed</td></tr>
+    <tr><td><code>ParHeure_Journaliers</code> <span class="tag off">en retrait</span></td><td>CA par heure</td><td>Script Lightspeed (non lu)</td></tr>
+  </table>
+  <p style="font-size:12.5px;color:var(--muted);">Les <b>privatisations</b> sont dans un autre Sheet, lu directement par le dashboard via son URL.</p>
+</section>
+
+<section>
+  <h2><span class="num">4</span> Les scripts (Google Apps Script)</h2>
+  <div class="card">
+    <h3>Importateur Lightspeed quotidien</h3>
+    <p>Déclencheur chaque matin (~8h). Il cherche les e-mails Lightspeed des 2 derniers jours, récupère les pièces jointes <code>.xls</code>, les convertit en feuilles Google via l'API Drive, les parse, et <b>ajoute</b> (jamais d'écrasement) les lignes dans <code>KPI_Journaliers</code> et <code>Top10_Journaliers</code>. Un anti-doublon empêche d'importer deux fois la même date. Il met aussi à jour la note Google globale (<code>Google_Rating</code>).</p>
+  </div>
+  <div class="card">
+    <h3>Note Google par jour (Outscraper)</h3>
+    <p>Déclencheur quotidien. Appelle l'API Outscraper avec l'identifiant du lieu (<code>place_id</code>), récupère les avis récents, calcule la moyenne des avis par jour et l'écrit dans <code>Note_Jour</code>.</p>
+  </div>
+  <div class="card">
+    <h3>Parser Skello → Heures_RH <span class="tag soon">à venir</span></h3>
+    <p>Lira le fichier Skello déposé chaque semaine, croisera chaque poste avec la table Salle / Cuisine, sommera les heures par jour et par équipe, et écrira l'onglet <code>Heures_RH</code>.</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">5</span> Règles de calcul</h2>
+  <div class="card">
+    <p class="kv"><b>CA net</b> = CA Lightspeed + CA des privatisations <i>confirmées et déjà passées</i>. Le « déjà passé » s'arrête au dernier jour de données réelles Lightspeed (pour ne pas compter d'événements futurs). Les lignes de privatisation marquées « Lightspeed » sont exclues (déjà dans Lightspeed).</p>
+    <p class="kv"><b>Couverts</b> = total Lightspeed uniquement. Lightspeed compte déjà les convives des privatisations — on n'ajoute donc <i>jamais</i> le <code># pax</code> aux couverts.</p>
+    <p class="kv"><b>Ticket moyen</b> = CA net ÷ couverts. Dans la comparaison Clients / Événements : <b>TM Événement</b> = CA événements ÷ <code># pax</code> ; <b>TM Clients</b> = CA Lightspeed ÷ (couverts − <code># pax</code>), pour éviter le double comptage des convives.</p>
+    <p class="kv"><b>Taux de remplissage</b> = couverts ÷ (capacité × jours). Capacité de référence : 178 couverts / jour (89 par service).</p>
+    <p class="kv"><b>CA annualisé</b> = CA net ÷ nombre de jours × 360.</p>
+    <p class="kv"><b>Note Google actuelle</b> = moyenne pondérée <i>cumulée</i> de tous les avis (depuis <code>Note_Jour</code>), affichée à 2 décimales. <b>Évolution hebdo</b> = note cumulée à la fin de cette semaine − note cumulée à la fin de la semaine précédente, en points.</p>
+    <p class="kv" style="margin-bottom:0;"><b>RH · CA par heure</b> = CA du jour ÷ heures travaillées (total, et par équipe salle / cuisine), les heures Skello étant réparties par poste.</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">6</span> Hébergement de la page</h2>
+  <p>Le dashboard est une <b>page HTML statique</b> (<code>index.html</code> + <code>logo.png</code>). Elle lit le Google Sheet en direct via l'endpoint CSV de Google (<code>gviz/tq</code>), ce qui impose deux conditions :</p>
+  <ul>
+    <li>Le Sheet doit rester <b>partagé en lecture</b> (« tout le monde avec le lien »).</li>
+    <li>La page doit être <b>servie en http(s)</b> — par ex. GitHub Pages — et <b>pas ouverte en <code>file://</code></b> (un double-clic local) : le navigateur bloque alors les requêtes vers Google (erreur CORS, origine « null »).</li>
+  </ul>
+  <p>Garder <code>logo.png</code> dans le même dossier que <code>index.html</code>.</p>
+</section>
+
+<section>
+  <h2><span class="num">7</span> Sécurité &amp; limites</h2>
+  <div class="note">
+    <b>À savoir :</b> le Sheet étant public en lecture, les données sont accessibles à qui possède l'URL. Pour restreindre l'accès, on peut placer la page derrière <b>Cloudflare Access</b> (connexion par e-mail, gratuit jusqu'à 50 utilisateurs) et, pour sécuriser vraiment la donnée, rendre le Sheet privé et le lire via un proxy.
+  </div>
+  <ul style="margin-top:14px;">
+    <li>Google affiche des dates <b>approximatives</b> pour les vieux avis → la note « par jour » est fiable sur le récent, plus floue sur l'historique.</li>
+    <li>La capacité (178 / 89) est codée en dur pour le remplissage ; à ajuster si la salle change.</li>
+    <li>Le nombre d'avis affiché vient d'Outscraper et peut différer légèrement du compteur officiel Google.</li>
+  </ul>
+</section>
+
+<section>
+  <h2><span class="num">8</span> Glossaire</h2>
+  <table>
+    <tr><td style="width:120px;"><b>unités</b></td><td>Quantité vendue d'un article sur la période (anciennement « vtes »).</td></tr>
+    <tr><td><b># pax</b></td><td>Nombre de convives d'un événement privatisé.</td></tr>
+    <tr><td><b>Clients</b></td><td>Activité « normale » (Lightspeed), par opposition aux Événements (privatisations).</td></tr>
+    <tr><td><b>CA net</b></td><td>Chiffre d'affaires hors taxes, encaissé.</td></tr>
+  </table>
+</section>
+
+<footer>
+  Rosario · Dashboard — document de méthodologie · juin 2026
+</footer>
+
+</div>
+</body>
+</html>
