@@ -40,11 +40,13 @@ tr:last-child td{ border-bottom:none; }
 .fstep .s{ font-size:10.5px; color:var(--muted); margin-top:3px; }
 .farrow{ display:flex; align-items:center; color:var(--muted); font-size:18px; padding:0 8px; }
 .tag{ display:inline-block; font-size:10px; font-weight:500; padding:2px 8px; border-radius:100px; margin-left:6px; }
-.tag.soon{ background:var(--gold-l,#fdf3e3); color:#7a5c1a; border:1px solid #e8c97a; }
+.tag.soon{ background:#fdf3e3; color:#7a5c1a; border:1px solid #e8c97a; }
 .tag.off{ background:#f1efe8; color:#8a8680; border:1px solid var(--border); }
 .note{ background:#fdf3e3; border:1px solid #e8c97a; border-radius:8px; padding:12px 16px; font-size:13px; color:#7a5c1a; line-height:1.55; }
 .kv{ font-size:13px; }
 .kv b{ font-weight:600; }
+.dlink{ color:var(--accent); font-weight:500; text-decoration:none; }
+.dlink:hover{ text-decoration:underline; }
 footer{ margin-top:50px; padding-top:18px; border-top:1px solid var(--border); font-size:11px; color:var(--muted); text-align:center; }
 @media(max-width:640px){ .flow{ flex-direction:column; } .farrow{ transform:rotate(90deg); padding:4px 0; } }
 </style>
@@ -83,15 +85,15 @@ footer{ margin-top:50px; padding-top:18px; border-top:1px solid var(--border); f
       <tr><td><code>shift_report</code></td><td>CA net midi / soir / total, couverts, ticket moyen</td><td>KPI principaux</td></tr>
       <tr><td><code>business_export</code></td><td>CA par catégorie (cuisine, tapas, alcool, boissons, bouteilles), modes de paiement</td><td>Cuisine vs Boissons, ticket food/boissons</td></tr>
       <tr><td><code>product_breakdown</code></td><td>Ventes par article</td><td>Top 10 produits</td></tr>
-      <tr><td><code>cancellations</code></td><td>Annulations (montant, motif, article…)</td><td>Bloc Annulations <span class="tag soon">à venir</span></td></tr>
-      <tr><td><code>rabais</code></td><td>Remises / offerts</td><td>Bloc Annulations <span class="tag soon">à venir</span></td></tr>
-      <tr><td><code>tickets</code></td><td>CA par heure</td><td>Non utilisé <span class="tag off">en retrait</span></td></tr>
+      <tr><td><code>cancellations</code></td><td>Annulations (montant, motif, article…)</td><td>Bloc Annulations</td></tr>
+      <tr><td><code>discounts</code></td><td>Rabais % et offerts (par catégorie / produit)</td><td>Bloc Annulations (Rabais / Offert)</td></tr>
     </table>
   </div>
 
   <div class="card">
     <h3>Skello <span style="font-size:11px;color:var(--muted);font-weight:400;">— hebdomadaire, export manuel</span></h3>
-    <p>Export <code>.xlsx</code> des heures travaillées. On n'utilise que l'onglet <b>« détails »</b> : une ligne par employé / par jour / par poste, avec la colonne <b>Heures Travaillées</b> (déjà nette de pause). Le <b>poste</b> de chaque ligne est classé en <b>Salle</b> ou <b>Cuisine</b> via une table de correspondance. Déposé chaque lundi pour la semaine précédente.</p>
+    <p>Export <code>.xlsx</code> des heures travaillées. On n'utilise que l'onglet <b>« détails »</b> : une ligne par employé / par jour / par poste, avec la colonne <b>Heures Travaillées</b> (déjà nette de pause). Le <b>poste</b> de chaque ligne est classé en <b>Salle</b> ou <b>Cuisine</b> via une table de correspondance.</p>
+    <p><b>Comment l'obtenir :</b> dans Skello → <b>Rapports → Télécharger par semaine</b>, puis déposer le fichier dans le <a class="dlink" href="https://drive.google.com/drive/folders/1mCjTx9zihNjbqCGdx3ZHCTYqXRHKL4Cb">dossier Drive Skello ↗</a> (chaque lundi, pour la semaine précédente). Le script <code>majHeuresRH</code> le lit automatiquement, remplit l'onglet <code>Heures_RH</code>, puis déplace le fichier traité dans le sous-dossier <b>« Traités »</b>.</p>
   </div>
 
   <div class="card">
@@ -114,10 +116,9 @@ footer{ margin-top:50px; padding-top:18px; border-top:1px solid var(--border); f
     <tr><td><code>Top10_Journaliers</code></td><td>1 ligne / produit / jour</td><td>Script Lightspeed</td></tr>
     <tr><td><code>Google_Rating</code></td><td>1 ligne / jour (note globale)</td><td>Script Lightspeed (Places API) — secondaire</td></tr>
     <tr><td><code>Note_Jour</code></td><td>1 ligne / jour (note moyenne + nb avis)</td><td>Script Outscraper</td></tr>
-    <tr><td><code>Heures_RH</code> <span class="tag soon">à venir</span></td><td>Date · Équipe · Heures</td><td>Script Skello</td></tr>
-    <tr><td><code>Annulations_Detail</code> <span class="tag soon">à venir</span></td><td>1 ligne / article annulé (Somme ≠ 0)</td><td>Script Lightspeed</td></tr>
-    <tr><td><code>Rabais_Detail</code> <span class="tag soon">à venir</span></td><td>1 ligne / produit · Type Rabais ou Offert</td><td>Script Lightspeed</td></tr>
-    <tr><td><code>ParHeure_Journaliers</code> <span class="tag off">en retrait</span></td><td>CA par heure</td><td>Script Lightspeed (non lu)</td></tr>
+    <tr><td><code>Heures_RH</code></td><td>Date · Équipe · Heures</td><td>Script Skello (<code>majHeuresRH</code>)</td></tr>
+    <tr><td><code>Annulations_Detail</code></td><td>1 ligne / article annulé (Somme ≠ 0)</td><td>Script Lightspeed</td></tr>
+    <tr><td><code>Rabais_Detail</code></td><td>1 ligne / produit · Type Rabais ou Offert</td><td>Script Lightspeed</td></tr>
   </table>
   <p style="font-size:12.5px;color:var(--muted);">Les <b>privatisations</b> sont dans un autre Sheet, lu directement par le dashboard via son URL.</p>
 </section>
@@ -126,15 +127,15 @@ footer{ margin-top:50px; padding-top:18px; border-top:1px solid var(--border); f
   <h2><span class="num">4</span> Les scripts (Google Apps Script)</h2>
   <div class="card">
     <h3>Importateur Lightspeed quotidien</h3>
-    <p>Déclencheur chaque matin (~8h). Il cherche les e-mails Lightspeed des 2 derniers jours, récupère les pièces jointes <code>.xls</code>, les convertit en feuilles Google via l'API Drive, les parse, et <b>ajoute</b> (jamais d'écrasement) les lignes dans <code>KPI_Journaliers</code> et <code>Top10_Journaliers</code>. Un anti-doublon empêche d'importer deux fois la même date. Il met aussi à jour la note Google globale (<code>Google_Rating</code>).</p>
+    <p>Déclencheur chaque matin (~8h). Il cherche les e-mails Lightspeed des 2 derniers jours, récupère les pièces jointes <code>.xls</code>, les convertit en feuilles Google via l'API Drive, les parse, et <b>ajoute</b> (jamais d'écrasement) les lignes dans <code>KPI_Journaliers</code>, <code>Top10_Journaliers</code>, <code>Annulations_Detail</code> et <code>Rabais_Detail</code>. Un anti-doublon empêche d'importer deux fois la même date. Il met aussi à jour la note Google globale (<code>Google_Rating</code>).</p>
   </div>
   <div class="card">
     <h3>Note Google par jour (Outscraper)</h3>
     <p>Déclencheur quotidien. Appelle l'API Outscraper avec l'identifiant du lieu (<code>place_id</code>), récupère les avis récents, calcule la moyenne des avis par jour et l'écrit dans <code>Note_Jour</code>.</p>
   </div>
   <div class="card">
-    <h3>Parser Skello → Heures_RH <span class="tag soon">à venir</span></h3>
-    <p>Lira le fichier Skello déposé chaque semaine, croisera chaque poste avec la table Salle / Cuisine, sommera les heures par jour et par équipe, et écrira l'onglet <code>Heures_RH</code>.</p>
+    <h3>Heures Skello (<code>majHeuresRH</code>)</h3>
+    <p>Déclencheur hebdomadaire (lundi). Scanne le <a class="dlink" href="https://drive.google.com/drive/folders/1mCjTx9zihNjbqCGdx3ZHCTYqXRHKL4Cb">dossier Drive Skello ↗</a>, lit l'onglet « détails » de chaque nouveau fichier, croise chaque poste avec la table Salle / Cuisine, somme les heures par jour et par équipe, écrit <code>Heures_RH</code>, puis déplace le fichier traité dans « Traités ».</p>
   </div>
 </section>
 
@@ -147,7 +148,8 @@ footer{ margin-top:50px; padding-top:18px; border-top:1px solid var(--border); f
     <p class="kv"><b>Taux de remplissage</b> = couverts ÷ (capacité × jours). Capacité de référence : 178 couverts / jour (89 par service).</p>
     <p class="kv"><b>CA annualisé</b> = CA net ÷ nombre de jours × 360.</p>
     <p class="kv"><b>Note Google actuelle</b> = moyenne pondérée <i>cumulée</i> de tous les avis (depuis <code>Note_Jour</code>), affichée à 2 décimales. <b>Évolution hebdo</b> = note cumulée à la fin de cette semaine − note cumulée à la fin de la semaine précédente, en points.</p>
-    <p class="kv" style="margin-bottom:0;"><b>RH · CA par heure</b> = CA du jour ÷ heures travaillées (total, et par équipe salle / cuisine), les heures Skello étant réparties par poste.</p>
+    <p class="kv"><b>Annulations</b> = somme des lignes du fichier <code>cancellations</code> dont le montant ≠ 0 (les « comptes rappelés » à 0 sont ignorés) ; montant compté en valeur absolue.</p>
+    <p class="kv"><b>RH · CA par heure</b> = CA du jour ÷ heures travaillées (total, et par équipe salle / cuisine), les heures Skello étant réparties par poste.</p>
   </div>
 </section>
 
@@ -164,7 +166,7 @@ footer{ margin-top:50px; padding-top:18px; border-top:1px solid var(--border); f
 <section>
   <h2><span class="num">7</span> Sécurité &amp; limites</h2>
   <div class="note">
-    <b>À savoir :</b> le Sheet étant public en lecture, les données sont accessibles à qui possède l'URL. Pour restreindre l'accès, on peut placer la page derrière <b>Cloudflare Access</b> (connexion par e-mail, gratuit jusqu'à 50 utilisateurs) et, pour sécuriser vraiment la donnée, rendre le Sheet privé et le lire via un proxy.
+    <b>À savoir :</b> le Sheet étant public en lecture, les données sont accessibles à qui possède l'URL. La page est protégée par un mot de passe (StatiCrypt, chiffrement AES côté navigateur) ; pour une vraie confidentialité de la donnée elle-même, il faudrait rendre le Sheet privé et le lire via un proxy.
   </div>
   <ul style="margin-top:14px;">
     <li>Google affiche des dates <b>approximatives</b> pour les vieux avis → la note « par jour » est fiable sur le récent, plus floue sur l'historique.</li>
@@ -176,7 +178,7 @@ footer{ margin-top:50px; padding-top:18px; border-top:1px solid var(--border); f
 <section>
   <h2><span class="num">8</span> Glossaire</h2>
   <table>
-    <tr><td style="width:120px;"><b>unités</b></td><td>Quantité vendue d'un article sur la période (anciennement « vtes »).</td></tr>
+    <tr><td style="width:120px;"><b>unités</b></td><td>Quantité vendue d'un article sur la période.</td></tr>
     <tr><td><b># pax</b></td><td>Nombre de convives d'un événement privatisé.</td></tr>
     <tr><td><b>Clients</b></td><td>Activité « normale » (Lightspeed), par opposition aux Événements (privatisations).</td></tr>
     <tr><td><b>CA net</b></td><td>Chiffre d'affaires hors taxes, encaissé.</td></tr>
