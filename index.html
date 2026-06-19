@@ -1344,9 +1344,22 @@ function renderPeriod() {
   window.CUR_CA  = caNet;
   const tktTotal = m.couverts > 0 ? +(caNet / m.couverts).toFixed(2) : +((m.tktMidi||0)*0.32 + (m.tktSoir||0)*0.68).toFixed(2);
 
-  const caFmt = fmtPct(caNet, p.prev_ca);
+  // Comparaison « à date » pour la période EN COURS (dernière de la liste) :
+  // on compare au même cumul (jours + services déjà écoulés) de la période
+  // précédente, pas à son total complet.
+  let cmpPrevCA  = p.prev_ca;
+  let cmpPrevTkt = mi && mi.couverts > 0 ? +((mi.caNet||0)/mi.couverts).toFixed(2) : null;
+  if (idx === list.length - 1 && idx > 0) {
+    const ptd = prevPeriodToDate(p.key, list[idx-1].key, gran);
+    if (ptd && ptd.ca > 0) {
+      cmpPrevCA  = ptd.ca;
+      cmpPrevTkt = ptd.cov > 0 ? +(ptd.ca / ptd.cov).toFixed(2) : cmpPrevTkt;
+    }
+  }
+
+  const caFmt = fmtPct(caNet, cmpPrevCA);
   s('kv-ca',   fmt(caNet) + ' €');
-  setd('kd-ca', caFmt.txt + (p.prev_ca ? ' ' + unit : ''), caFmt.cls);
+  setd('kd-ca', caFmt.txt + (cmpPrevCA ? ' ' + unit : ''), caFmt.cls);
 
   s('kv-cov',  fmt(m.couverts));
   setd('kd-cov', 'Couverts servis', 'neu');
@@ -1354,9 +1367,8 @@ function renderPeriod() {
 
   s('kv-tkt', tktTotal.toFixed(2) + ' €');
   s('kv-tkt-big', tktTotal.toFixed(2) + ' €');
-  const tktPrev = mi && mi.couverts > 0 ? +((mi.caNet||0)/mi.couverts).toFixed(2) : null;
-  s('kv-tkt-delta', tktPrev ? (tktTotal >= tktPrev ? '▲ +' : '▼ ') + Math.abs(tktTotal - tktPrev).toFixed(2) + ' € vs S préc.' : '—');
-  setd('kd-tkt', mi ? fmtPct(tktTotal, mi.couverts > 0 ? +((mi.caNet||mi.caNetMidi+mi.caNetSoir||0)/mi.couverts).toFixed(2) : 0).txt + ' vs S préc.' : '—', 'neu');
+  s('kv-tkt-delta', cmpPrevTkt ? (tktTotal >= cmpPrevTkt ? '▲ +' : '▼ ') + Math.abs(tktTotal - cmpPrevTkt).toFixed(2) + ' € ' + unit : '—');
+  setd('kd-tkt', cmpPrevTkt ? fmtPct(tktTotal, cmpPrevTkt).txt + ' ' + unit : '—', 'neu');
 
   const days = gran === 'week' ? 7 : new Date(p.key.slice(0,4), +p.key.slice(5,7), 0).getDate();
   const ann  = Math.round(caNet / days * 360 / 10000) / 100;
@@ -1452,8 +1464,7 @@ function renderPeriod() {
   } catch(chartErr) { console.warn('Chart update error:', chartErr.message); }
 
   s('ca-kv1', fmt(caNet) + ' €');
-  const caPctCA = p.prev_ca ? ((p.ca-p.prev_ca)/p.prev_ca*100).toFixed(1) : null;
-  setd('ca-kd1', caPctCA ? `${+caPctCA>=0?'▲ +':'▼ '}${caPctCA} % ${unit}` : '—', caPctCA ? (+caPctCA>=0?'up':'dn') : 'neu');
+  setd('ca-kd1', cmpPrevCA ? caFmt.txt + ' ' + unit : '—', caFmt.cls);
   s('ca-kv2', tktTotal.toFixed(2) + ' €');
   setd('ca-kd2', `Déj. ${(m.tktMidi||0).toFixed(2)} € · Dîner ${(m.tktSoir||0).toFixed(2)} €`, 'neu');
 
@@ -1476,8 +1487,7 @@ function renderPeriod() {
   const caBev  = m.caBoissons || Math.round(caNet * 0.25);
 
   s('ca2-tkt-big', tktTotal.toFixed(2) + ' €');
-  const ca2TktPrev = mi && mi.couverts > 0 ? +((mi.caNet||0)/mi.couverts).toFixed(2) : null;
-  s('ca2-tkt-delta', ca2TktPrev ? (tktTotal >= ca2TktPrev ? '▲ +' : '▼ ') + Math.abs(tktTotal - ca2TktPrev).toFixed(2) + ' € vs S préc.' : '—');
+  s('ca2-tkt-delta', cmpPrevTkt ? (tktTotal >= cmpPrevTkt ? '▲ +' : '▼ ') + Math.abs(tktTotal - cmpPrevTkt).toFixed(2) + ' € ' + unit : '—');
   if (ca2TktChart) {
     ca2TktChart.data.labels = histLbls;
     ca2TktChart.data.datasets[0].data = histM.map(mm => { const c = mm?.couverts || 0; return c > 0 ? +((mm?.caNet||0)/c).toFixed(2) : 0; });
@@ -1499,6 +1509,41 @@ function renderPeriod() {
 
   if (typeof updateRH === 'function') updateRH();
   if (typeof updateAnnulations === 'function') updateAnnulations();
+}
+
+// Cumul « à date » de la période précédente, aligné sur les jours + services
+// déjà écoulés de la période en cours (comparaison équivalente, pas total complet).
+function prevPeriodToDate(currKey, prevKey, gran) {
+  const byP = ((gran === 'week' ? window.LIVE_BY_WEEK : window.LIVE_BY_MONTH) || {});
+  const currRows = byP[currKey] || [];
+  const prevRows = byP[prevKey] || [];
+  if (!currRows.length || !prevRows.length) return null;
+  const relOf = (dateStr) => {
+    if (gran === 'week') { const dt = new Date(+dateStr.slice(0,4), +dateStr.slice(4,6)-1, +dateStr.slice(6,8)); return 'd' + (dt.getDay() || 7); }
+    return 'd' + dateStr.slice(6,8);
+  };
+  const prevByRel = {};
+  prevRows.forEach(r => { prevByRel[relOf(r['Date'])] = r; });
+  const elapsedRel = {};
+  let ca = 0, cov = 0;
+  currRows.forEach(r => {
+    const rel = relOf(r['Date']);
+    elapsedRel[rel] = true;
+    const pr = prevByRel[rel];
+    if (!pr) return;
+    const hasMidi = n(r['CA_Net_Midi']) > 0 || n(r['Couverts_Midi']) > 0;
+    const hasSoir = n(r['CA_Net_Soir']) > 0 || n(r['Couverts_Soir']) > 0;
+    if (hasMidi) { ca += n(pr['CA_Net_Midi']); cov += n(pr['Couverts_Midi']); }
+    if (hasSoir) { ca += n(pr['CA_Net_Soir']); cov += n(pr['Couverts_Soir']); }
+    if (!hasMidi && !hasSoir) { ca += n(pr['CA_Net_Total']); cov += n(pr['Couverts_Total']); }
+  });
+  // Événements de la période précédente sur les mêmes positions relatives écoulées
+  (window.LIVE_PRIV_ROWS || []).forEach(r => {
+    const inPrev = gran === 'week' ? (getWeekKey(r.date) === prevKey)
+                                   : (r.date.slice(0,4) + '-' + r.date.slice(4,6) === prevKey);
+    if (inPrev && elapsedRel[relOf(r.date)]) ca += r.total;
+  });
+  return { ca: Math.round(ca), cov: Math.round(cov) };
 }
 
 function updateCompare() {
