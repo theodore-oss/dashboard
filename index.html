@@ -783,11 +783,15 @@ async function loadLiveData() {
       const cov     = sum('Couverts_Total');
       const covMidi = sum('Couverts_Midi');
       const covSoir = sum('Couverts_Soir');
+      // Remplissage basé sur les services réellement écoulés (89 places / service)
+      const nbMidi  = rows.reduce((s,r) => s + ((n(r['Couverts_Midi'])>0 || n(r['CA_Net_Midi'])>0) ? 1 : 0), 0);
+      const nbSoir  = rows.reduce((s,r) => s + ((n(r['Couverts_Soir'])>0 || n(r['CA_Net_Soir'])>0) ? 1 : 0), 0);
+      const nbServices = nbMidi + nbSoir;
       return {
         couverts:   Math.round(cov),
-        rempli:     Math.round(cov / (178 * rows.length) * 100),
-        rempliMidi: Math.round(covMidi > 0 ? covMidi / (89 * rows.length) * 100 : 0),
-        rempliSoir: Math.round(covSoir > 0 ? covSoir / (89 * rows.length) * 100 : 0),
+        rempli:     Math.round(nbServices > 0 ? cov / (89 * nbServices) * 100 : 0),
+        rempliMidi: Math.round(nbMidi > 0 ? covMidi / (89 * nbMidi) * 100 : 0),
+        rempliSoir: Math.round(nbSoir > 0 ? covSoir / (89 * nbSoir) * 100 : 0),
         tktMidi:    covMidi > 0 ? +(sum('CA_Net_Midi') / covMidi).toFixed(2) : 0,
         tktSoir:    covSoir > 0 ? +(sum('CA_Net_Soir') / covSoir).toFixed(2) : 0,
         caNet:      +sum('CA_Net_Total').toFixed(0),
@@ -851,11 +855,15 @@ async function loadLiveData() {
       const cov = sum('Couverts_Total');
       const covMidi = sum('Couverts_Midi');
       const covSoir = sum('Couverts_Soir');
+      // Remplissage basé sur les services réellement écoulés (89 places / service)
+      const nbMidi  = rows.reduce((s,r) => s + ((n(r['Couverts_Midi'])>0 || n(r['CA_Net_Midi'])>0) ? 1 : 0), 0);
+      const nbSoir  = rows.reduce((s,r) => s + ((n(r['Couverts_Soir'])>0 || n(r['CA_Net_Soir'])>0) ? 1 : 0), 0);
+      const nbServices = nbMidi + nbSoir;
       return {
         couverts:   Math.round(cov),
-        rempli:     Math.round(cov / (178 * rows.length) * 100),
-        rempliMidi: Math.round(covMidi > 0 ? covMidi / (89 * rows.length) * 100 : 0),
-        rempliSoir: Math.round(covSoir > 0 ? covSoir / (89 * rows.length) * 100 : 0),
+        rempli:     Math.round(nbServices > 0 ? cov / (89 * nbServices) * 100 : 0),
+        rempliMidi: Math.round(nbMidi > 0 ? covMidi / (89 * nbMidi) * 100 : 0),
+        rempliSoir: Math.round(nbSoir > 0 ? covSoir / (89 * nbSoir) * 100 : 0),
         tktMidi:    covMidi > 0 ? +(sum('CA_Net_Midi') / covMidi).toFixed(2) : 0,
         tktSoir:    covSoir > 0 ? +(sum('CA_Net_Soir') / covSoir).toFixed(2) : 0,
         caNet:      +sum('CA_Net_Total').toFixed(0),
