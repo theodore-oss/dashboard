@@ -2358,11 +2358,13 @@ window.PNL = (function(){
     return {ls, evt, tot:ls+evt};
   }
   function projData(){
-    const ca=dashCA(PROJ_MONTH), s=eff(PROJ_MONTH), sv=salesProj();
+    const ca=dashCA(PROJ_MONTH), s=eff(PROJ_MONTH), sv=salesProj(), st=effStock(PROJ_MONTH);
     const caTot=sv.tot;
     const ratio=ca.caTot?ca.caFood/ca.caTot:0.66, caFood=Math.round(caTot*ratio);
+    const foodCost=projLigne('Food cost')-(st.foodClose-st.foodOpen);
+    const bevCost =projLigne('Beverage cost')-(st.bevClose-st.bevOpen);
     return derive({src:'proj', caTot, caFood, caBev:caTot-caFood,
-      fb:projLigne('Food cost')+projLigne('Beverage cost'), foodCost:projLigne('Food cost'), bevCost:projLigne('Beverage cost'),
+      fb:foodCost+bevCost, foodCost, bevCost,
       staff:s.staff+projLigne('Staff cost'),
       variables:projLigne('Coûts variables'), fixes:projLigne('Coûts fixes'),
       loyer:s.loyer, maintenance:projLigne('Maintenance'), noncat:projLigne('À catégoriser'),
