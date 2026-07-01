@@ -2357,18 +2357,37 @@ window.PNL = (function(){
     const evt= s.ventesEvt!=null ? +s.ventesEvt : Math.round(a.evt/Math.max(ed.el,1)*ed.dim);
     return {ls, evt, tot:ls+evt};
   }
+  // Répartit un total projeté sur les sous-catégories d'une ligne, selon la proportion des factures à date
+  function distribProj(lg, total){
+    const psub=((PENN[PROJ_MONTH]||{})[lg]||{subs:{}}).subs||{};
+    let ptot=0; for(const k in psub) ptot+=psub[k];
+    const o={};
+    if(ptot>0){ for(const k in psub) o[k]=Math.round(total*psub[k]/ptot); }
+    else if(Math.round(total)) o['(à venir)']=Math.round(total);
+    return o;
+  }
   function projData(){
     const ca=dashCA(PROJ_MONTH), s=eff(PROJ_MONTH), sv=salesProj(), st=effStock(PROJ_MONTH);
     const caTot=sv.tot;
     const ratio=ca.caTot?ca.caFood/ca.caTot:0.66, caFood=Math.round(caTot*ratio);
     const foodCost=projLigne('Food cost')-(st.foodClose-st.foodOpen);
     const bevCost =projLigne('Beverage cost')-(st.bevClose-st.bevOpen);
+    const staffAuto=projLigne('Staff cost'), variables=projLigne('Coûts variables'), fixes=projLigne('Coûts fixes'), maintenance=projLigne('Maintenance'), noncat=projLigne('À catégoriser');
+    const subs={
+      'F&B cost':{'Food cost':Math.round(foodCost),'Beverage cost':Math.round(bevCost)},
+      'Staff cost':Object.assign({'Salaires':Math.round(s.staff)}, distribProj('Staff cost', staffAuto)),
+      'Coûts variables':distribProj('Coûts variables', variables),
+      'Coûts fixes':distribProj('Coûts fixes', fixes),
+      'Maintenance':distribProj('Maintenance', maintenance),
+      'Loyer & charges':{'Loyer & charges':Math.round(s.loyer)},
+      'Remboursement prêts':{'Prêt FDC':Math.round(s.fdc),'Prêt travaux':Math.round(s.travaux),'Leasing':Math.round(s.leasing)},
+      'Non catégorisé':distribProj('Non catégorisé', noncat)
+    };
     return derive({src:'proj', caTot, caFood, caBev:caTot-caFood,
       fb:foodCost+bevCost, foodCost, bevCost,
-      staff:s.staff+projLigne('Staff cost'),
-      variables:projLigne('Coûts variables'), fixes:projLigne('Coûts fixes'),
-      loyer:s.loyer, maintenance:projLigne('Maintenance'), noncat:projLigne('À catégoriser'),
-      remb:s.fdc+s.travaux+s.leasing, amort:0});
+      staff:s.staff+staffAuto, variables, fixes,
+      loyer:s.loyer, maintenance, noncat,
+      remb:s.fdc+s.travaux+s.leasing, amort:0, subs});
   }
 
   const LINES=[
@@ -2393,7 +2412,7 @@ window.PNL = (function(){
     const colDefs=[i0,i1,i2].filter(i=>i>=0).map(i=>{ const key=KEYS[i]; return key===PROJ_MONTH ? {proj:true,key,label:mlabel(key)+' projeté'} : {key}; });
 
     const datas=colDefs.map(cd=> cd.proj ? projData() : derive(monthData(cd.key)));
-    const subsArr=colDefs.map(cd=> cd.proj ? null : monthData(cd.key).subs);
+    const subsArr=colDefs.map((cd,ix)=> cd.proj ? (datas[ix].subs||{}) : monthData(cd.key).subs);
     const cell=(main,sp)=>'<div style="display:flex;align-items:baseline;gap:4px;"><span style="flex:1;text-align:right;">'+main+'</span><span class="pin" style="width:54px;text-align:right;">'+(sp?'· '+sp:'')+'</span></div>';
 
     let h='<table class="pnl"><thead><tr><th class="l">Poste</th>';
@@ -2419,13 +2438,12 @@ window.PNL = (function(){
         names.forEach(nm=>{
           h+='<tr><td class="l" style="padding-left:32px;color:var(--muted);">'+nm+'</td>';
           colDefs.forEach((cd,ix)=>{
-            let sv=0;
+            let sv;
             if(line.subsCA){ sv=datas[ix][line.subsCA.find(x=>x[0]===nm)[1]]||0; }
-            else if(cd.proj){ sv = (line.sl==='F&B cost') ? (nm==='Food cost'?(datas[ix].foodCost||0):nm==='Beverage cost'?(datas[ix].bevCost||0):null) : null; }
-            else { sv=((subsArr[ix]||{})[line.sl]||{})[nm]||0; }
+            else { const o=(subsArr[ix]||{})[line.sl]||{}; sv=(nm in o)?o[nm]:(cd.proj?null:0); }
             let base=datas[ix].caTot;
             if(line.sl==='F&B cost'){ if(nm==='Food cost') base=datas[ix].caFood; else if(nm==='Beverage cost') base=datas[ix].caBev; }
-            const txt = sv===null ? '<span class="pin">—</span>' : cell(eur(sv), pc(sv,base));
+            const txt = (sv==null) ? '<span class="pin">—</span>' : cell(eur(sv), pc(sv,base));
             h+='<td class="r'+(cd.proj?' colproj':'')+'" style="color:var(--muted);">'+txt+'</td>';
           });
           h+='</tr>';
