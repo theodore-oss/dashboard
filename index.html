@@ -671,34 +671,37 @@ footer { max-width: 1040px; margin: 32px auto 0; padding-top: 20px; border-top: 
   </div>
   <div class="card" style="margin-bottom:14px;">
     <div class="card-body">
-      <div style="font-size:13px; font-weight:500; margin-bottom:10px;">Ventes projetées <span style="font-weight:400;color:var(--muted);font-size:11px;">— mois en cours</span></div>
-      <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:16px;">
+      <!-- Mois à projeter : pilote tout le sous-onglet (fournisseurs, ventes, saisies, stock) -->
+      <div style="display:flex; align-items:center; gap:10px; margin-bottom:18px; padding-bottom:14px; border-bottom:2px solid var(--accent);">
+        <span style="font-size:13px; font-weight:600;">Mois à projeter</span>
+        <select id="pl-mois" style="margin-left:4px;"></select>
+        <span id="saved-msg" style="font-size:11px;color:var(--ok);opacity:0;transition:opacity .2s;margin-left:auto;">✓ enregistré</span>
+      </div>
+
+      <div style="font-size:11px;font-weight:600;color:var(--accent);text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px;">1 · Ventes projetées</div>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:24px;">
         <div class="pl-field"><label>Ventes Lightspeed <span id="ad-ls" style="color:var(--muted);"></span></label><input id="m-ventes-ls" inputmode="numeric"></div>
         <div class="pl-field"><label>Ventes événementiel <span id="ad-evt" style="color:var(--muted);"></span></label><input id="m-ventes-evt" inputmode="numeric"></div>
       </div>
-      <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px; border-top:1px solid var(--border); padding-top:14px;">
-        <span style="font-size:13px; font-weight:500;">Saisies manuelles (coûts)</span>
-        <span id="saved-msg" style="font-size:11px;color:var(--ok);opacity:0;transition:opacity .2s;margin-left:6px;">✓ enregistré</span>
-        <select id="pl-mois" style="margin-left:auto;"></select>
-      </div>
-      <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:12px;">
+
+      <div style="font-size:11px;font-weight:600;color:var(--accent);text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px;padding-top:16px;border-top:1px solid var(--border);">2 · Saisies manuelles (coûts)</div>
+      <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-bottom:24px;">
         <div class="pl-field"><label>Salaires</label><input id="m-staff" inputmode="numeric"></div>
         <div class="pl-field"><label>Loyer &amp; charges</label><input id="m-loyer" inputmode="numeric"></div>
         <div class="pl-field"><label>Prêt FDC</label><input id="m-fdc" inputmode="numeric"></div>
         <div class="pl-field"><label>Prêt travaux</label><input id="m-travaux" inputmode="numeric"></div>
         <div class="pl-field"><label>Leasing</label><input id="m-leasing" inputmode="numeric"></div>
       </div>
-      <div style="border-top:1px solid var(--border); margin-top:14px; padding-top:14px;">
-        <div style="font-size:13px; font-weight:500; margin-bottom:8px;">Variation de stock F&amp;B <span style="font-weight:400;color:var(--muted);font-size:11px;">— appliquée à partir de juin 2026 · coût = achats − (stock fin − stock début)</span></div>
-        <table class="proj" style="font-size:12.5px;">
-          <thead><tr><th class="l"></th><th class="r">Stock début (M-1)</th><th class="r">Stock fin (M)</th><th class="r">Variation</th></tr></thead>
-          <tbody>
-            <tr><td>Food</td><td class="r"><input id="m-stk-fo" class="est" inputmode="numeric"></td><td class="r"><input id="m-stk-fc" class="est" inputmode="numeric"></td><td class="r" id="stk-fd" style="color:var(--muted);">—</td></tr>
-            <tr><td>Beverage</td><td class="r"><input id="m-stk-bo" class="est" inputmode="numeric"></td><td class="r"><input id="m-stk-bc" class="est" inputmode="numeric"></td><td class="r" id="stk-bd" style="color:var(--muted);">—</td></tr>
-            <tr style="font-weight:600;"><td>F&amp;B</td><td class="r" id="stk-to">—</td><td class="r" id="stk-tc">—</td><td class="r" id="stk-td">—</td></tr>
-          </tbody>
-        </table>
-      </div>
+
+      <div style="font-size:11px;font-weight:600;color:var(--accent);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px;padding-top:16px;border-top:1px solid var(--border);">3 · Variation de stock F&amp;B <span style="font-weight:400;color:var(--muted);font-size:10px;text-transform:none;letter-spacing:0;">— coût = achats − (stock fin − stock début)</span></div>
+      <table class="proj" style="font-size:12.5px;">
+        <thead><tr><th class="l"></th><th class="r">Stock début (M-1)</th><th class="r">Stock fin (M)</th><th class="r">Variation</th></tr></thead>
+        <tbody>
+          <tr><td>Food</td><td class="r"><input id="m-stk-fo" class="est" inputmode="numeric"></td><td class="r"><input id="m-stk-fc" class="est" inputmode="numeric"></td><td class="r" id="stk-fd" style="color:var(--muted);">—</td></tr>
+          <tr><td>Beverage</td><td class="r"><input id="m-stk-bo" class="est" inputmode="numeric"></td><td class="r"><input id="m-stk-bc" class="est" inputmode="numeric"></td><td class="r" id="stk-bd" style="color:var(--muted);">—</td></tr>
+          <tr style="font-weight:600;"><td>F&amp;B</td><td class="r" id="stk-to">—</td><td class="r" id="stk-tc">—</td><td class="r" id="stk-td">—</td></tr>
+        </tbody>
+      </table>
     </div>
   </div>
   <input class="pl-search" id="pl-search" placeholder="Rechercher un fournisseur…">
@@ -708,7 +711,7 @@ footer { max-width: 1040px; margin: 32px auto 0; padding-top: 20px; border-top: 
       <tbody id="proj-body"></tbody>
     </table>
   </div></div>
-  <p style="font-size:11px;color:var(--muted);margin-top:10px;">Fournisseurs des 3 derniers mois, classés par catégorie. <strong>%</strong> = au prorata des jours écoulés · <strong>M-1</strong> = total du mois précédent. Le tout alimente la colonne « projeté » du P&amp;L. Saisies enregistrées sur cet appareil.</p>
+  <p style="font-size:11px;color:var(--muted);margin-top:10px;">Fournisseurs des 3 derniers mois jusqu'au mois projeté, classés par catégorie. <strong>%</strong> = prorata des jours (si mois en cours) · <strong>M-1</strong> = mois précédent. Tout est calé sur le <strong>Mois à projeter</strong> et alimente la colonne « projeté » du P&amp;L. Saisies partagées en ligne.</p>
   </div><!-- /sub-proj -->
 </div><!-- /pnl -->
 
@@ -2205,8 +2208,8 @@ window.PNL = (function(){
     Object.keys(obj).forEach(key=>{ const i=key.indexOf('|'); if(i<0) return; const mk=key.slice(0,i), f=key.slice(i+1); const v=obj[key]; SAISIES[mk]=SAISIES[mk]||{}; SAISIES[mk][f]=(v===''||v==null)?v:(isNaN(+v)?v:+v); });
     try{ localStorage.setItem(SKEY,JSON.stringify(SAISIES)); }catch(e){}
   }
-  function saveSup(lg, su){ SAISIES[CURRENT]=SAISIES[CURRENT]||{}; SAISIES[CURRENT]['sup|'+lg+'|'+su.n]=su.est; persist(); }
-  let selMonth='';
+  function saveSup(lg, su){ SAISIES[PROJ_MONTH]=SAISIES[PROJ_MONTH]||{}; SAISIES[PROJ_MONTH]['sup|'+lg+'|'+su.n]=su.est; persist(); }
+  let PROJ_MONTH='';
 
   function dec(s){ return String(s==null?'':s).replace(/&amp;/g,'&').replace(/&#0?39;|&apos;/g,"'").replace(/&#8217;/g,'’').replace(/&quot;/g,'"').replace(/&lt;/g,'<').replace(/&gt;/g,'>'); }
   function colVal(r, names){ for(const k in r){ const kl=dec(k).toLowerCase().replace(/[^a-z0-9]/g,''); if(names.some(nm=>kl.includes(nm))) return r[k]; } return ''; }
@@ -2225,14 +2228,15 @@ window.PNL = (function(){
     });
   }
   function ingestFact(rows){
-    FACT={};
+    FACT={};   // FACT[ligne][fournisseur] = { 'YYYY-MM': montant }
     rows.forEach(r=>{
       const lg=dec(colVal(r,['lignepl'])).trim();
       const f =dec(colVal(r,['fournisseur'])).trim();
-      const curr=num(colVal(r,['moiscourant','courant']));
-      const m1 =num(colVal(r,['m1']));
-      if(!lg||!f) return;
-      FACT[lg]=FACT[lg]||[]; FACT[lg].push({n:f,curr,m1});
+      let mk=String(colVal(r,['mois'])).trim();
+      const mm=mk.match(/(\d{4})-(\d{2})/); if(mm) mk=mm[1]+'-'+mm[2]; else { const d=new Date(mk); if(!isNaN(d)) mk=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0'); }
+      const v=num(colVal(r,['montant']));
+      if(!lg||!f||!/^\d{4}-\d{2}$/.test(mk)) return;
+      FACT[lg]=FACT[lg]||{}; FACT[lg][f]=FACT[lg][f]||{}; FACT[lg][f][mk]=(FACT[lg][f][mk]||0)+v;
     });
   }
 
@@ -2316,24 +2320,45 @@ window.PNL = (function(){
     return Object.assign({}, d, {fb, marge, ebitda, cash:ebitda-d.remb});
   }
 
-  function elapsed(){ const t=new Date(); const dim=new Date(t.getFullYear(),t.getMonth()+1,0).getDate(); return {el:Math.min(t.getDate(),dim), dim}; }
+  function addMonth(mk, n){ let a=mk.split('-').map(Number), y=a[0], m=a[1]+n; y+=Math.floor((m-1)/12); m=((m-1)%12+12)%12+1; return y+'-'+String(m).padStart(2,'0'); }
+  function elapsedFor(mk){
+    const now=new Date(), cal=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0');
+    const p=mk.split('-').map(Number), dim=new Date(p[0],p[1],0).getDate();
+    return (mk===cal) ? {el:Math.min(now.getDate(),dim), dim} : {el:dim, dim};   // mois passé → complet
+  }
   function projLigne(lg){ return (PROJSTATE[lg]||[]).reduce((a,x)=>a+(+x.est||0),0); }
-  // CA réalisé à date du mois courant : Lightspeed (caNet) + événementiel (privatisations)
-  function salesAdate(){
-    const Ms=(typeof MONTHS!=='undefined'?MONTHS:[]); const idxM=Ms.findIndex(x=>x.key===CURRENT);
+  // Construit la liste fournisseurs pour le MOIS À PROJETER (PROJ_MONTH)
+  function buildProjState(){
+    PROJSTATE={};
+    const pm=PROJ_MONTH, pm1=addMonth(pm,-1), pm2=addMonth(pm,-2), ed=elapsedFor(pm);
+    for(const lg in FACT){
+      const arr=[];
+      for(const f in FACT[lg]){
+        const M=FACT[lg][f];
+        if(!(M[pm]||M[pm1]||M[pm2])) continue;   // vu dans les 3 mois jusqu'au mois projeté
+        const curr=M[pm]||0, m1=M[pm1]||0;
+        const saved=(SAISIES[pm]||{})['sup|'+lg+'|'+f];
+        arr.push({n:f, curr, m1, est: saved!=null ? +saved : Math.round(curr/Math.max(ed.el,1)*ed.dim)});
+      }
+      if(arr.length){ arr.sort((a,b)=>a.n<b.n?-1:1); PROJSTATE[lg]=arr; }
+    }
+  }
+  // CA réalisé à date d'un mois : Lightspeed (caNet) + événementiel (privatisations)
+  function salesAdate(mk){
+    const Ms=(typeof MONTHS!=='undefined'?MONTHS:[]); const idxM=Ms.findIndex(x=>x.key===mk);
     const mm=(typeof METRICS_M!=='undefined'?METRICS_M:[]);
     const ls=(idxM>=0 && mm[idxM])?(mm[idxM].caNet||0):0;
-    const evt=(((window.LIVE_PRIV_BY_MONTH||{})[CURRENT])||{}).total||0;
+    const evt=(((window.LIVE_PRIV_BY_MONTH||{})[mk])||{}).total||0;
     return {ls, evt};
   }
   function salesProj(){
-    const {el,dim}=elapsed(), a=salesAdate(), s=SAISIES[CURRENT]||{};
-    const ls = s.ventesLs!=null ? +s.ventesLs : Math.round(a.ls/Math.max(el,1)*dim);
-    const evt= s.ventesEvt!=null ? +s.ventesEvt : Math.round(a.evt/Math.max(el,1)*dim);
+    const ed=elapsedFor(PROJ_MONTH), a=salesAdate(PROJ_MONTH), s=SAISIES[PROJ_MONTH]||{};
+    const ls = s.ventesLs!=null ? +s.ventesLs : Math.round(a.ls/Math.max(ed.el,1)*ed.dim);
+    const evt= s.ventesEvt!=null ? +s.ventesEvt : Math.round(a.evt/Math.max(ed.el,1)*ed.dim);
     return {ls, evt, tot:ls+evt};
   }
   function projData(){
-    const ca=dashCA(CURRENT), s=eff(CURRENT), sv=salesProj();
+    const ca=dashCA(PROJ_MONTH), s=eff(PROJ_MONTH), sv=salesProj();
     const caTot=sv.tot;
     const ratio=ca.caTot?ca.caFood/ca.caTot:0.66, caFood=Math.round(caTot*ratio);
     return derive({src:'proj', caTot, caFood, caBev:caTot-caFood,
@@ -2363,11 +2388,7 @@ window.PNL = (function(){
   function render(){
     if(!ready) return;
     const i2=winEnd, i1=winEnd-1, i0=winEnd-2;
-    const colDefs=[];
-    if(i0>=0) colDefs.push({key:KEYS[i0]});
-    if(i1>=0) colDefs.push({key:KEYS[i1]});
-    if(KEYS[i2]===CURRENT) colDefs.push({proj:true,key:CURRENT,label:mlabel(CURRENT)+' projeté'});
-    else colDefs.push({key:KEYS[i2]});
+    const colDefs=[i0,i1,i2].filter(i=>i>=0).map(i=>{ const key=KEYS[i]; return key===PROJ_MONTH ? {proj:true,key,label:mlabel(key)+' projeté'} : {key}; });
 
     const datas=colDefs.map(cd=> cd.proj ? projData() : derive(monthData(cd.key)));
     const subsArr=colDefs.map(cd=> cd.proj ? null : monthData(cd.key).subs);
@@ -2425,7 +2446,7 @@ window.PNL = (function(){
 
   const LG_ORDER=['Food cost','Beverage cost','Staff cost','Coûts variables','Coûts fixes','Maintenance','À catégoriser'];
   function renderProj(){
-    const q=(($('pl-search').value)||'').toLowerCase(); const {el,dim}=elapsed();
+    const q=(($('pl-search').value)||'').toLowerCase(); const {el,dim}=elapsedFor(PROJ_MONTH);
     let h='';
     LG_ORDER.forEach(lg=>{
       const arr=(PROJSTATE[lg]||[]).map((s,si)=>({s,si})).filter(o=>o.s.n.toLowerCase().includes(q));
@@ -2454,12 +2475,12 @@ window.PNL = (function(){
   }
 
   function fillInputs(){
-    const s=eff(selMonth);
+    const s=eff(PROJ_MONTH);
     [['m-staff','staff'],['m-loyer','loyer'],['m-fdc','fdc'],['m-travaux','travaux'],['m-leasing','leasing']].forEach(([id,k])=>{ $(id).value=Math.round(s[k]||0); });
-    const sv=salesProj(), a=salesAdate();
+    const sv=salesProj(), a=salesAdate(PROJ_MONTH);
     $('m-ventes-ls').value=Math.round(sv.ls); $('m-ventes-evt').value=Math.round(sv.evt);
     $('ad-ls').textContent='· à date '+eur(a.ls); $('ad-evt').textContent='· à date '+eur(a.evt);
-    const st=effStock(selMonth);
+    const st=effStock(PROJ_MONTH);
     $('m-stk-fo').value=Math.round(st.foodOpen); $('m-stk-fc').value=Math.round(st.foodClose);
     $('m-stk-bo').value=Math.round(st.bevOpen);  $('m-stk-bc').value=Math.round(st.bevClose);
     updateStockDisplay();
@@ -2470,21 +2491,27 @@ window.PNL = (function(){
     $('stk-to').textContent=eur(fo+bo); $('stk-tc').textContent=eur(fc+bc); $('stk-td').textContent=eur((fc-fo)+(bc-bo));
   }
   function onStockInput(){
-    SAISIES[selMonth]=Object.assign({}, SAISIES[selMonth], { stockFoodOpen:num($('m-stk-fo').value), stockFoodClose:num($('m-stk-fc').value), stockBevOpen:num($('m-stk-bo').value), stockBevClose:num($('m-stk-bc').value) });
+    SAISIES[PROJ_MONTH]=Object.assign({}, SAISIES[PROJ_MONTH], { stockFoodOpen:num($('m-stk-fo').value), stockFoodClose:num($('m-stk-fc').value), stockBevOpen:num($('m-stk-bo').value), stockBevClose:num($('m-stk-bc').value) });
     persist(); flashSaved(); updateStockDisplay(); computeKPIs(); render();
   }
   function flashSaved(){ const m=$('saved-msg'); m.style.opacity='1'; setTimeout(()=>m.style.opacity='0',1200); }
   function onManualInput(){
-    SAISIES[selMonth]=Object.assign({}, SAISIES[selMonth], { staff:num($('m-staff').value), loyer:num($('m-loyer').value), fdc:num($('m-fdc').value), travaux:num($('m-travaux').value), leasing:num($('m-leasing').value) });
+    SAISIES[PROJ_MONTH]=Object.assign({}, SAISIES[PROJ_MONTH], { staff:num($('m-staff').value), loyer:num($('m-loyer').value), fdc:num($('m-fdc').value), travaux:num($('m-travaux').value), leasing:num($('m-leasing').value) });
     persist(); flashSaved(); computeKPIs(); render();
   }
   function onSalesInput(){
-    SAISIES[CURRENT]=Object.assign({}, SAISIES[CURRENT], { ventesLs:num($('m-ventes-ls').value), ventesEvt:num($('m-ventes-evt').value) });
+    SAISIES[PROJ_MONTH]=Object.assign({}, SAISIES[PROJ_MONTH], { ventesLs:num($('m-ventes-ls').value), ventesEvt:num($('m-ventes-evt').value) });
     persist(); flashSaved(); computeKPIs(); render();
   }
 
   function shift(d){ winEnd=Math.max(Math.min(2,KEYS.length-1), Math.min(KEYS.length-1, winEnd+d)); render(); }
   function gotoMonth(mk){ const i=KEYS.indexOf(mk); if(i<0) return; winEnd=Math.max(Math.min(2,KEYS.length-1), Math.min(KEYS.length-1, i)); render(); }
+  // Change le mois à projeter : recalcule la projection, saute le P&L sur ce mois, re-remplit les saisies.
+  function setProjMonth(mk){
+    PROJ_MONTH=mk; buildProjState();
+    const i=KEYS.indexOf(mk); if(i>=0) winEnd=Math.max(Math.min(2,KEYS.length-1), Math.min(KEYS.length-1, i));
+    fillInputs(); renderProj(); render();
+  }
   function toggle(i){ expanded[i]=!expanded[i]; render(); }
   // Bouton « Actualiser » : déclenche la synchro Pennylane via la Web App, puis recharge les données (cache cassé).
   async function refresh(btn){
@@ -2522,14 +2549,13 @@ window.PNL = (function(){
       winEnd=KEYS.length-1;
       const msel=$('pnl-month-sel'); if(msel) msel.innerHTML=KEYS.map(k=>'<option value="'+k+'">'+mlabel(k)+(k===CURRENT?' (en cours)':'')+'</option>').join('');
       await loadSaisiesRemote();
-      PROJSTATE={}; const {el,dim}=elapsed();
-      for(const lg in FACT) PROJSTATE[lg]=FACT[lg].map(s=>{ const sv=(SAISIES[CURRENT]||{})['sup|'+lg+'|'+s.n]; return {n:s.n,curr:s.curr,m1:s.m1,est: sv!=null ? +sv : Math.round(s.curr/Math.max(el,1)*dim)}; });
+      PROJ_MONTH = CURRENT;
+      buildProjState();
 
-      // sélecteur de mois (mois Pennylane ≥ cutoff+1)
-      const pennMonths=KEYS.filter(k=>k>CUTOFF);
-      selMonth=CURRENT;
-      const sel=$('pl-mois'); sel.innerHTML=pennMonths.map(k=>'<option value="'+k+'"'+(k===CURRENT?' selected':'')+'>'+mlabel(k)+'</option>').join('');
-      sel.onchange=()=>{ selMonth=sel.value; fillInputs(); };
+      // sélecteur « Mois à projeter » : mois en cours + jusqu'à 3 précédents (mois Pennylane)
+      const projMonths=[]; for(let d=0; d<4; d++){ const k=addMonth(CURRENT,-d); if(k>CUTOFF) projMonths.push(k); }
+      const sel=$('pl-mois'); sel.innerHTML=projMonths.map(k=>'<option value="'+k+'"'+(k===CURRENT?' selected':'')+'>'+mlabel(k)+(k===CURRENT?' (en cours)':'')+'</option>').join('');
+      sel.onchange=()=>setProjMonth(sel.value);
       ['m-staff','m-loyer','m-fdc','m-travaux','m-leasing'].forEach(id=>$(id).oninput=onManualInput);
       ['m-ventes-ls','m-ventes-evt'].forEach(id=>$(id).oninput=onSalesInput);
       ['m-stk-fo','m-stk-fc','m-stk-bo','m-stk-bc'].forEach(id=>$(id).oninput=onStockInput);
