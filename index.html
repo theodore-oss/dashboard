@@ -2493,6 +2493,12 @@ window.PNL = (function(){
               colDefs.forEach((cd,ix)=>{ const o=(detailArr[ix][line.sl]&&detailArr[ix][line.sl][nm])||{}; const sv=(sp in o)?o[sp]:null; const txt=(sv==null)?'<span class="pin">—</span>':cell(eur(sv),''); h+='<td class="r'+(cd.proj?' colproj':'')+'" style="color:var(--muted);font-size:11.5px;">'+txt+'</td>'; });
               h+='</tr>';
             });
+            // Ligne de rebouclage : fournisseurs + variation de stock = total de la sous-catégorie (F&B)
+            if(line.sl==='F&B cost' && (nm==='Food cost'||nm==='Beverage cost')){
+              h+='<tr><td class="l" style="padding-left:54px;color:var(--muted);font-size:11.5px;font-style:italic;">Variation de stock</td>';
+              colDefs.forEach((cd)=>{ const st=effStock(cd.key); const v=(nm==='Food cost')?(st.foodOpen-st.foodClose):(st.bevOpen-st.bevClose); const txt=v?cell(eur(v),''):'<span class="pin">—</span>'; h+='<td class="r'+(cd.proj?' colproj':'')+'" style="color:var(--muted);font-size:11.5px;font-style:italic;">'+txt+'</td>'; });
+              h+='</tr>';
+            }
           }
         });
       }
@@ -2518,7 +2524,8 @@ window.PNL = (function(){
     LG_ORDER.forEach(lg=>{
       const arr=(PROJSTATE[lg]||[]).map((s,si)=>({s,si})).filter(o=>o.s.n.toLowerCase().includes(q));
       if(!arr.length) return;
-      h+='<tr class="catrow"><td colspan="4">'+lg+'</td></tr>';
+      const grpTot=(PROJSTATE[lg]||[]).reduce((a,x)=>a+(+x.est||0),0);
+      h+='<tr class="catrow"><td colspan="3">'+lg+'</td><td class="r">'+eur(grpTot)+'</td></tr>';
       arr.forEach(({s,si})=>{
         const pr=Math.round(s.curr/Math.max(el,1)*dim), selPr=(+s.est===pr), selM1=(+s.est===s.m1);
         h+='<tr>'+
