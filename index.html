@@ -636,6 +636,21 @@ footer { max-width: 1040px; margin: 32px auto 0; padding-top: 20px; border-top: 
 .pl-search{ width:100%; max-width:320px; height:36px; margin-bottom:12px; }
 .m1btn{ height:30px; padding:0 10px; font-size:12px; font-family:'Sora',sans-serif; border:1px solid var(--border); border-radius:7px; background:#fff; color:var(--muted); cursor:pointer; }
 .m1btn:hover{ border-color:var(--accent); color:var(--accent); }
+/* Sélecteur de mois (mini-calendrier échelle mois) */
+.mpick-btn{ height:30px; padding:0 12px; font-family:'Sora',sans-serif; font-size:12px; border:1px solid var(--border); border-radius:7px; background:#fff; color:var(--text); cursor:pointer; display:inline-flex; align-items:center; gap:6px; }
+.mpick-btn:hover{ border-color:var(--accent); color:var(--accent); }
+.mpick-btn .chev{ color:var(--muted); font-size:10px; }
+.mpick-pop{ position:fixed; z-index:9999; display:none; width:236px; background:#fff; border:1px solid var(--border); border-radius:10px; box-shadow:0 8px 28px rgba(0,0,0,.16); padding:10px; font-family:'Sora',sans-serif; }
+.mpick-head{ display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; }
+.mpick-head span{ font-size:13px; font-weight:600; color:var(--text); }
+.mpick-nav{ width:26px; height:26px; border-radius:50%; border:1px solid var(--border); background:#fff; color:var(--muted); font-size:14px; cursor:pointer; font-family:'Sora',sans-serif; }
+.mpick-nav:hover:not(:disabled){ border-color:var(--accent); color:var(--accent); }
+.mpick-nav:disabled{ opacity:.3; cursor:default; }
+.mpick-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:5px; }
+.mpick-m{ height:34px; font-size:12px; font-family:'Sora',sans-serif; border:1px solid transparent; border-radius:7px; background:var(--bg); color:var(--text); cursor:pointer; }
+.mpick-m:hover:not(:disabled){ border-color:var(--accent); color:var(--accent); }
+.mpick-m.cur{ background:var(--accent); color:#fff; font-weight:600; }
+.mpick-m:disabled{ opacity:.32; cursor:default; background:transparent; }
 @media(max-width:820px){ .pl-kpis{ grid-template-columns:1fr 1fr; } }
 </style>
 
@@ -652,7 +667,7 @@ footer { max-width: 1040px; margin: 32px auto 0; padding-top: 20px; border-top: 
       <span class="card-title">Compte de résultat mensuel</span>
       <span style="margin-left:auto; display:flex; align-items:center; gap:8px;">
         <button id="pnl-refresh" onclick="PNL.refresh(this)" title="Synchroniser les dernières factures Pennylane puis recharger" style="height:30px;padding:0 12px;font-family:'Sora',sans-serif;font-size:12px;border:1px solid var(--border);border-radius:7px;background:#fff;color:var(--muted);cursor:pointer;">↻ Actualiser</button>
-        <select id="pnl-month-sel" onchange="PNL.gotoMonth(this.value)" style="height:30px;" title="Aller à un mois"></select>
+        <button class="mpick-btn" id="pnl-month-btn" title="Choisir un mois"><span id="pnl-month-lbl">—</span><span class="chev">▾</span></button>
         <button class="pnav" id="pnav-l" onclick="PNL.shift(-1)" aria-label="Mois précédents">‹</button>
         <button class="pnav" id="pnav-r" onclick="PNL.shift(1)" aria-label="Mois suivants">›</button>
       </span>
@@ -664,26 +679,30 @@ footer { max-width: 1040px; margin: 32px auto 0; padding-top: 20px; border-top: 
 
   <div id="sub-proj" class="subpanel">
   <div class="pl-kpis">
-    <div class="pl-kpi"><div class="lbl">CA projeté</div><div class="val accent" id="k-ca">—</div></div>
-    <div class="pl-kpi"><div class="lbl">Marge brute projetée</div><div class="val" id="k-marge">—</div><div style="font-size:11px;margin-top:1px;" id="k-marge-pct">—</div></div>
-    <div class="pl-kpi"><div class="lbl">EBITDA projeté</div><div class="val" id="k-ebitda">—</div><div style="font-size:11px;margin-top:1px;" id="k-ebitda-pct">—</div></div>
-    <div class="pl-kpi"><div class="lbl">Cash projeté</div><div class="val ok" id="k-cash">—</div></div>
+    <div class="pl-kpi"><div class="lbl" id="k-ca-lbl">CA</div><div class="val accent" id="k-ca">—</div></div>
+    <div class="pl-kpi"><div class="lbl">Marge brute</div><div class="val" id="k-marge">—</div><div style="font-size:11px;margin-top:1px;" id="k-marge-pct">—</div></div>
+    <div class="pl-kpi"><div class="lbl">EBITDA</div><div class="val" id="k-ebitda">—</div><div style="font-size:11px;margin-top:1px;" id="k-ebitda-pct">—</div></div>
+    <div class="pl-kpi"><div class="lbl">Cash</div><div class="val ok" id="k-cash">—</div></div>
   </div>
   <div class="card" style="margin-bottom:14px;">
     <div class="card-body">
       <!-- Mois à projeter : pilote tout le sous-onglet (fournisseurs, ventes, saisies, stock) -->
       <div style="display:flex; align-items:center; gap:10px; margin-bottom:18px; padding-bottom:14px; border-bottom:2px solid var(--accent);">
         <span style="font-size:13px; font-weight:600;">Mois à ajuster</span>
-        <select id="pl-mois" style="margin-left:4px;"></select>
+        <button class="mpick-btn" id="pl-mois-btn" style="margin-left:4px;" title="Choisir un mois"><span id="pl-mois-lbl">—</span><span class="chev">▾</span></button>
+        <span id="proj-histo-tag" style="display:none;font-size:11px;color:var(--gold);font-weight:600;">mois clôturé — ajustable</span>
         <span id="saved-msg" style="font-size:11px;color:var(--ok);opacity:0;transition:opacity .2s;margin-left:auto;">✓ enregistré</span>
       </div>
 
+      <div id="proj-sec-ventes">
       <div style="font-size:11px;font-weight:600;color:var(--accent);text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px;">1 · Ventes projetées</div>
       <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:24px;">
         <div class="pl-field"><label>Ventes Lightspeed <span id="ad-ls" style="color:var(--muted);"></span></label><input id="m-ventes-ls" inputmode="numeric"></div>
         <div class="pl-field"><label>Ventes événementiel <span id="ad-evt" style="color:var(--muted);"></span></label><input id="m-ventes-evt" inputmode="numeric"></div>
       </div>
+      </div>
 
+      <div id="proj-sec-manual">
       <div style="font-size:11px;font-weight:600;color:var(--accent);text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px;padding-top:16px;border-top:1px solid var(--border);">2 · Saisies manuelles (coûts)</div>
       <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-bottom:24px;">
         <div class="pl-field"><label>Salaires</label><input id="m-staff" inputmode="numeric"></div>
@@ -692,7 +711,9 @@ footer { max-width: 1040px; margin: 32px auto 0; padding-top: 20px; border-top: 
         <div class="pl-field"><label>Prêt travaux</label><input id="m-travaux" inputmode="numeric"></div>
         <div class="pl-field"><label>Leasing</label><input id="m-leasing" inputmode="numeric"></div>
       </div>
+      </div>
 
+      <div id="proj-sec-stock">
       <div style="font-size:11px;font-weight:600;color:var(--accent);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px;padding-top:16px;border-top:1px solid var(--border);">3 · Variation de stock F&amp;B <span style="font-weight:400;color:var(--muted);font-size:10px;text-transform:none;letter-spacing:0;">— coût = achats − (stock fin − stock début)</span></div>
       <table class="proj" style="font-size:12.5px;">
         <thead><tr><th class="l"></th><th class="r">Stock début (M-1)</th><th class="r">Stock fin (M)</th><th class="r">Variation</th></tr></thead>
@@ -702,18 +723,21 @@ footer { max-width: 1040px; margin: 32px auto 0; padding-top: 20px; border-top: 
           <tr style="font-weight:600;"><td>F&amp;B</td><td class="r" id="stk-to">—</td><td class="r" id="stk-tc">—</td><td class="r" id="stk-td">—</td></tr>
         </tbody>
       </table>
+      </div>
     </div>
   </div>
   <input class="pl-search" id="pl-search" placeholder="Rechercher un fournisseur…">
   <div class="card"><div class="card-body">
     <table class="proj">
-      <thead><tr><th class="l">Fournisseur</th><th class="r">Factures à date</th><th class="r">Valeur M-1</th><th class="r">Valeur retenue</th></tr></thead>
+      <thead><tr><th class="l" id="proj-col1">Fournisseur</th><th class="r" id="proj-col2">Factures à date</th><th class="r">Valeur M-1</th><th class="r">Valeur retenue</th></tr></thead>
       <tbody id="proj-body"></tbody>
     </table>
   </div></div>
-  <p style="font-size:11px;color:var(--muted);margin-top:10px;">Fournisseurs des 3 derniers mois jusqu'au mois choisi, classés par catégorie. <strong>Valeur retenue</strong> = ce qui est affiché dans le P&amp;L (par défaut le réel Pennylane, ajustable ; 0 = exclu). <strong>%</strong> = prorata des jours (mois en cours) · <strong>M-1</strong> = mois précédent. Saisies partagées en ligne.</p>
+  <p style="font-size:11px;color:var(--muted);margin-top:10px;"><strong>Mois Pennylane</strong> : lignes = fournisseurs des 3 derniers mois, classés par catégorie. <strong>Mois clôturés (Excel)</strong> : lignes = sous-catégories, également ajustables. <strong>Valeur retenue</strong> = ce qui s'affiche dans le P&amp;L (par défaut le réel, ajustable ; 0 = exclu). <strong>%</strong> = prorata des jours (mois en cours) · <strong>M-1</strong> = mois précédent. Saisies partagées en ligne.</p>
   </div><!-- /sub-proj -->
 </div><!-- /pnl -->
+
+<div id="mpick-pop" class="mpick-pop"></div>
 
 <footer>
   <span id="footer-lbl">Rosario · Dashboard · S13 · 23–29 mars 2026</span>
@@ -2209,7 +2233,8 @@ window.PNL = (function(){
     Object.keys(obj).forEach(key=>{ const i=key.indexOf('|'); if(i<0) return; const mk=key.slice(0,i), f=key.slice(i+1); const v=obj[key]; SAISIES[mk]=SAISIES[mk]||{}; SAISIES[mk][f]=(v===''||v==null)?v:(isNaN(+v)?v:+v); });
     try{ localStorage.setItem(SKEY,JSON.stringify(SAISIES)); }catch(e){}
   }
-  function saveSup(lg, su){ SAISIES[PROJ_MONTH]=SAISIES[PROJ_MONTH]||{}; SAISIES[PROJ_MONTH]['sup|'+lg+'|'+su.n]=su.est; persist(); }
+  function supPrefix(mk){ return mk<=CUTOFF ? 'hsub|' : 'sup|'; }   // historique = override par sous-catégorie ; Pennylane = par fournisseur
+  function saveSup(lg, su){ SAISIES[PROJ_MONTH]=SAISIES[PROJ_MONTH]||{}; SAISIES[PROJ_MONTH][supPrefix(PROJ_MONTH)+lg+'|'+su.n]=su.est; persist(); }
   let PROJ_MONTH='';
 
   function dec(s){ return String(s==null?'':s).replace(/&amp;/g,'&').replace(/&#0?39;|&apos;/g,"'").replace(/&#8217;/g,'’').replace(/&quot;/g,'"').replace(/&lt;/g,'<').replace(/&gt;/g,'>'); }
@@ -2293,19 +2318,28 @@ window.PNL = (function(){
   }
 
   function monthData(mk){
-    if(mk<=CUTOFF){
-      const h=HISTO[mk]||{}; const get=lg=>(h[lg]||{}).total||0;
-      const caKey=Object.keys(h).find(k=>k.toLowerCase().indexOf('chiffre')===0);
-      const ca=(caKey?h[caKey]:null)||{subs:{},total:0};
-      const caFood=(ca.subs||{})['CA Food']||0, caBev=(ca.subs||{})['CA Beverage']||0;
-      const fbSub=(h['F&B cost']||{subs:{}}).subs||{};
-      return {src:'histo', caTot:ca.total||caFood+caBev, caFood, caBev,
-        fb:get('F&B cost'), foodCost:fbSub['Food cost']||0, bevCost:fbSub['Beverage cost']||0,
-        staff:get('Staff cost'), variables:get('Coûts variables'), fixes:get('Coûts fixes'),
-        loyer:get('Loyer & charges'), maintenance:get('Maintenance'), noncat:get('Non catégorisé'),
-        remb:get('Remboursement prêts'), amort:get('Amortissements'), subs:subsOf(h), detail:detailOf(h)};
+    return mk<=CUTOFF ? computeMonthHisto(mk) : computeMonthPenn(mk);
+  }
+  // P&L d'un mois historique (Excel) = valeurs retenues, ajustables par sous-catégorie (override 'hsub|ligne|souscat').
+  function computeMonthHisto(mk){
+    const h=HISTO[mk]||{}, S=SAISIES[mk]||{};
+    const caKey=Object.keys(h).find(k=>k.toLowerCase().indexOf('chiffre')===0);
+    const ca=(caKey?h[caKey]:null)||{subs:{},total:0};
+    const caFood=(ca.subs||{})['CA Food']||0, caBev=(ca.subs||{})['CA Beverage']||0;
+    const subs={}, lineTot={};
+    for(const lg in h){
+      if(lg===caKey) continue;
+      const o={}; let t=0;
+      for(const sc in h[lg].subs){ const k='hsub|'+lg+'|'+sc; const v=S[k]!=null? +S[k] : h[lg].subs[sc]; o[sc]=v; t+=v; }
+      subs[lg]=o; lineTot[lg]=t;
     }
-    return computeMonthPenn(mk);   // mois Pennylane = valeurs retenues (Ajustements)
+    const get=lg=>lineTot[lg]||0;
+    const fbSub=subs['F&B cost']||{};
+    return {src:'histo', caTot:ca.total||caFood+caBev, caFood, caBev,
+      fb:get('F&B cost'), foodCost:fbSub['Food cost']||0, bevCost:fbSub['Beverage cost']||0,
+      staff:get('Staff cost'), variables:get('Coûts variables'), fixes:get('Coûts fixes'),
+      loyer:get('Loyer & charges'), maintenance:get('Maintenance'), noncat:get('Non catégorisé'),
+      remb:get('Remboursement prêts'), amort:get('Amortissements'), subs, detail:detailOf(h)};
   }
   function detailOf(store){ const o={}; for(const lg in store){ if(store[lg].detail && Object.keys(store[lg].detail).length) o[lg]=store[lg].detail; } return o; }
   function subsOf(store, s){
@@ -2360,9 +2394,10 @@ window.PNL = (function(){
     } }
     return det;
   }
-  // Construit la liste fournisseurs pour le MOIS À PROJETER (PROJ_MONTH)
+  // Construit la liste éditable pour le MOIS À AJUSTER (PROJ_MONTH)
   function buildProjState(){
     PROJSTATE={};
+    if(PROJ_MONTH<=CUTOFF){ buildProjStateHisto(); return; }   // historique = lignes par sous-catégorie
     const pm=PROJ_MONTH, pm1=addMonth(pm,-1), pm2=addMonth(pm,-2), ed=elapsedFor(pm);
     for(const lg in FACT){
       const arr=[];
@@ -2372,6 +2407,22 @@ window.PNL = (function(){
         const curr=M[pm]||0, m1=M[pm1]||0;
         const saved=(SAISIES[pm]||{})['sup|'+lg+'|'+f];
         arr.push({n:f, curr, m1, est: saved!=null ? +saved : Math.round(curr/Math.max(ed.el,1)*ed.dim)});
+      }
+      if(arr.length){ arr.sort((a,b)=>a.n<b.n?-1:1); PROJSTATE[lg]=arr; }
+    }
+  }
+  // Mois historique : chaque sous-catégorie de l'Excel devient une ligne éditable (valeur retenue = override sinon réel Excel)
+  function buildProjStateHisto(){
+    const pm=PROJ_MONTH, pm1=addMonth(pm,-1);
+    const h=HISTO[pm]||{}, hp=HISTO[pm1]||{};
+    const caKey=Object.keys(h).find(k=>k.toLowerCase().indexOf('chiffre')===0);
+    for(const lg in h){
+      if(lg===caKey) continue;
+      const arr=[];
+      for(const sc in h[lg].subs){
+        const curr=h[lg].subs[sc], m1=((hp[lg]||{subs:{}}).subs||{})[sc]||0;
+        const saved=(SAISIES[pm]||{})['hsub|'+lg+'|'+sc];
+        arr.push({n:sc, curr, m1, est: saved!=null ? +saved : curr});
       }
       if(arr.length){ arr.sort((a,b)=>a.n<b.n?-1:1); PROJSTATE[lg]=arr; }
     }
@@ -2409,7 +2460,7 @@ window.PNL = (function(){
       staff:s.staff+staffAuto, variables, fixes, loyer:s.loyer, maintenance, noncat,
       remb:s.fdc+s.travaux+s.leasing, amort:0, subs, detail};
   }
-  function projData(){ return derive(computeMonthPenn(PROJ_MONTH)); }   // KPIs de l'onglet Ajustements (mois sélectionné)
+  function projData(){ return derive(monthData(PROJ_MONTH)); }   // KPIs de l'onglet Ajustements (mois sélectionné, historique ou Pennylane)
 
   const LINES=[
     {label:'Chiffre d’affaires', k:'caTot', bold:true, cls:'head-row', subsCA:[['CA Food','caFood'],['CA Beverage','caBev']]},
@@ -2483,7 +2534,7 @@ window.PNL = (function(){
             // Ligne de rebouclage : fournisseurs + variation de stock = total de la sous-catégorie (F&B)
             if(line.sl==='F&B cost' && (nm==='Food cost'||nm==='Beverage cost')){
               h+='<tr><td class="l" style="padding-left:54px;color:var(--muted);font-size:11.5px;font-style:italic;">Variation de stock</td>';
-              colDefs.forEach((cd)=>{ const st=effStock(cd.key); const v=(nm==='Food cost')?(st.foodOpen-st.foodClose):(st.bevOpen-st.bevClose); const txt=v?cell(eur(v),''):'<span class="pin">—</span>'; h+='<td class="r'+(cd.proj?' colproj':'')+'" style="color:var(--muted);font-size:11.5px;font-style:italic;">'+txt+'</td>'; });
+              colDefs.forEach((cd)=>{ const st=effStock(cd.key); const v=(cd.key<=CUTOFF)?0:((nm==='Food cost')?(st.foodOpen-st.foodClose):(st.bevOpen-st.bevClose)); const txt=v?cell(eur(v),''):'<span class="pin">—</span>'; h+='<td class="r'+(cd.proj?' colproj':'')+'" style="color:var(--muted);font-size:11.5px;font-style:italic;">'+txt+'</td>'; });
               h+='</tr>';
             }
           }
@@ -2492,7 +2543,7 @@ window.PNL = (function(){
     });
     h+='</tbody></table>';
     $('pnl-table').innerHTML=h;
-    const selEl=$('pnl-month-sel'); if(selEl) selEl.value=KEYS[winEnd];
+    const lblEl=$('pnl-month-lbl'); if(lblEl) lblEl.textContent=mlabel(KEYS[winEnd]);
     $('pnav-l').disabled = winEnd<=Math.min(2,KEYS.length-1);
     $('pnav-r').disabled = winEnd>=KEYS.length-1;
   }
@@ -2504,11 +2555,14 @@ window.PNL = (function(){
     setPct('k-marge-pct',P.marge,P.caTot); setPct('k-ebitda-pct',P.ebitda,P.caTot);
   }
 
-  const LG_ORDER=['Food cost','Beverage cost','Staff cost','Coûts variables','Coûts fixes','Maintenance','À catégoriser'];
+  const LG_ORDER_PENN=['Food cost','Beverage cost','Staff cost','Coûts variables','Coûts fixes','Maintenance','À catégoriser'];
+  const LG_ORDER_HISTO=['F&B cost','Staff cost','Coûts variables','Coûts fixes','Loyer & charges','Maintenance','Non catégorisé','Remboursement prêts','Amortissements'];
   function renderProj(){
     const q=(($('pl-search').value)||'').toLowerCase(); const {el,dim}=elapsedFor(PROJ_MONTH);
     let h='';
-    LG_ORDER.forEach(lg=>{
+    const base=PROJ_MONTH<=CUTOFF ? LG_ORDER_HISTO : LG_ORDER_PENN;
+    const order=base.concat(Object.keys(PROJSTATE).filter(k=>base.indexOf(k)<0));   // + toute ligne restante
+    order.forEach(lg=>{
       const arr=(PROJSTATE[lg]||[]).map((s,si)=>({s,si})).filter(o=>o.s.n.toLowerCase().includes(q));
       if(!arr.length) return;
       const grpTot=(PROJSTATE[lg]||[]).reduce((a,x)=>a+(+x.est||0),0);
@@ -2567,10 +2621,16 @@ window.PNL = (function(){
 
   function shift(d){ winEnd=Math.max(Math.min(2,KEYS.length-1), Math.min(KEYS.length-1, winEnd+d)); render(); }
   function gotoMonth(mk){ const i=KEYS.indexOf(mk); if(i<0) return; winEnd=Math.max(Math.min(2,KEYS.length-1), Math.min(KEYS.length-1, i)); render(); }
-  // Change le mois à projeter : recalcule la projection, saute le P&L sur ce mois, re-remplit les saisies.
+  // Change le mois à ajuster : recalcule les lignes éditables, saute le P&L sur ce mois, re-remplit les saisies.
   function setProjMonth(mk){
     PROJ_MONTH=mk; buildProjState();
     const i=KEYS.indexOf(mk); if(i>=0) winEnd=Math.max(Math.min(2,KEYS.length-1), Math.min(KEYS.length-1, i));
+    const histo = mk<=CUTOFF;
+    ['proj-sec-ventes','proj-sec-manual','proj-sec-stock'].forEach(id=>{ const e=$(id); if(e) e.style.display=histo?'none':''; });
+    const tag=$('proj-histo-tag'); if(tag) tag.style.display=histo?'':'none';
+    const c1=$('proj-col1'); if(c1) c1.textContent=histo?'Sous-catégorie':'Fournisseur';
+    const c2=$('proj-col2'); if(c2) c2.textContent=histo?'Valeur Excel':'Factures à date';
+    const lbl=$('pl-mois-lbl'); if(lbl) lbl.textContent=mlabel(mk);
     fillInputs(); renderProj(); render();
   }
   function toggle(i){ expanded[i]=!expanded[i]; render(); }
@@ -2589,6 +2649,35 @@ window.PNL = (function(){
     if(btn){ btn.innerHTML=old||'↻ Actualiser'; btn.disabled=false; }
   }
   function sub(id, el){ document.querySelectorAll('#pnl .subpanel').forEach(p=>p.classList.remove('on')); document.querySelectorAll('#pnl .subtab').forEach(t=>t.classList.remove('on')); $(id).classList.add('on'); el.classList.add('on'); }
+
+  // ── Mini-calendrier de sélection de mois (échelle mois, navigation par année) ──
+  const MPICK={onPick:null, year:0, allowed:[], sel:''};
+  const MFR_SHORT=['Jan','Fév','Mar','Avr','Mai','Juin','Juil','Aoû','Sep','Oct','Nov','Déc'];
+  function openMPick(btn, sel, allowed, onPick){
+    MPICK.onPick=onPick; MPICK.allowed=allowed||[]; MPICK.sel=sel||'';
+    MPICK.year=+((sel||(MPICK.allowed[MPICK.allowed.length-1])||'2026-01').split('-')[0]);
+    renderMPick();
+    const pop=$('mpick-pop'), r=btn.getBoundingClientRect();
+    pop.style.display='block';
+    const w=pop.offsetWidth||236;
+    pop.style.left=Math.max(8, Math.min(r.left, window.innerWidth-w-8))+'px';
+    pop.style.top=Math.min(r.bottom+4, window.innerHeight-260)+'px';
+  }
+  function renderMPick(){
+    const pop=$('mpick-pop'), y=MPICK.year;
+    const yrs=MPICK.allowed.map(k=>+k.split('-')[0]);
+    const minY=yrs.length?Math.min(...yrs):y, maxY=yrs.length?Math.max(...yrs):y;
+    let h='<div class="mpick-head"><button class="mpick-nav" data-d="-1"'+(y<=minY?' disabled':'')+'>‹</button><span>'+y+'</span><button class="mpick-nav" data-d="1"'+(y>=maxY?' disabled':'')+'>›</button></div><div class="mpick-grid">';
+    for(let m=1;m<=12;m++){ const mk=y+'-'+String(m).padStart(2,'0'); const ok=MPICK.allowed.indexOf(mk)>=0, cur=mk===MPICK.sel;
+      h+='<button class="mpick-m'+(cur?' cur':'')+'" data-mk="'+mk+'"'+(ok?'':' disabled')+'>'+MFR_SHORT[m-1]+'</button>'; }
+    h+='</div>';
+    pop.innerHTML=h;
+    pop.querySelectorAll('.mpick-nav').forEach(b=>b.onclick=()=>{ if(b.disabled) return; MPICK.year+=+b.dataset.d; renderMPick(); });
+    pop.querySelectorAll('.mpick-m').forEach(b=>b.onclick=()=>{ if(b.disabled) return; closeMPick(); if(MPICK.onPick) MPICK.onPick(b.dataset.mk); });
+  }
+  function closeMPick(){ const p=$('mpick-pop'); if(p) p.style.display='none'; }
+  document.addEventListener('click', e=>{ const p=$('mpick-pop'); if(!p||p.style.display==='none') return; if(p.contains(e.target)||e.target.closest('.mpick-btn')) return; closeMPick(); });
+  window.addEventListener('resize', closeMPick);
 
   async function load(bust){
     try{
@@ -2609,15 +2698,14 @@ window.PNL = (function(){
       if(!KEYS.length){ return; }
       if(KEYS[KEYS.length-1]!==CURRENT) CURRENT=KEYS[KEYS.length-1];
       winEnd=KEYS.length-1;
-      const msel=$('pnl-month-sel'); if(msel) msel.innerHTML=KEYS.map(k=>'<option value="'+k+'">'+mlabel(k)+(k===CURRENT?' (en cours)':'')+'</option>').join('');
       await loadSaisiesRemote();
       PROJ_MONTH = CURRENT;
       buildProjState();
 
-      // sélecteur « Mois à projeter » : mois en cours + jusqu'à 3 précédents (mois Pennylane)
-      const projMonths=[]; for(let d=0; d<4; d++){ const k=addMonth(CURRENT,-d); if(k>CUTOFF) projMonths.push(k); }
-      const sel=$('pl-mois'); sel.innerHTML=projMonths.map(k=>'<option value="'+k+'"'+(k===CURRENT?' selected':'')+'>'+mlabel(k)+(k===CURRENT?' (en cours)':'')+'</option>').join('');
-      sel.onchange=()=>setProjMonth(sel.value);
+      // Sélecteurs de mois = mini-calendrier (échelle mois). Tous les mois disponibles, historiques inclus.
+      const pnlBtn=$('pnl-month-btn'); if(pnlBtn) pnlBtn.onclick=()=>openMPick(pnlBtn, KEYS[winEnd], KEYS, gotoMonth);
+      const plBtn=$('pl-mois-btn'); if(plBtn) plBtn.onclick=()=>openMPick(plBtn, PROJ_MONTH, KEYS, setProjMonth);
+      const plLbl=$('pl-mois-lbl'); if(plLbl) plLbl.textContent=mlabel(PROJ_MONTH);
       ['m-staff','m-loyer','m-fdc','m-travaux','m-leasing'].forEach(id=>$(id).oninput=onManualInput);
       ['m-ventes-ls','m-ventes-evt'].forEach(id=>$(id).oninput=onSalesInput);
       ['m-stk-fo','m-stk-fc','m-stk-bo','m-stk-bc'].forEach(id=>$(id).oninput=onStockInput);
