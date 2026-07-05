@@ -673,7 +673,7 @@ footer { max-width: 1040px; margin: 32px auto 0; padding-top: 20px; border-top: 
     <div class="card-body">
       <!-- Mois à projeter : pilote tout le sous-onglet (fournisseurs, ventes, saisies, stock) -->
       <div style="display:flex; align-items:center; gap:10px; margin-bottom:18px; padding-bottom:14px; border-bottom:2px solid var(--accent);">
-        <span style="font-size:13px; font-weight:600;">Mois à projeter</span>
+        <span style="font-size:13px; font-weight:600;">Mois à ajuster</span>
         <select id="pl-mois" style="margin-left:4px;"></select>
         <span id="saved-msg" style="font-size:11px;color:var(--ok);opacity:0;transition:opacity .2s;margin-left:auto;">✓ enregistré</span>
       </div>
@@ -711,7 +711,7 @@ footer { max-width: 1040px; margin: 32px auto 0; padding-top: 20px; border-top: 
       <tbody id="proj-body"></tbody>
     </table>
   </div></div>
-  <p style="font-size:11px;color:var(--muted);margin-top:10px;">Fournisseurs des 3 derniers mois jusqu'au mois projeté, classés par catégorie. <strong>%</strong> = prorata des jours (si mois en cours) · <strong>M-1</strong> = mois précédent. Tout est calé sur le <strong>Mois à projeter</strong> et alimente la colonne « projeté » du P&amp;L. Saisies partagées en ligne.</p>
+  <p style="font-size:11px;color:var(--muted);margin-top:10px;">Fournisseurs des 3 derniers mois jusqu'au mois choisi, classés par catégorie. <strong>Valeur retenue</strong> = ce qui est affiché dans le P&amp;L (par défaut le réel Pennylane, ajustable ; 0 = exclu). <strong>%</strong> = prorata des jours (mois en cours) · <strong>M-1</strong> = mois précédent. Saisies partagées en ligne.</p>
   </div><!-- /sub-proj -->
 </div><!-- /pnl -->
 
@@ -2305,19 +2305,7 @@ window.PNL = (function(){
         loyer:get('Loyer & charges'), maintenance:get('Maintenance'), noncat:get('Non catégorisé'),
         remb:get('Remboursement prêts'), amort:get('Amortissements'), subs:subsOf(h), detail:detailOf(h)};
     }
-    const p=PENN[mk]||{}; const get=lg=>(p[lg]||{}).total||0; const s=eff(mk); const ca=dashCA(mk);
-    const fbSub=(p['F&B cost']||{subs:{}}).subs||{};
-    // Coût consommé = achats − variation de stock (achats + stock début − stock fin)
-    const st=effStock(mk);
-    const foodCost=(fbSub['Food cost']||0)    - (st.foodClose - st.foodOpen);
-    const bevCost =(fbSub['Beverage cost']||0) - (st.bevClose - st.bevOpen);
-    const subs=subsOf(p, s);
-    subs['F&B cost']={'Food cost':foodCost, 'Beverage cost':bevCost};
-    return {src:'penn', caTot:ca.caTot, caFood:ca.caFood, caBev:ca.caBev,
-      fb:foodCost+bevCost, foodCost, bevCost,
-      staff:s.staff+get('Staff cost'), variables:get('Coûts variables'), fixes:get('Coûts fixes'),
-      loyer:s.loyer, maintenance:get('Maintenance'), noncat:get('Non catégorisé'),
-      remb:s.fdc+s.travaux+s.leasing, amort:0, subs, detail:detailOf(p)};
+    return computeMonthPenn(mk);   // mois Pennylane = valeurs retenues (Ajustements)
   }
   function detailOf(store){ const o={}; for(const lg in store){ if(store[lg].detail && Object.keys(store[lg].detail).length) o[lg]=store[lg].detail; } return o; }
   function subsOf(store, s){
@@ -2341,7 +2329,37 @@ window.PNL = (function(){
     const p=mk.split('-').map(Number), dim=new Date(p[0],p[1],0).getDate();
     return (mk===cal) ? {el:Math.min(now.getDate(),dim), dim} : {el:dim, dim};   // mois passé → complet
   }
-  function projLigne(lg){ return (PROJSTATE[lg]||[]).reduce((a,x)=>a+(+x.est||0),0); }
+  // Total d'un groupe pour un mois = somme des valeurs RETENUES (ajustées, sinon réel à date) par fournisseur
+  function groupTotal(mk, g){
+    const arr=FACT[g]; if(!arr) return 0;
+    const ed=elapsedFor(mk), pm1=addMonth(mk,-1), pm2=addMonth(mk,-2); let sum=0;
+    for(const f in arr){ const M=arr[f]; if(!(M[mk]||M[pm1]||M[pm2])) continue;
+      const saved=(SAISIES[mk]||{})['sup|'+g+'|'+f];
+      sum += saved!=null ? +saved : Math.round((M[mk]||0)/Math.max(ed.el,1)*ed.dim);
+    }
+    return sum;
+  }
+  function projLigne(lg){ return groupTotal(PROJ_MONTH, lg); }
+  // Sous-catégorie dominante (à date) d'un fournisseur dans une ligne
+  function domSousCat(mk, lg, sup){
+    const pdet=((PENN[mk]||{})[lg]||{detail:{}}).detail||{};
+    let best=null, bestA=-1;
+    for(const sc in pdet){ const a=pdet[sc][sup]||0; if(a>bestA){ bestA=a; best=sc; } }
+    return best;
+  }
+  // Détail fournisseur = valeurs RETENUES ; chaque fournisseur rangé sous sa sous-catégorie dominante (aucune répartition)
+  function suppliersDetail(mk){
+    const det={}, ed=elapsedFor(mk), pm1=addMonth(mk,-1), pm2=addMonth(mk,-2);
+    const put=(lg,sc,sup,amt)=>{ if(!amt) return; det[lg]=det[lg]||{}; det[lg][sc]=det[lg][sc]||{}; det[lg][sc][sup]=(det[lg][sc][sup]||0)+Math.round(amt); };
+    const FB={'Food cost':1,'Beverage cost':1};
+    for(const g in FACT){ for(const f in FACT[g]){ const M=FACT[g][f]; if(!(M[mk]||M[pm1]||M[pm2])) continue;
+      const saved=(SAISIES[mk]||{})['sup|'+g+'|'+f]; const val=saved!=null?+saved:Math.round((M[mk]||0)/Math.max(ed.el,1)*ed.dim); if(!val) continue;
+      if(FB[g]){ put('F&B cost', g, f, val); continue; }
+      const lg=(g==='À catégoriser')?'Non catégorisé':g;
+      put(lg, domSousCat(mk, lg, f) || '(non ventilé)', f, val);
+    } }
+    return det;
+  }
   // Construit la liste fournisseurs pour le MOIS À PROJETER (PROJ_MONTH)
   function buildProjState(){
     PROJSTATE={};
@@ -2366,63 +2384,32 @@ window.PNL = (function(){
     const evt=(((window.LIVE_PRIV_BY_MONTH||{})[mk])||{}).total||0;
     return {ls, evt};
   }
-  function salesProj(){
-    const ed=elapsedFor(PROJ_MONTH), a=salesAdate(PROJ_MONTH), s=SAISIES[PROJ_MONTH]||{};
+  function salesProj(mk){
+    const m=mk||PROJ_MONTH, ed=elapsedFor(m), a=salesAdate(m), s=SAISIES[m]||{};
     const ls = s.ventesLs!=null ? +s.ventesLs : Math.round(a.ls/Math.max(ed.el,1)*ed.dim);
     const evt= s.ventesEvt!=null ? +s.ventesEvt : Math.round(a.evt/Math.max(ed.el,1)*ed.dim);
     return {ls, evt, tot:ls+evt};
   }
-  // Répartit un total projeté sur les sous-catégories d'une ligne, selon la proportion des factures à date
-  function distribProj(lg, total){
-    const psub=((PENN[PROJ_MONTH]||{})[lg]||{subs:{}}).subs||{};
-    let ptot=0; for(const k in psub) ptot+=psub[k];
-    const o={};
-    if(ptot>0){ for(const k in psub) o[k]=Math.round(total*psub[k]/ptot); }
-    else if(Math.round(total)) o['(à venir)']=Math.round(total);
-    return o;
-  }
-  // Détail fournisseur PROJETÉ : estimations retenues (PROJSTATE), ventilées par sous-catégorie
-  function projDetail(){
-    const det={};
-    const put=(lg,sc,sup,amt)=>{ if(!amt) return; det[lg]=det[lg]||{}; det[lg][sc]=det[lg][sc]||{}; det[lg][sc][sup]=(det[lg][sc][sup]||0)+Math.round(amt); };
-    const FB={'Food cost':1,'Beverage cost':1};
-    for(const g in PROJSTATE){
-      (PROJSTATE[g]||[]).forEach(x=>{
-        const est=+x.est||0; if(!est) return;
-        if(FB[g]){ put('F&B cost', g, x.n, est); return; }         // F&B : groupe = sous-catégorie
-        const lg=(g==='À catégoriser')?'Non catégorisé':g;
-        const pdet=((PENN[PROJ_MONTH]||{})[lg]||{detail:{}}).detail||{};
-        let tot=0; const mix={};
-        for(const sc in pdet){ const a=pdet[sc][x.n]; if(a){ mix[sc]=a; tot+=a; } }
-        if(tot>0){ for(const sc in mix) put(lg, sc, x.n, est*mix[sc]/tot); }  // ventile selon le mix à date du fournisseur
-        else put(lg, '(à venir)', x.n, est);                                  // pas encore facturé ce mois → bucket
-      });
-    }
-    return det;
-  }
-  function projData(){
-    const ca=dashCA(PROJ_MONTH), s=eff(PROJ_MONTH), sv=salesProj(), st=effStock(PROJ_MONTH);
-    const caTot=sv.tot;
-    const ratio=ca.caTot?ca.caFood/ca.caTot:0.66, caFood=Math.round(caTot*ratio);
-    const foodCost=projLigne('Food cost')-(st.foodClose-st.foodOpen);
-    const bevCost =projLigne('Beverage cost')-(st.bevClose-st.bevOpen);
-    const staffAuto=projLigne('Staff cost'), variables=projLigne('Coûts variables'), fixes=projLigne('Coûts fixes'), maintenance=projLigne('Maintenance'), noncat=projLigne('À catégoriser');
-    const subs={
-      'F&B cost':{'Food cost':Math.round(foodCost),'Beverage cost':Math.round(bevCost)},
-      'Staff cost':Object.assign({'Salaires':Math.round(s.staff)}, distribProj('Staff cost', staffAuto)),
-      'Coûts variables':distribProj('Coûts variables', variables),
-      'Coûts fixes':distribProj('Coûts fixes', fixes),
-      'Maintenance':distribProj('Maintenance', maintenance),
-      'Loyer & charges':{'Loyer & charges':Math.round(s.loyer)},
-      'Remboursement prêts':{'Prêt FDC':Math.round(s.fdc),'Prêt travaux':Math.round(s.travaux),'Leasing':Math.round(s.leasing)},
-      'Non catégorisé':distribProj('Non catégorisé', noncat)
-    };
-    return derive({src:'proj', caTot, caFood, caBev:caTot-caFood,
+  // P&L d'un mois Pennylane = EXACTEMENT les valeurs retenues (Ajustements). Aucune répartition ; 0 = 0.
+  function computeMonthPenn(mk){
+    const s=eff(mk), st=effStock(mk), sv=salesProj(mk), caR=dashCA(mk);
+    const caTot=sv.tot, ratio=caR.caTot?caR.caFood/caR.caTot:0.66, caFood=Math.round(caTot*ratio);
+    const foodCost=groupTotal(mk,'Food cost')-(st.foodClose-st.foodOpen);
+    const bevCost =groupTotal(mk,'Beverage cost')-(st.bevClose-st.bevOpen);
+    const variables=groupTotal(mk,'Coûts variables'), fixes=groupTotal(mk,'Coûts fixes'), maintenance=groupTotal(mk,'Maintenance'), staffAuto=groupTotal(mk,'Staff cost'), noncat=groupTotal(mk,'À catégoriser');
+    const detail=suppliersDetail(mk);
+    const subs={};
+    for(const lg in detail){ const o={}; for(const sc in detail[lg]){ let t=0; for(const sp in detail[lg][sc]) t+=detail[lg][sc][sp]; o[sc]=t; } subs[lg]=o; }
+    subs['F&B cost']={'Food cost':Math.round(foodCost),'Beverage cost':Math.round(bevCost)};
+    subs['Staff cost']=Object.assign({'Salaires':Math.round(s.staff)}, subs['Staff cost']||{});
+    subs['Loyer & charges']={'Loyer & charges':Math.round(s.loyer)};
+    subs['Remboursement prêts']={'Prêt FDC':Math.round(s.fdc),'Prêt travaux':Math.round(s.travaux),'Leasing':Math.round(s.leasing)};
+    return {src:(mk===CURRENT?'proj':'penn'), caTot, caFood, caBev:caTot-caFood,
       fb:foodCost+bevCost, foodCost, bevCost,
-      staff:s.staff+staffAuto, variables, fixes,
-      loyer:s.loyer, maintenance, noncat,
-      remb:s.fdc+s.travaux+s.leasing, amort:0, subs, detail:projDetail()});
+      staff:s.staff+staffAuto, variables, fixes, loyer:s.loyer, maintenance, noncat,
+      remb:s.fdc+s.travaux+s.leasing, amort:0, subs, detail};
   }
+  function projData(){ return derive(computeMonthPenn(PROJ_MONTH)); }   // KPIs de l'onglet Ajustements (mois sélectionné)
 
   const LINES=[
     {label:'Chiffre d’affaires', k:'caTot', bold:true, cls:'head-row', subsCA:[['CA Food','caFood'],['CA Beverage','caBev']]},
@@ -2443,11 +2430,11 @@ window.PNL = (function(){
   function render(){
     if(!ready) return;
     const i2=winEnd, i1=winEnd-1, i0=winEnd-2;
-    const colDefs=[i0,i1,i2].filter(i=>i>=0).map(i=>{ const key=KEYS[i]; return key===PROJ_MONTH ? {proj:true,key,label:mlabel(key)+' projeté'} : {key}; });
+    const colDefs=[i0,i1,i2].filter(i=>i>=0).map(i=>{ const key=KEYS[i]; return key===CURRENT ? {proj:true,key,label:mlabel(key)+' projeté'} : {key}; });   // « projeté » = seulement le mois en cours
 
-    const datas=colDefs.map(cd=> cd.proj ? projData() : derive(monthData(cd.key)));
-    const subsArr=colDefs.map((cd,ix)=> cd.proj ? (datas[ix].subs||{}) : monthData(cd.key).subs);
-    const detailArr=colDefs.map((cd,ix)=> cd.proj ? (datas[ix].detail||{}) : (monthData(cd.key).detail||{}));   // projeté = estimations ; clôturé = réel
+    const datas=colDefs.map(cd=> derive(monthData(cd.key)));
+    const subsArr=colDefs.map(cd=> monthData(cd.key).subs);
+    const detailArr=colDefs.map(cd=> monthData(cd.key).detail||{});
     const cell=(main,sp)=>'<div style="display:flex;align-items:baseline;gap:4px;"><span style="flex:1;text-align:right;">'+main+'</span><span class="pin" style="width:54px;text-align:right;">'+(sp?'· '+sp:'')+'</span></div>';
 
     let h='<table class="pnl"><thead><tr><th class="l">Poste</th>';
