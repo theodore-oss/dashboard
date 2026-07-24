@@ -642,6 +642,11 @@ footer { max-width: 1040px; margin: 32px auto 0; padding-top: 20px; border-top: 
 .mini:hover{ border-color:var(--accent); color:var(--accent); }
 .mini.sel{ background:#eafaf1; border-color:#27ae60; color:#1e8a4c; }
 .catrow td{ font-weight:500; font-size:12px; color:var(--accent); background:#fbf4f4; border-top:1px solid var(--border); padding:6px 10px; }
+.scbadge{ display:inline-block; font-size:9.5px; font-weight:500; color:var(--muted); background:var(--bg); border:1px solid var(--border); border-radius:100px; padding:1px 7px; white-space:nowrap; }
+.delx{ width:18px; height:18px; line-height:1; padding:0; border:none; background:transparent; color:#d9b3b3; font-size:15px; cursor:pointer; border-radius:4px; }
+.delx:hover{ background:#fbecec; color:#c0392b; }
+.pl-validate{ height:34px; padding:0 16px; font-family:'Sora',sans-serif; font-size:13px; font-weight:500; border:1px solid var(--accent); border-radius:7px; background:var(--accent); color:#fff; cursor:pointer; }
+.pl-validate:hover{ opacity:.9; } .pl-validate:disabled{ opacity:.6; cursor:default; }
 .pl-search{ width:100%; max-width:320px; height:36px; margin-bottom:12px; }
 .m1btn{ height:30px; padding:0 10px; font-size:12px; font-family:'Sora',sans-serif; border:1px solid var(--border); border-radius:7px; background:#fff; color:var(--muted); cursor:pointer; }
 .m1btn:hover{ border-color:var(--accent); color:var(--accent); }
@@ -734,7 +739,11 @@ footer { max-width: 1040px; margin: 32px auto 0; padding-top: 20px; border-top: 
       </div>
     </div>
   </div>
-  <input class="pl-search" id="pl-search" placeholder="Rechercher un fournisseur…">
+  <div style="display:flex; align-items:center; gap:12px; margin-bottom:12px;">
+    <input class="pl-search" id="pl-search" placeholder="Rechercher un fournisseur…" style="margin-bottom:0;">
+    <button class="pl-validate" onclick="PNL.validate(this)" title="Enregistrer et figer les valeurs retenues de ce mois, et les partager en ligne">Valider les ajustements</button>
+    <span id="proj-dirty" style="font-size:11px;color:var(--muted);"></span>
+  </div>
   <div class="card"><div class="card-body">
     <table class="proj">
       <thead><tr><th class="l" id="proj-col1">Fournisseur</th><th class="r" id="proj-col2">Factures à date</th><th class="r">Valeur M-1</th><th class="r">Valeur retenue</th></tr></thead>
@@ -2238,11 +2247,23 @@ window.PNL = (function(){
   const SAISIES_URL='https://script.google.com/macros/s/AKfycbxgAtta4o_OFAXN6dU1SgttyKhlMrEmK_1ZwzM-k2VoArQQPbQQaE8hV-9D9tJPw9sE/exec';
   let SAISIES={}; try{ SAISIES=JSON.parse(localStorage.getItem(SKEY)||'{}'); }catch(e){ SAISIES={}; }
   function flattenSaisies(){ const items=[]; for(const mk in SAISIES){ const o=SAISIES[mk]||{}; for(const f in o){ items.push({key:mk+'|'+f, value:o[f]}); } } return items; }
+  function persistLocal(){ try{ localStorage.setItem(SKEY,JSON.stringify(SAISIES)); }catch(e){} }
   function persist(){
-    try{ localStorage.setItem(SKEY,JSON.stringify(SAISIES)); }catch(e){}
+    persistLocal();
     if(SAISIES_URL && SAISIES_URL.indexOf('http')===0){
       try{ fetch(SAISIES_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(flattenSaisies())}); }catch(e){}
     }
+  }
+  // Fournisseurs masqués (globaux) : clé « _hidden|ligne|fournisseur ». Persistés en ligne comme les autres saisies.
+  function isHidden(lg, nm){ return !!((SAISIES['_hidden']||{})[lg+'|'+nm]); }
+  function hideSup(lg, nm){ SAISIES['_hidden']=SAISIES['_hidden']||{}; SAISIES['_hidden'][lg+'|'+nm]=1; persist(); }
+  // Nettoie un nom de fournisseur pour fusionner les doublons Pennylane (« Facture X (label généré) » → « X »).
+  function cleanSup(name){
+    let s=String(name==null?'':name).trim();
+    s=s.replace(/\s*\(label g[ée]n[ée]r[ée]\)\s*/ig,' ');   // retire « (label généré) »
+    s=s.replace(/^Facture\s+/i,'');                          // retire le préfixe « Facture »
+    s=s.replace(/\s*-\s*[A-Za-z]*\d[\w\/]*\s*$/,'');          // retire une réf. finale « - AV26/0002 »
+    return s.trim().toUpperCase();
   }
   async function loadSaisiesRemote(){
     let obj=null;
@@ -2253,11 +2274,21 @@ window.PNL = (function(){
       try{ const rows=await fetchSheet('Saisies_Manuelles'); obj={}; rows.forEach(r=>{ const k=colVal(r,['cle']); if(k) obj[k]=colVal(r,['valeur']); }); }catch(e){}
     }
     if(!obj) return;
-    Object.keys(obj).forEach(key=>{ const i=key.indexOf('|'); if(i<0) return; const mk=key.slice(0,i), f=key.slice(i+1); const v=obj[key]; SAISIES[mk]=SAISIES[mk]||{}; SAISIES[mk][f]=(v===''||v==null)?v:(isNaN(+v)?v:+v); });
+    // Le LOCAL gagne : on ne remplit depuis le distant que les clés absentes en local
+    // (évite qu'une valeur fraîchement saisie soit écrasée par une version périmée du Sheet / cache gviz).
+    Object.keys(obj).forEach(key=>{ const i=key.indexOf('|'); if(i<0) return; const mk=key.slice(0,i), f=key.slice(i+1); const v=obj[key]; SAISIES[mk]=SAISIES[mk]||{}; if(SAISIES[mk][f]===undefined) SAISIES[mk][f]=(v===''||v==null)?v:(isNaN(+v)?v:+v); });
     try{ localStorage.setItem(SKEY,JSON.stringify(SAISIES)); }catch(e){}
   }
   function supPrefix(mk){ return mk<=CUTOFF ? 'hsub|' : 'sup|'; }   // historique = override par sous-catégorie ; Pennylane = par fournisseur
-  function saveSup(lg, su){ SAISIES[PROJ_MONTH]=SAISIES[PROJ_MONTH]||{}; SAISIES[PROJ_MONTH][supPrefix(PROJ_MONTH)+lg+'|'+su.n]=su.est; persist(); }
+  // Édition d'un fournisseur : mise à jour LOCALE seulement (aperçu live). Le partage en ligne se fait au clic « Valider ».
+  function markDirty(on){ const e=$('proj-dirty'); if(e) e.textContent=on?'● modifications non validées':''; }
+  function saveSup(lg, su){ SAISIES[PROJ_MONTH]=SAISIES[PROJ_MONTH]||{}; SAISIES[PROJ_MONTH][supPrefix(PROJ_MONTH)+lg+'|'+su.n]=su.est; persistLocal(); markDirty(true); }
+  // « Valider » : partage EN LIGNE les ajustements saisis (overrides + masquages). Ne fige PAS les
+  // fournisseurs non touchés — ils restent en extrapolation vivante et continuent de suivre Pennylane.
+  function validateProj(btn){
+    persist(); markDirty(false);
+    if(btn){ const o=btn.textContent; btn.textContent='✓ Enregistré'; btn.disabled=true; setTimeout(()=>{ btn.textContent=o; btn.disabled=false; },1400); }
+  }
   let PROJ_MONTH='';
 
   function dec(s){ return String(s==null?'':s).replace(/&amp;/g,'&').replace(/&#0?39;|&apos;/g,"'").replace(/&#8217;/g,'’').replace(/&quot;/g,'"').replace(/&lt;/g,'<').replace(/&gt;/g,'>'); }
@@ -2281,7 +2312,7 @@ window.PNL = (function(){
       else { const d=new Date(mk); if(!isNaN(d)) mk=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0'); }
       const lg=dec(colVal(r,['lignepl'])).trim();
       const sc=normSub((dec(colVal(r,['souscateg'])).trim())||'—');
-      const fourn=dec(colVal(r,['fournisseur'])).trim();   // vide pour l'historique (Excel)
+      const fourn=cleanSup(dec(colVal(r,['fournisseur'])));   // vide pour l'historique (Excel) ; noms nettoyés/fusionnés
       const v=num(colVal(r,['montant']));
       if(!/^\d{4}-\d{2}$/.test(mk)||!lg) return;
       store[mk]=store[mk]||{}; store[mk][lg]=store[mk][lg]||{total:0,subs:{},detail:{}};
@@ -2293,7 +2324,7 @@ window.PNL = (function(){
     FACT={};   // FACT[ligne][fournisseur] = { 'YYYY-MM': montant }
     rows.forEach(r=>{
       const lg=dec(colVal(r,['lignepl'])).trim();
-      const f =dec(colVal(r,['fournisseur'])).trim();
+      const f =cleanSup(dec(colVal(r,['fournisseur'])));   // noms nettoyés/fusionnés (mêmes clés que PENN)
       let mk=String(colVal(r,['mois'])).trim();
       const mm=mk.match(/(\d{4})-(\d{2})/); if(mm) mk=mm[1]+'-'+mm[2]; else { const d=new Date(mk); if(!isNaN(d)) mk=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0'); }
       const v=num(colVal(r,['montant']));
@@ -2410,13 +2441,19 @@ window.PNL = (function(){
   }
   function projLigne(lg){ return groupTotal(PROJ_MONTH, lg); }
   // Sous-catégorie dominante (à date) d'un fournisseur dans une ligne
-  function domSousCat(mk, lg, sup){
-    const pdet=((PENN[mk]||{})[lg]||{detail:{}}).detail||{};
-    let best=null, bestA=-1;
-    for(const sc in pdet){ const a=pdet[sc][sup]||0; if(a>bestA){ bestA=a; best=sc; } }
-    return best;
+  // Répartition d'un fournisseur par sous-catégorie dans une ligne (pour le mois mk, sinon tous mois).
+  // Renvoie { souscat: montant réel } — un fournisseur peut apparaître dans plusieurs sous-cat.
+  function subcatBreakdown(mk, lg, sup){
+    const cur={}; let has=false;
+    const pd=((PENN[mk]||{})[lg]||{detail:{}}).detail||{};
+    for(const sc in pd){ const a=pd[sc][sup]||0; if(a>0){ cur[sc]=a; has=true; } }
+    if(has) return cur;
+    const all={};   // repli : agrégé sur tous les mois (catégorie récente / mois affiché vide)
+    for(const m in PENN){ const p=((PENN[m]||{})[lg]||{detail:{}}).detail||{}; for(const sc in p){ const a=p[sc][sup]||0; if(a>0) all[sc]=(all[sc]||0)+a; } }
+    return all;
   }
-  // Détail fournisseur = valeurs RETENUES ; chaque fournisseur rangé sous sa sous-catégorie dominante (aucune répartition)
+  // Détail fournisseur = valeurs RETENUES, ventilées sur les sous-catégories RÉELLES du fournisseur
+  // (au prorata du réel Pennylane) — un fournisseur multi-sous-cat est donc réparti, pas forcé dans une seule.
   function suppliersDetail(mk){
     const det={}, ed=elapsedFor(mk), pm1=addMonth(mk,-1), pm2=addMonth(mk,-2);
     const put=(lg,sc,sup,amt)=>{ if(!amt) return; det[lg]=det[lg]||{}; det[lg][sc]=det[lg][sc]||{}; det[lg][sc][sup]=(det[lg][sc][sup]||0)+Math.round(amt); };
@@ -2426,7 +2463,14 @@ window.PNL = (function(){
       if(FB[g]){ put('F&B cost', g, f, val); continue; }
       if(g==='F&B cost'){ put('F&B cost', 'F&B (non ventilé)', f, val); continue; }   // sous-cat générique éventuelle
       const lg=(g==='À catégoriser')?'Non catégorisé':g;
-      put(lg, domSousCat(mk, lg, f) || '(non ventilé)', f, val);
+      const br=subcatBreakdown(mk, g, f);
+      const keys=Object.keys(br), tot=keys.reduce((a,k)=>a+br[k],0);
+      if(tot>0){   // ventile la valeur retenue au prorata des sous-catégories réelles
+        let acc=0;
+        keys.forEach((sc,i)=>{ const part = (i===keys.length-1) ? (val-acc) : Math.round(val*br[sc]/tot); acc+=part; put(lg, sc, f, part); });
+      } else {
+        put(lg, '(non ventilé)', f, val);
+      }
     } }
     return det;
   }
@@ -2438,14 +2482,23 @@ window.PNL = (function(){
     for(const lg in FACT){
       const arr=[];
       for(const f in FACT[lg]){
+        if(isHidden(lg,f)) continue;             // fournisseur masqué (croix rouge)
         const M=FACT[lg][f];
         if(!(M[pm]||M[pm1]||M[pm2])) continue;   // vu dans les 3 mois jusqu'au mois projeté
         const curr=M[pm]||0, m1=M[pm1]||0;
         const saved=(SAISIES[pm]||{})['sup|'+lg+'|'+f];
-        arr.push({n:f, curr, m1, est: saved!=null ? +saved : Math.round(curr/Math.max(ed.el,1)*ed.dim)});
+        arr.push({n:f, curr, m1, est: saved!=null ? +saved : Math.round(curr/Math.max(ed.el,1)*ed.dim), sc: subcatTag(pm, lg, f)});
       }
       if(arr.length){ arr.sort((a,b)=>a.n<b.n?-1:1); PROJSTATE[lg]=arr; }
     }
+  }
+  // Étiquette sous-catégorie d'un fournisseur dans une ligne (dominante, « +N » si multi). Vide pour F&B / À catégoriser.
+  function subcatTag(mk, lg, f){
+    if(lg==='Food cost'||lg==='Beverage cost'||lg==='À catégoriser') return '';
+    const br=subcatBreakdown(mk, lg, f), ks=Object.keys(br);
+    if(!ks.length) return '';
+    ks.sort((a,b)=>br[b]-br[a]);
+    return ks.length>1 ? (ks[0]+' +'+(ks.length-1)) : ks[0];
   }
   // Mois historique : chaque sous-catégorie de l'Excel devient une ligne éditable (valeur retenue = override sinon réel Excel)
   function buildProjStateHisto(){
@@ -2616,7 +2669,11 @@ window.PNL = (function(){
       arr.forEach(({s,si})=>{
         const pr=Math.round(s.curr/Math.max(el,1)*dim), selPr=(+s.est===pr), selM1=(+s.est===s.m1);
         h+='<tr>'+
-          '<td>'+s.n+'</td>'+
+          '<td><div style="display:flex;align-items:center;gap:7px;">'
+            +(s.sc?'<span class="scbadge">'+s.sc+'</span>':'')
+            +'<span>'+s.n+'</span>'
+            +(PROJ_MONTH>CUTOFF?'<button class="delx" data-lg="'+lg+'" data-s="'+si+'" title="Retirer ce fournisseur de la liste">×</button>':'')
+          +'</div></td>'+
           '<td class="r"><div style="display:flex;align-items:center;justify-content:flex-end;gap:6px;"><span style="color:var(--muted);">'+eur(s.curr)+'</span><button class="mini'+(selPr?' sel':'')+'" data-act="pr" data-lg="'+lg+'" data-s="'+si+'" title="Au prorata des jours ('+el+'/'+dim+') = '+eur(pr)+'">%</button></div></td>'+
           '<td class="r"><div style="display:flex;align-items:center;justify-content:flex-end;gap:6px;"><span style="color:var(--muted);">'+eur(s.m1)+'</span><button class="mini'+(selM1?' sel':'')+'" data-act="m1" data-lg="'+lg+'" data-s="'+si+'" title="Reprendre M-1">M-1</button></div></td>'+
           '<td class="r"><input class="est" data-lg="'+lg+'" data-s="'+si+'" value="'+Math.round(s.est)+'" inputmode="numeric"></td>'+
@@ -2632,6 +2689,7 @@ window.PNL = (function(){
       saveSup(lg,su); computeKPIs(); render();
     });
     tb.querySelectorAll('button.mini').forEach(b=>b.onclick=e=>{ const t=e.currentTarget; const lg=t.dataset.lg; const su=PROJSTATE[lg][+t.dataset.s]; su.est = t.dataset.act==='m1'?su.m1:Math.round(su.curr/Math.max(el,1)*dim); saveSup(lg,su); renderProj(); computeKPIs(); render(); });
+    tb.querySelectorAll('button.delx').forEach(b=>b.onclick=e=>{ const t=e.currentTarget; const lg=t.dataset.lg; const su=PROJSTATE[lg][+t.dataset.s]; if(!su) return; if(!confirm('Retirer « '+su.n+' » de la liste des ajustements ?\n(Il disparaîtra tant qu\'il n\'aura pas de nouvelle facture ; ses valeurs passées restent dans le P&L.)')) return; hideSup(lg, su.n); buildProjState(); renderProj(); computeKPIs(); render(); });
     computeKPIs();
   }
 
@@ -2787,7 +2845,7 @@ window.PNL = (function(){
     }catch(e){ console.warn('P&L:', e.message, e.stack); }
   }
 
-  return { load, shift, toggle, toggleSub, sub, gotoMonth, refresh, refreshAll };
+  return { load, shift, toggle, toggleSub, sub, gotoMonth, refresh, refreshAll, validate:validateProj };
 })();
 </script>
 </body>
