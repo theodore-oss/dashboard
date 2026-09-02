@@ -880,10 +880,9 @@ function rzConfirm(msg, opts){
 // ════════════════════════════════════════════════════════════════
 // ROSARIO LIVE DATA — chargement depuis Google Sheet
 // ════════════════════════════════════════════════════════════════
-const SHEET_ID = '1IKHeZaPg2Hc-XExx_namZzH9ylIoUAmPjr3QtnShT2Q';
-
-// ⚠️ À RENSEIGNER une fois le Worker déployé, et à faire correspondre à
-// l'identifiant OAuth créé dans Google Cloud Console.
+// L'identifiant du classeur n'apparaît plus ici : toutes les lectures passent
+// par le Worker, seul à le connaître. Le publier n'apporterait rien et
+// désignerait inutilement la cible.
 const WORKER_URL = 'https://rosario-dashboard-api.theodore-0c2.workers.dev';
 // « Client Web 3 » du projet Google Cloud 350141197678. L'origine JavaScript
 // autorisée doit être exactement https://dashboard.grupodomingo.io — sans
@@ -2483,8 +2482,12 @@ window.PNL = (function(){
   const expanded={};
   const expandedSub={};
   const SKEY='rosario_pnl_saisies';
-  // ↓↓↓ Colle ici l'URL /exec de la Web App de saisies (voir saisies-webapp.gs). Vide = sauvegarde locale seulement.
-  const SAISIES_URL='https://script.google.com/macros/s/AKfycbxgAtta4o_OFAXN6dU1SgttyKhlMrEmK_1ZwzM-k2VoArQQPbQQaE8hV-9D9tJPw9sE/exec';
+  // L'URL de la Web App Apps Script N'EST PLUS ICI, volontairement : elle est
+  // déployée en accès public (condition pour être appelable depuis un
+  // navigateur), donc l'écrire dans une page non chiffrée revenait à laisser
+  // quiconque lire les saisies manuelles, en écrire, ou lancer les ingestions.
+  // Elle vit désormais dans les secrets du Worker, qui la relaie après avoir
+  // vérifié le jeton — voir l'action « ingest ».
   let SAISIES={}; try{ SAISIES=JSON.parse(localStorage.getItem(SKEY)||'{}'); }catch(e){ SAISIES={}; }
   function flattenSaisies(){ const items=[]; for(const mk in SAISIES){ const o=SAISIES[mk]||{}; for(const f in o){ items.push({key:mk+'|'+f, value:o[f]}); } } return items; }
   function persistLocal(){ try{ localStorage.setItem(SKEY,JSON.stringify(SAISIES)); }catch(e){} }
@@ -3052,13 +3055,17 @@ window.PNL = (function(){
   function toggle(i){ expanded[i]=!expanded[i]; render(); }
   function toggleSub(key){ expandedSub[key]=!expandedSub[key]; render(); }
   // Bouton « Actualiser » : déclenche la synchro Pennylane via la Web App, puis recharge les données (cache cassé).
+  // Appelle une ingestion via le Worker (qui détient l'URL Apps Script).
+  function lancerIngestion(action){
+    return fetch(WORKER_URL + '?ingest=' + action,
+      { headers: { Authorization: 'Bearer ' + (window.RZ_TOKEN || '') } }).then(r => r.json());
+  }
   async function refresh(btn){
-    if(!SAISIES_URL || SAISIES_URL.indexOf('http')!==0){ alert('Renseigne d\'abord l\'URL de la Web App (SAISIES_URL) pour activer l\'actualisation depuis Pennylane.'); return; }
     const old = btn ? btn.innerHTML : '';
     if(btn){ btn.disabled=true; btn.innerHTML='⏳ Synchro Pennylane…'; }
     try{
       // Déclenche la synchro côté serveur. On n'attend pas forcément la fin (peut être long) : garde-fou 60 s.
-      await Promise.race([ fetch(SAISIES_URL+'?action=sync',{method:'GET'}).catch(()=>{}), new Promise(r=>setTimeout(r,60000)) ]);
+      await Promise.race([ lancerIngestion('sync').catch(()=>{}), new Promise(r=>setTimeout(r,60000)) ]);
     }catch(e){}
     if(btn) btn.innerHTML='⏳ Chargement…';
     try{ await load(true); }catch(e){}
@@ -3068,7 +3075,6 @@ window.PNL = (function(){
   // Course avec délai : ne reste jamais bloqué si une requête ne répond pas.
   function withTimeout(promise, ms){ return Promise.race([ Promise.resolve(promise).catch(()=>null), new Promise(r=>setTimeout(()=>r(null), ms)) ]); }
   async function refreshAll(btn){
-    if(!SAISIES_URL || SAISIES_URL.indexOf('http')!==0){ rzConfirm('Renseigne d\'abord l\'URL de la Web App (SAISIES_URL) pour activer l\'actualisation.',{title:'Actualisation indisponible',ok:'OK'}); return; }
     const old = btn ? (btn.dataset.label || btn.innerHTML) : '';
     if(btn) btn.dataset.label = old;
     let done=false;
@@ -3079,7 +3085,7 @@ window.PNL = (function(){
 
     // Déclenche la synchro. On tente de lire le compte-rendu, mais sans jamais rester bloqué (garde-fou 240 s).
     let steps=null;
-    const res = await withTimeout(fetch(SAISIES_URL+'?action=full',{method:'GET'}).then(r=>r.json()), 240000);
+    const res = await withTimeout(lancerIngestion('full'), 240000);
     if(res && res.steps) steps=res.steps;
 
     if(btn && !done) btn.innerHTML='⏳ Chargement…';
