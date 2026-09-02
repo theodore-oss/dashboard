@@ -885,7 +885,10 @@ const SHEET_ID = '1IKHeZaPg2Hc-XExx_namZzH9ylIoUAmPjr3QtnShT2Q';
 // ⚠️ À RENSEIGNER une fois le Worker déployé, et à faire correspondre à
 // l'identifiant OAuth créé dans Google Cloud Console.
 const WORKER_URL = 'https://rosario-dashboard-api.theodore-0c2.workers.dev';
-const GOOGLE_CLIENT_ID = '258106204198-lle8mdfgvi1imom1ue8a3cgfk1bj2i1t.apps.googleusercontent.com';
+// « Client Web 3 » du projet Google Cloud 350141197678. L'origine JavaScript
+// autorisée doit être exactement https://dashboard.grupodomingo.io — sans
+// barre finale, une origine n'ayant ni chemin ni suffixe.
+const GOOGLE_CLIENT_ID = '350141197678-dn4lnfi9k4kfomj1tbcps7t0jvqnupmb.apps.googleusercontent.com';
 
 // Lecture d'un onglet — passe par le Worker, jamais plus en direct.
 // Le Worker s'authentifie auprès de Google avec ses propres identifiants et
