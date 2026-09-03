@@ -1715,8 +1715,16 @@ function renderPeriod() {
   document.querySelectorAll('.pnav-btn')[1].style.opacity = idx === list.length-1 ? '.3' : '1';
 
   const privWkForCA = ((gran === 'week' ? window.LIVE_PRIV_BY_WEEK : window.LIVE_PRIV_BY_MONTH) || {})[p.key] || { total: 0, pax: 0 };
-  const caLS     = m.caNet || p.ca;
-  const caNet    = caLS + Math.round(privWkForCA.total);
+  // caLS doit être le CA Lightspeed SEUL, car l'événementiel lui est ajouté
+  // juste après. Le repli d'origine était « m.caNet || p.ca » — or p.ca
+  // contient DÉJÀ les privatisations (voir liveWEEKS/liveMONTHS : ca + priv).
+  // Sur une période sans aucune vente Lightspeed (fermeture, semaine à
+  // événement seul), m.caNet vaut 0, le repli s'activait, et l'événementiel
+  // était compté deux fois. On retranche donc les privatisations avant de
+  // s'en servir comme base.
+  const privPeriode = Math.round(privWkForCA.total);
+  const caLS     = (m.caNet != null) ? m.caNet : Math.max(0, (p.ca || 0) - privPeriode);
+  const caNet    = caLS + privPeriode;
   window.CUR_CA  = caNet;
   const tktTotal = m.couverts > 0 ? +(caNet / m.couverts).toFixed(2) : +((m.tktMidi||0)*0.32 + (m.tktSoir||0)*0.68).toFixed(2);
 
