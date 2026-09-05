@@ -141,6 +141,57 @@ footer { max-width: 1040px; margin: 32px auto 0; padding-top: 20px; border-top: 
   .kpi-strip{ grid-template-columns: repeat(2,1fr); }
   .grid-2,.grid-3 { grid-template-columns: 1fr; }
 }
+/* ══════════════ TÉLÉPHONE (≤ 700 px) ══════════════
+   Le dashboard a été dessiné pour un écran large. Sur 390 px, trois choses le
+   rendaient illisible : l'en-tête sur une seule ligne, le sélecteur de période
+   à 200 px de large, et les tableaux du P&L qui débordaient sans qu'on puisse
+   les faire défiler. Rien ici ne s'applique au-delà de 700 px — l'affichage
+   ordinateur est strictement inchangé. */
+@media(max-width:700px){
+  body{ padding: calc(14px + env(safe-area-inset-top)) calc(12px + env(safe-area-inset-right)) calc(40px + env(safe-area-inset-bottom)) calc(12px + env(safe-area-inset-left)); }
+
+  /* En-tête : empilé, et le sélecteur de période prend toute la largeur au
+     lieu d'être serré contre le bord droit. */
+  .header{ flex-direction: column; align-items: stretch; gap: 14px; padding-bottom: 16px; margin-bottom: 18px; }
+  .header-left img{ width: 112px !important; }
+  .header-right{ align-items: stretch; }
+  .period-picker{ align-items: stretch; }
+  .period-granularity{ align-self: flex-start; }
+  .period-nav{ justify-content: space-between; }
+  .pnav-lbl{ min-width: 0; flex: 1; font-size: 11.5px; }
+  .ann-badge{ justify-content: center; }
+
+  /* Onglets : défilables plutôt que repliés sur deux lignes. */
+  .tabs{ overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+  .tabs::-webkit-scrollbar{ display: none; }
+  .tab{ flex: 0 0 auto; padding: 8px 12px 10px; font-size: 12.5px; }
+
+  /* KPI : une seule colonne. À deux colonnes, « 12 345 € » se coupait en
+     plein milieu sur les petits écrans. */
+  .kpi-strip{ grid-template-columns: 1fr; }
+  .kpi-cell{ padding: 13px 15px; }
+  .kpi-cell-val{ font-size: 21px; }
+
+  .card-body{ padding: 15px 13px; }
+  .card-header{ padding: 12px 14px; }
+  .section-sep{ margin: 14px 0 10px; padding-top: 13px; }
+
+  /* Les flèches latérales des graphes débordaient hors de l'écran. */
+  .cnav-l{ left: -8px; } .cnav-r{ right: -8px; }
+  .cnav{ width: 26px; height: 26px; }
+
+  /* Légendes : à gauche et sur plusieurs lignes, sinon elles débordent. */
+  .cleg{ flex-wrap: wrap; justify-content: flex-start; gap: 9px 13px; }
+
+  /* Le bloc « Couverts & remplissage » aligne 4 cases sur une rangée : en
+     2×2 elles redeviennent lisibles. */
+  .card-body > div[style*="display:flex"][style*="border:1px solid var(--border)"]{ flex-wrap: wrap; }
+  .card-body > div[style*="display:flex"][style*="border:1px solid var(--border)"] > div{ flex: 1 0 50%; }
+
+  .svc-split{ grid-template-columns: 1fr; }
+  footer{ flex-direction: column; align-items: flex-start; gap: 10px; }
+  .src-list{ flex-wrap: wrap; gap: 8px 12px; }
+}
 </style>
 </head>
 <body>
@@ -714,12 +765,46 @@ footer { max-width: 1040px; margin: 32px auto 0; padding-top: 20px; border-top: 
 .mpick-m.cur{ background:var(--accent); color:#fff; font-weight:600; }
 .mpick-m:disabled{ opacity:.32; cursor:default; background:transparent; }
 @media(max-width:820px){ .pl-kpis{ grid-template-columns:1fr 1fr; } }
+/* ══════════════ P&L SUR TÉLÉPHONE — LECTURE SEULE ══════════════
+   Les Ajustements sont masqués, pas désactivés : leurs champs de saisie font
+   96 px de large et se remplissent au clavier, ce qui n'a aucun sens à 390 px,
+   et une saisie approximative faite dans le métro se propagerait dans tout le
+   P&L. Le tableau mensuel et les Livraisons restent consultables. */
+@media(max-width:700px){
+  #subtab-proj, #sub-proj{ display:none !important; }
+
+  /* Le tableau garde ses 3 colonnes de mois, mais devient défilable
+     horizontalement, la colonne des postes restant figée à gauche — sans elle
+     on perd le nom de la ligne dès qu'on fait défiler. */
+  #pnl-table{ overflow-x:auto; -webkit-overflow-scrolling:touch; margin:0 -13px; padding:0 13px; }
+  #pnl table.pnl{ min-width:470px; font-size:12px; }
+  #pnl table.pnl th, #pnl table.pnl td{ padding:6px 7px; }
+  #pnl table.pnl th:first-child, #pnl table.pnl td:first-child{
+    position:sticky; left:0; z-index:2; background:var(--surface); box-shadow:1px 0 0 var(--border);
+  }
+  /* Les lignes de synthèse ont leur propre fond : sans ce rappel, le contenu
+     défilerait visiblement sous la colonne figée. */
+  #pnl .mid td:first-child{ background:#fbf4f4; }
+  #pnl .pin{ display:none; }   /* les « · 24 % » n'ont plus la place */
+
+  .subtabs{ overflow-x:auto; scrollbar-width:none; }
+  .subtabs::-webkit-scrollbar{ display:none; }
+  .subtab{ flex:0 0 auto; }
+
+  /* Livraisons : l'en-tête aligne 6 éléments sur une ligne, et la barre de
+     proportion mange la place du montant. */
+  #sub-liv > div:first-child{ flex-wrap:wrap; gap:9px; }
+  .lvf span[style*="width:130px"]{ display:none !important; }
+  .pl-kpis{ grid-template-columns:1fr 1fr; gap:8px; }
+  .pl-kpi{ padding:10px 12px; }
+  .pl-kpi .val{ font-size:16px; }
+}
 </style>
 
 <div id="pnl" class="view">
   <div class="subtabs">
     <button class="subtab on" onclick="PNL.sub('sub-pnl',this)">P&amp;L mensuel</button>
-    <button class="subtab" onclick="PNL.sub('sub-proj',this)">Ajustements</button>
+    <button class="subtab" id="subtab-proj" onclick="PNL.sub('sub-proj',this)">Ajustements</button>
     <button class="subtab" onclick="PNL.sub('sub-liv',this); PNL.renderLiv();">Livraisons</button>
   </div>
 
@@ -2408,7 +2493,10 @@ function deconnecter(msg) {
   window.RZ_TOKEN = null;
   // On purge les deux : un jeton écrit par une version antérieure de la page
   // traînerait sinon dans sessionStorage sans jamais être effacé.
-  try { localStorage.removeItem('rz_tok'); sessionStorage.removeItem('rz_tok'); } catch (e) {}
+  try {
+    localStorage.removeItem('rz_tok'); localStorage.removeItem('rz_exp');
+    sessionStorage.removeItem('rz_tok');
+  } catch (e) {}
   const g = document.getElementById('gate'), a = document.getElementById('app');
   if (g) g.style.display = 'flex';
   if (a) a.style.display = 'none';
@@ -2434,13 +2522,34 @@ function onGoogleCredential(rep) {
 
   window.RZ_TOKEN = jwt;
   // localStorage et non sessionStorage : installé sur l'écran d'accueil, iOS
-  // tue l'app dès qu'elle passe en arrière-plan, ce qui vidait sessionStorage
-  // et forçait une reconnexion plusieurs fois par jour.
-  // Le compromis est mesuré : un jeton Google expire au bout d'une heure, et
-  // initAuth refuse tout jeton périmé. Ce qui subsiste sur le disque n'est
-  // donc jamais utilisable plus d'une heure.
+  // tue l'app dès qu'elle passe en arrière-plan, ce qui vidait sessionStorage.
   try { localStorage.setItem('rz_tok', jwt); } catch (e) {}
+  // On démarre SANS attendre l'échange : le jeton Google fonctionne déjà, et
+  // faire patienter l'utilisateur derrière un appel réseau facultatif n'aurait
+  // aucun sens. La session longue prend le relais dès qu'elle arrive.
   demarrer();
+  echangerContreSession();
+}
+
+// ── Session longue ────────────────────────────────────────────────────────
+// Un jeton Google expire au bout d'une heure, sans prolongation possible. On
+// l'échange donc contre un jeton émis par le Worker, valable 30 jours.
+// Si l'échange échoue (SESSION_SECRET pas encore posé côté Cloudflare, réseau
+// coupé), on garde le jeton Google : le dashboard fonctionne comme avant, avec
+// sa reconnexion horaire. Aucune régression possible.
+async function echangerContreSession() {
+  try {
+    const r = await fetch(WORKER_URL + '?session=1',
+      { headers: { Authorization: 'Bearer ' + (window.RZ_TOKEN || '') } });
+    if (!r.ok) return;
+    const d = await r.json();
+    if (!d || !d.token) return;
+    window.RZ_TOKEN = d.token;
+    localStorage.setItem('rz_tok', d.token);
+    // Stockée à part : un jeton de session n'est pas un JWT, son expiration
+    // n'est donc pas lisible dans le jeton lui-même comme celle de Google.
+    localStorage.setItem('rz_exp', String(d.exp || 0));
+  } catch (e) { /* on reste sur le jeton Google */ }
 }
 
 function demarrer() {
@@ -2468,14 +2577,27 @@ async function bootRosario() {
   // le passage en localStorage, plutôt que d'imposer une reconnexion.
   try { dejaConnecte = localStorage.getItem('rz_tok') || sessionStorage.getItem('rz_tok'); } catch (e) {}
   if (dejaConnecte) {
-    try {
-      const c = JSON.parse(atob(dejaConnecte.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')));
-      if (Number(c.exp || 0) * 1000 > Date.now() + 60000) {
-        window.RZ_TOKEN = dejaConnecte;
-        demarrer();
-        return;
-      }
-    } catch (e) { /* jeton illisible : on redemande une connexion */ }
+    // Deux formats coexistent : le jeton de session du Worker (préfixe « rz1. »,
+    // dont l'expiration est stockée à côté) et le JWT Google (expiration dans
+    // sa charge utile). D'où les deux branches.
+    let valide = false;
+    if (dejaConnecte.indexOf('rz1.') === 0) {
+      valide = Number(localStorage.getItem('rz_exp') || 0) > Date.now() + 60000;
+    } else {
+      try {
+        const c = JSON.parse(atob(dejaConnecte.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')));
+        valide = Number(c.exp || 0) * 1000 > Date.now() + 60000;
+      } catch (e) { valide = false; }   // jeton illisible : on redemande une connexion
+    }
+    if (valide) {
+      window.RZ_TOKEN = dejaConnecte;
+      demarrer();
+      // Prolongation glissante : chaque ouverture repousse l'échéance de
+      // 30 jours. Tant que le dashboard est consulté régulièrement, la
+      // reconnexion n'arrive jamais.
+      echangerContreSession();
+      return;
+    }
   }
 
   const s = document.createElement('script');
