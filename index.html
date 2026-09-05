@@ -2,9 +2,24 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!-- viewport-fit=cover : sans lui, iOS laisse des bandes blanches autour de
+     l'encoche en mode plein écran. Les marges de sécurité sont reprises plus
+     bas dans le CSS du body (env(safe-area-inset-*)). -->
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Dashboard Rosario</title>
 <link rel="icon" type="image/png" href="favicon.png">
+<!-- ══ Installation sur l'écran d'accueil (PWA) ══
+     iOS ignore une partie du manifest : le nom affiché sous l'icône vient de
+     apple-mobile-web-app-title, et l'icône de apple-touch-icon. D'où les deux
+     déclarations, manifest ET balises Apple. -->
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#8B1A1A">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Rosario">
+<!-- black-translucent : la barre d'état se fond dans la page. C'est ce qui
+     impose de réserver l'espace de l'encoche côté CSS. -->
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="apple-touch-icon" href="app-icon-180.png">
 <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -18,7 +33,10 @@
   --radius: 10px;
   --shadow: 0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.04);
 }
-body { font-family: 'Sora', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; padding: 40px 24px 80px; }
+/* Les marges de sécurité (encoche, barre d'accueil) valent 0 dans un
+   navigateur classique : ce calcul ne change donc rien sur ordinateur. */
+body { font-family: 'Sora', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh;
+  padding: calc(40px + env(safe-area-inset-top)) calc(24px + env(safe-area-inset-right)) calc(80px + env(safe-area-inset-bottom)) calc(24px + env(safe-area-inset-left)); }
 .wrap { max-width: 1040px; margin: 0 auto; }
 
 /* ── HEADER ── */
@@ -2388,7 +2406,9 @@ window.RZ_TOKEN = null;
 
 function deconnecter(msg) {
   window.RZ_TOKEN = null;
-  try { sessionStorage.removeItem('rz_tok'); } catch (e) {}
+  // On purge les deux : un jeton écrit par une version antérieure de la page
+  // traînerait sinon dans sessionStorage sans jamais être effacé.
+  try { localStorage.removeItem('rz_tok'); sessionStorage.removeItem('rz_tok'); } catch (e) {}
   const g = document.getElementById('gate'), a = document.getElementById('app');
   if (g) g.style.display = 'flex';
   if (a) a.style.display = 'none';
@@ -2413,9 +2433,13 @@ function onGoogleCredential(rep) {
   }
 
   window.RZ_TOKEN = jwt;
-  // Conservé le temps de l'onglet seulement : un rechargement de page ne
-  // redemande pas de se connecter, mais rien ne subsiste après fermeture.
-  try { sessionStorage.setItem('rz_tok', jwt); } catch (e) {}
+  // localStorage et non sessionStorage : installé sur l'écran d'accueil, iOS
+  // tue l'app dès qu'elle passe en arrière-plan, ce qui vidait sessionStorage
+  // et forçait une reconnexion plusieurs fois par jour.
+  // Le compromis est mesuré : un jeton Google expire au bout d'une heure, et
+  // initAuth refuse tout jeton périmé. Ce qui subsiste sur le disque n'est
+  // donc jamais utilisable plus d'une heure.
+  try { localStorage.setItem('rz_tok', jwt); } catch (e) {}
   demarrer();
 }
 
@@ -2440,7 +2464,9 @@ async function bootRosario() {
   // Jeton encore valide dans cet onglet : on repart directement, sans
   // réafficher l'écran de connexion à chaque rechargement.
   let dejaConnecte = null;
-  try { dejaConnecte = sessionStorage.getItem('rz_tok'); } catch (e) {}
+  // sessionStorage en repli : reprend un jeton laissé par la version d'avant
+  // le passage en localStorage, plutôt que d'imposer une reconnexion.
+  try { dejaConnecte = localStorage.getItem('rz_tok') || sessionStorage.getItem('rz_tok'); } catch (e) {}
   if (dejaConnecte) {
     try {
       const c = JSON.parse(atob(dejaConnecte.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')));
