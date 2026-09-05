@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Icônes Rosario</title>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#f7f6f3;--surface:#fff;--border:#e4e1d9;--text:#1a1916;--muted:#8a8680;--accent:#8B1A1A}
+body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);padding:44px 24px 80px}
+.wrap{max-width:620px;margin:0 auto}
+h1{font-size:19px;font-weight:600;margin-bottom:6px}
+.sub{font-size:12.5px;color:var(--muted);font-weight:300;line-height:1.65;margin-bottom:26px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:22px;box-shadow:0 1px 3px rgba(0,0,0,.06)}
+.choix{display:flex;gap:28px;justify-content:center;flex-wrap:wrap}
+.opt{text-align:center;cursor:pointer}
+.opt canvas{border-radius:22%;border:2px solid transparent;display:block;width:132px;height:132px;transition:border-color .15s}
+.opt.on canvas{border-color:var(--accent)}
+.opt .nm{font-size:12px;color:var(--muted);margin-top:9px;font-weight:300}
+.opt.on .nm{color:var(--accent);font-weight:500}
+button{height:40px;padding:0 20px;font-family:'Sora',sans-serif;font-size:13.5px;font-weight:500;border:1px solid var(--accent);border-radius:8px;background:var(--accent);color:#fff;cursor:pointer;width:100%;margin-top:24px}
+button:hover{opacity:.9}
+button:disabled{opacity:.4;cursor:default}
+.note{font-size:11.5px;color:var(--muted);font-weight:300;line-height:1.7;margin-top:18px;padding-top:16px;border-top:1px solid var(--border)}
+code{background:var(--bg);border:1px solid var(--border);border-radius:4px;padding:1px 5px;font-size:11px}
+.err{display:none;background:#fdedec;border:1px solid #f3c8c2;color:#8a2f22;border-radius:8px;padding:12px 15px;font-size:12px;font-weight:300;line-height:1.6;margin-bottom:18px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Icône d'écran d'accueil</h1>
+  <p class="sub">
+    iOS exige une image <strong>carrée</strong>. Cette page recompose le favicon sur fond crème,
+    aux trois tailles attendues. Choisis une version, télécharge, dépose les fichiers dans le dépôt.
+  </p>
+
+  <div class="err" id="err">
+    Les images n'ont pas pu être chargées. Cette page doit être ouverte <strong>depuis le site</strong>
+    (<code>dashboard.grupodomingo.io/icones.html</code>) et non par un double-clic depuis ton dossier :
+    ouvert en <code>file://</code>, le navigateur interdit d'exporter une image chargée localement.
+  </div>
+
+  <div class="card">
+    <div class="choix">
+      <div class="opt on" data-mot="1"><canvas id="cA" width="180" height="180"></canvas><div class="nm">Forme + Rosario</div></div>
+      <div class="opt" data-mot="0"><canvas id="cB" width="180" height="180"></canvas><div class="nm">Forme seule</div></div>
+    </div>
+    <button id="dl" disabled>Télécharger les 3 fichiers</button>
+    <div class="note">
+      Tu obtiens <code>app-icon-180.png</code>, <code>app-icon-192.png</code> et <code>app-icon-512.png</code>,
+      déjà nommés comme <code>index.html</code> et <code>manifest.json</code> les attendent.
+      Dépose-les à la racine du dépôt, à côté de <code>index.html</code>.<br><br>
+      Ensuite — et c'est le piège — <strong>supprime l'app de ton écran d'accueil et réinstalle-la</strong>.
+      iOS met l'icône en cache et ne la rafraîchit jamais de lui-même.
+    </div>
+  </div>
+</div>
+
+<script>
+// Aucun réglage : les proportions ci-dessous ont été mesurées sur les fichiers
+// réels. FB est la boîte englobante de la forme dans favicon.png (638×543) —
+// l'image comporte quelques pixels transparents sur les bords, qui décaleraient
+// le centrage si on prenait l'image entière.
+var FB = { x: 26, y: 7, w: 585, h: 528 };
+var CREME = '#f7f6f3';
+var tailles = [180, 192, 512];
+var fav = new Image(), mot = new Image(), pretes = 0, avecMot = true;
+
+function dessiner(cv, S, am) {
+  var c = cv.getContext('2d');
+  c.fillStyle = CREME; c.fillRect(0, 0, S, S);
+  c.imageSmoothingQuality = 'high';
+  if (am) {
+    // Forme en haut, mot en dessous : le mot fait 2,8 fois plus large que haut,
+    // il occupe donc une bande fine et laisse la forme porter l'identité.
+    var hF = S * 0.44, wF = FB.w * (hF / FB.h);
+    c.drawImage(fav, FB.x, FB.y, FB.w, FB.h, (S - wF) / 2, S * 0.15, wF, hF);
+    var wM = S * 0.60, hM = wM * (mot.height / mot.width);
+    c.drawImage(mot, (S - wM) / 2, S * 0.15 + hF + S * 0.055, wM, hM);
+  } else {
+    var h2 = S * 0.60, w2 = FB.w * (h2 / FB.h);
+    c.drawImage(fav, FB.x, FB.y, FB.w, FB.h, (S - w2) / 2, (S - h2) / 2, w2, h2);
+  }
+}
+
+function apercus() {
+  dessiner(document.getElementById('cA'), 180, true);
+  dessiner(document.getElementById('cB'), 180, false);
+  document.getElementById('dl').disabled = false;
+}
+
+function pret() { if (++pretes === 2) apercus(); }
+fav.onload = pret; mot.onload = pret;
+fav.onerror = mot.onerror = function () { document.getElementById('err').style.display = 'block'; };
+// Chemins relatifs : même origine que la page, donc canvas exportable.
+fav.src = 'favicon.png';
+mot.src = 'logo.png';
+
+Array.prototype.forEach.call(document.querySelectorAll('.opt'), function (o) {
+  o.addEventListener('click', function () {
+    Array.prototype.forEach.call(document.querySelectorAll('.opt'), function (x) { x.classList.remove('on'); });
+    o.classList.add('on');
+    avecMot = o.dataset.mot === '1';
+  });
+});
+
+document.getElementById('dl').addEventListener('click', function () {
+  tailles.forEach(function (S, i) {
+    // Décalés : trois téléchargements simultanés, Safari n'en retient qu'un.
+    setTimeout(function () {
+      var cv = document.createElement('canvas');
+      cv.width = S; cv.height = S;
+      dessiner(cv, S, avecMot);
+      cv.toBlob(function (b) {
+        var u = URL.createObjectURL(b), a = document.createElement('a');
+        a.href = u; a.download = 'app-icon-' + S + '.png';
+        document.body.appendChild(a); a.click(); a.remove();
+        setTimeout(function () { URL.revokeObjectURL(u); }, 1000);
+      }, 'image/png');
+    }, i * 400);
+  });
+});
+</script>
+</body>
+</html>
