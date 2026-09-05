@@ -166,11 +166,16 @@ footer { max-width: 1040px; margin: 32px auto 0; padding-top: 20px; border-top: 
   .tabs::-webkit-scrollbar{ display: none; }
   .tab{ flex: 0 0 auto; padding: 8px 12px 10px; font-size: 12.5px; }
 
-  /* KPI : une seule colonne. À deux colonnes, « 12 345 € » se coupait en
-     plein milieu sur les petits écrans. */
-  .kpi-strip{ grid-template-columns: 1fr; }
-  .kpi-cell{ padding: 13px 15px; }
-  .kpi-cell-val{ font-size: 21px; }
+  /* KPI en 2×2 carré : plus compact qu'une colonne unique, qui repoussait les
+     graphes très bas. Le carré est obtenu par aspect-ratio et le contenu est
+     centré verticalement, ce qui absorbe les cases à 2 ou 3 lignes (Couverts
+     et Note Google en ont une de plus que les autres). */
+  .kpi-strip{ grid-template-columns: repeat(2,1fr); }
+  .kpi-cell{ padding: 11px 12px; aspect-ratio: 1/1; display: flex; flex-direction: column; justify-content: center; overflow: hidden; }
+  .kpi-n{ font-size: 8.5px; margin-bottom: 3px; }
+  .kpi-n::before{ width: 14px; height: 14px; font-size: 8px; }
+  .kpi-cell-val{ font-size: 20px; }
+  .kpi-cell-delta{ font-size: 10px; line-height: 1.3; }
 
   .card-body{ padding: 15px 13px; }
   .card-header{ padding: 12px 14px; }
@@ -183,10 +188,24 @@ footer { max-width: 1040px; margin: 32px auto 0; padding-top: 20px; border-top: 
   /* Légendes : à gauche et sur plusieurs lignes, sinon elles débordent. */
   .cleg{ flex-wrap: wrap; justify-content: flex-start; gap: 9px 13px; }
 
-  /* Le bloc « Couverts & remplissage » aligne 4 cases sur une rangée : en
-     2×2 elles redeviennent lisibles. */
-  .card-body > div[style*="display:flex"][style*="border:1px solid var(--border)"]{ flex-wrap: wrap; }
-  .card-body > div[style*="display:flex"][style*="border:1px solid var(--border)"] > div{ flex: 1 0 50%; }
+  /* « Couverts & remplissage » : quatre cases côte à côte deviennent deux
+     blocs. Couverts sur toute la largeur, puis Remplissage — dont Déjeuner et
+     Dîner sont les sous-items, en dessous et en plus petit. La hiérarchie
+     devient lisible : ce sont deux détails d'un même taux, pas quatre
+     indicateurs de même rang. */
+  .cov-stats{ display: grid !important; grid-template-columns: 1fr 1fr; }
+  .cov-cell{ border-right: none !important; padding: 12px 14px !important; }
+  .cov-couverts{ grid-column: 1 / -1; border-bottom: 1px solid var(--border); }
+  .cov-remp{ grid-column: 1 / -1; border-bottom: 1px solid var(--border); padding-bottom: 8px !important; }
+  .cov-midi{ border-right: 1px solid var(--border) !important; }
+  .cov-midi, .cov-soir{ padding-top: 9px !important; background: #fbfaf8; }
+  .cov-midi .cov-val, .cov-soir .cov-val{ font-size: 17px !important; }
+  .cov-midi .cov-lbl, .cov-soir .cov-lbl{ font-size: 8.5px !important; }
+  .cov-midi .cov-sub, .cov-soir .cov-sub{ font-size: 9px !important; }
+
+  /* Onglet Opérations masqué : RH et annulations relèvent d'une analyse au
+     calme, pas d'une consultation en salle. */
+  #tab-operations{ display: none !important; }
 
   .svc-split{ grid-template-columns: 1fr; }
   footer{ flex-direction: column; align-items: flex-start; gap: 10px; }
@@ -249,7 +268,7 @@ footer { max-width: 1040px; margin: 32px auto 0; padding-top: 20px; border-top: 
 <div class="tabs">
   <button class="tab on" onclick="showTab('overview',this)">Vue d'ensemble</button>
   <button class="tab" onclick="showTab('ca',this)">Analyse CA</button>
-  <button class="tab" onclick="showTab('operations',this)">Opérations</button>
+  <button class="tab" id="tab-operations" onclick="showTab('operations',this)">Opérations</button>
   <button class="tab" onclick="showTab('pnl',this)">P&amp;L</button>
 </div>
 
@@ -342,26 +361,30 @@ footer { max-width: 1040px; margin: 32px auto 0; padding-top: 20px; border-top: 
       <!-- Graphe historique couverts -->
       <div class="chart-h120" style="margin-bottom:20px;"><button class="cnav cnav-l" onclick="navPeriod(-1)" aria-label="Périodes précédentes">‹</button><canvas id="covChart"></canvas><button class="cnav cnav-r" onclick="navPeriod(1)" aria-label="Périodes suivantes">›</button></div>
       <!-- Stats en ligne -->
-      <div style="display:flex;gap:0;border:1px solid var(--border);border-radius:8px;overflow:hidden;">
-        <div style="flex:1;padding:14px 16px;border-right:1px solid var(--border);text-align:center;">
-          <div style="font-size:9px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px;">Couverts</div>
-          <div style="font-size:24px;font-weight:600;color:var(--accent);" id="rk-cov">—</div>
-          <div style="font-size:10px;color:var(--muted);margin-top:2px;" id="rk-cov-d">—</div>
+      <!-- Classes plutôt que styles en ligne seuls : sur téléphone ces quatre
+           cases se réorganisent en deux blocs (Couverts, puis Remplissage avec
+           déjeuner et dîner en sous-items), ce qui demande de pouvoir les
+           cibler proprement en CSS. -->
+      <div class="cov-stats" style="display:flex;gap:0;border:1px solid var(--border);border-radius:8px;overflow:hidden;">
+        <div class="cov-cell cov-couverts" style="flex:1;padding:14px 16px;border-right:1px solid var(--border);text-align:center;">
+          <div class="cov-lbl" style="font-size:9px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px;">Couverts</div>
+          <div class="cov-val" style="font-size:24px;font-weight:600;color:var(--accent);" id="rk-cov">—</div>
+          <div class="cov-sub" style="font-size:10px;color:var(--muted);margin-top:2px;" id="rk-cov-d">—</div>
         </div>
-        <div style="flex:1;padding:14px 16px;border-right:1px solid var(--border);text-align:center;">
-          <div style="font-size:9px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px;">Remplissage</div>
-          <div style="font-size:24px;font-weight:600;color:var(--accent);" id="rk-fill">—</div>
-          <div style="font-size:10px;color:var(--muted);margin-top:2px;" id="rk-fill-d">—</div>
+        <div class="cov-cell cov-remp" style="flex:1;padding:14px 16px;border-right:1px solid var(--border);text-align:center;">
+          <div class="cov-lbl" style="font-size:9px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px;">Remplissage</div>
+          <div class="cov-val" style="font-size:24px;font-weight:600;color:var(--accent);" id="rk-fill">—</div>
+          <div class="cov-sub" style="font-size:10px;color:var(--muted);margin-top:2px;" id="rk-fill-d">—</div>
         </div>
-        <div style="flex:1;padding:14px 16px;border-right:1px solid var(--border);text-align:center;">
-          <div style="font-size:9px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px;">Déjeuner</div>
-          <div style="font-size:24px;font-weight:600;color:var(--accent);" id="fill-midi-val">—</div>
-          <div style="font-size:10px;color:var(--muted);margin-top:2px;">taux remplissage</div>
+        <div class="cov-cell cov-midi" style="flex:1;padding:14px 16px;border-right:1px solid var(--border);text-align:center;">
+          <div class="cov-lbl" style="font-size:9px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px;">Déjeuner</div>
+          <div class="cov-val" style="font-size:24px;font-weight:600;color:var(--accent);" id="fill-midi-val">—</div>
+          <div class="cov-sub" style="font-size:10px;color:var(--muted);margin-top:2px;">taux remplissage</div>
         </div>
-        <div style="flex:1;padding:14px 16px;text-align:center;">
-          <div style="font-size:9px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px;">Dîner</div>
-          <div style="font-size:24px;font-weight:600;color:var(--accent);" id="fill-soir-val">—</div>
-          <div style="font-size:10px;color:var(--muted);margin-top:2px;">taux remplissage</div>
+        <div class="cov-cell cov-soir" style="flex:1;padding:14px 16px;text-align:center;">
+          <div class="cov-lbl" style="font-size:9px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px;">Dîner</div>
+          <div class="cov-val" style="font-size:24px;font-weight:600;color:var(--accent);" id="fill-soir-val">—</div>
+          <div class="cov-sub" style="font-size:10px;color:var(--muted);margin-top:2px;">taux remplissage</div>
         </div>
       </div>
     </div>
@@ -771,7 +794,12 @@ footer { max-width: 1040px; margin: 32px auto 0; padding-top: 20px; border-top: 
    et une saisie approximative faite dans le métro se propagerait dans tout le
    P&L. Le tableau mensuel et les Livraisons restent consultables. */
 @media(max-width:700px){
-  #subtab-proj, #sub-proj{ display:none !important; }
+  /* Sur téléphone il ne reste que le P&L mensuel : les Ajustements se
+     saisissent au clavier, et les Livraisons sont un outil de contrôle qui
+     demande de comparer ligne à ligne. Ni l'un ni l'autre ne se consulte
+     debout. */
+  #subtab-proj, #sub-proj, #subtab-liv, #sub-liv{ display:none !important; }
+  .subtabs{ border-bottom:none; }
 
   /* Le tableau garde ses 3 colonnes de mois, mais devient défilable
      horizontalement, la colonne des postes restant figée à gauche — sans elle
@@ -805,7 +833,7 @@ footer { max-width: 1040px; margin: 32px auto 0; padding-top: 20px; border-top: 
   <div class="subtabs">
     <button class="subtab on" onclick="PNL.sub('sub-pnl',this)">P&amp;L mensuel</button>
     <button class="subtab" id="subtab-proj" onclick="PNL.sub('sub-proj',this)">Ajustements</button>
-    <button class="subtab" onclick="PNL.sub('sub-liv',this); PNL.renderLiv();">Livraisons</button>
+    <button class="subtab" id="subtab-liv" onclick="PNL.sub('sub-liv',this); PNL.renderLiv();">Livraisons</button>
   </div>
 
   <div id="sub-pnl" class="subpanel on">
@@ -1492,7 +1520,7 @@ function renderGoogleCharts() {
   const allWk = Object.keys(byWk).sort();
   let endPos = dispWk ? allWk.indexOf(dispWk.key) : allWk.length - 1;
   if (endPos < 0) endPos = allWk.length - 1;
-  const wkKeys = allWk.slice(Math.max(0, endPos - 5), endPos + 1);
+  const wkKeys = allWk.slice(Math.max(0, endPos - (histN() - 1)), endPos + 1);
   const wkLbls = wkKeys.map(k => 'S' + k.slice(-2));
   const wkAvgs = wkKeys.map(k => byWk[k].nb > 0 ? +(byWk[k].sum / byWk[k].nb).toFixed(2) : null);
   const wkStars = wkKeys.map(k => byWk[k].st);
@@ -1775,6 +1803,14 @@ const annChart = new Chart(document.getElementById('annChart'), {
 /* ════════════ PERIOD PICKER ════════════ */
 let gran = 'week', idx = WEEKS.length - 1, histShift = 0;
 function currentList() { return gran === 'week' ? WEEKS : MONTHS; }
+// Nombre de périodes affichées par les graphes historiques.
+// 4 sur téléphone au lieu de 6 : à 390 px de large, six colonnes écrasent les
+// libellés et les montants au point de les rendre illisibles. On ne perd pas
+// d'information pour autant — le balayage horizontal permet de remonter aussi
+// loin qu'on veut.
+function histN() {
+  return (window.matchMedia && window.matchMedia('(max-width:700px)').matches) ? 4 : 6;
+}
 
 // Graphes historiques cliquables : un clic sur une colonne sélectionne cette
 // période dans tout le dashboard. Ils partagent tous la même fenêtre glissante
@@ -1783,6 +1819,39 @@ function currentList() { return gran === 'week' ? WEEKS : MONTHS; }
 // propre onClick (détail des annulations).
 [histChart, caHistChart, covChart, tktChart, ca2TktChart, cmpChart, rhWeekChart]
   .forEach(c => rendreCliquable(c));
+
+// ── Balayage horizontal sur les graphes (téléphone) ──
+// Les flèches latérales font 22 px et débordent à moitié de l'écran sur un
+// téléphone : le glissement du doigt est le geste réellement attendu. Appliqué
+// à TOUS les graphes, y compris ceux qui affichent des jours, pour que le
+// geste ait le même effet partout — changer de période.
+function activerBalayage(el) {
+  if (!el) return;
+  let x0 = null, y0 = null, horizontal = false;
+  el.addEventListener('touchstart', ev => {
+    const t = ev.touches[0]; x0 = t.clientX; y0 = t.clientY; horizontal = false;
+  }, { passive: true });
+  el.addEventListener('touchmove', ev => {
+    if (x0 == null) return;
+    const t = ev.touches[0], dx = t.clientX - x0, dy = t.clientY - y0;
+    // Le facteur 1.4 exige un geste franchement horizontal avant de bloquer le
+    // défilement vertical : sans lui, un simple scroll de la page au-dessus
+    // d'un graphe se retrouvait bloqué net.
+    if (Math.abs(dx) > 12 && Math.abs(dx) > Math.abs(dy) * 1.4) {
+      horizontal = true;
+      if (ev.cancelable) ev.preventDefault();
+    }
+  }, { passive: false });
+  el.addEventListener('touchend', ev => {
+    if (x0 == null) return;
+    const t = ev.changedTouches[0], dx = t.clientX - x0, dy = t.clientY - y0;
+    x0 = null; y0 = null;
+    if (!horizontal || Math.abs(dx) < 40 || Math.abs(dx) < Math.abs(dy)) return;
+    // Glisser vers la gauche fait avancer dans le temps, comme on tourne une page.
+    navPeriod(dx < 0 ? 1 : -1);
+  }, { passive: true });
+}
+document.querySelectorAll('.chart-h160, .chart-h120').forEach(activerBalayage);
 
 function renderPeriod() {
   const list = currentList();
@@ -1867,8 +1936,19 @@ function renderPeriod() {
   }
 
   const caFmt = fmtPct(cmpCurrCA, cmpPrevCA);
+  // Écart en euros À CÔTÉ du pourcentage : « +12 % » ne dit pas s'il s'agit de
+  // 400 € ou de 4 000 €. Sur une petite semaine, un pourcentage flatteur peut
+  // ne représenter presque rien — les deux ensemble évitent le contresens.
+  const eurSigne = v => (v >= 0 ? '+' : '−') + Math.abs(Math.round(v)).toLocaleString('fr-FR') + ' €';
+  const caEcart = (cmpPrevCA && cmpPrevCA > 0) ? (cmpCurrCA - cmpPrevCA) : null;
+  // Sur deux lignes : mis bout à bout, « ▲ +12,4 % · +3 240 € vs S-1 à date »
+  // déborde de la case sur téléphone.
+  const deltaCA = caEcart == null ? '—'
+    : caFmt.txt + (cmpPrevCA ? ' ' + cmpLabel : '')
+      + '<span style="display:block;font-size:11px;margin-top:1px;">' + eurSigne(caEcart) + '</span>';
+  const setdH = (id, html, cls) => { const e = document.getElementById(id); if (e) { e.innerHTML = html; e.className = 'kpi-cell-delta ' + cls; } };
   s('kv-ca',   fmt(caNet) + ' €');
-  setd('kd-ca', caFmt.txt + (cmpPrevCA ? ' ' + cmpLabel : ''), caFmt.cls);
+  setdH('kd-ca', deltaCA, caFmt.cls);
 
   s('kv-cov',  fmt(m.couverts));
   setd('kd-cov', 'Couverts servis', 'neu');
@@ -1895,8 +1975,9 @@ function renderPeriod() {
   const allList    = gran === 'week' ? WEEKS : MONTHS;
   const metricsArr = gran === 'week' ? METRICS_W : (METRICS_M.length ? METRICS_M : METRICS_W);
   // Fenêtre historique affichée (décalable avec les flèches sous chaque graphe)
-  const winEnd    = Math.max(Math.min(5, allList.length - 1), Math.min(allList.length - 1, idx + histShift));
-  const winStart  = Math.max(0, winEnd - 5);
+  const nHist     = histN() - 1;   // décalage entre la 1re et la dernière colonne
+  const winEnd    = Math.max(Math.min(nHist, allList.length - 1), Math.min(allList.length - 1, idx + histShift));
+  const winStart  = Math.max(0, winEnd - nHist);
   window.HIST_WIN = { start: winStart, end: winEnd };
   const histSlice  = allList.slice(winStart, winEnd + 1);
   const histM      = metricsArr.slice(winStart, winEnd + 1);
@@ -1987,7 +2068,7 @@ function renderPeriod() {
   } catch(chartErr) { console.warn('Chart update error:', chartErr.message); }
 
   s('ca-kv1', fmt(caNet) + ' €');
-  setd('ca-kd1', cmpPrevCA ? caFmt.txt + ' ' + cmpLabel : '—', caFmt.cls);
+  setdH('ca-kd1', deltaCA, caFmt.cls);
   s('ca-kv2', tktTotal.toFixed(2) + ' €');
   setd('ca-kd2', `Déj. ${tktMidiAgg.toFixed(2)} € · Dîner ${tktSoirAgg.toFixed(2)} €`, 'neu');
 
@@ -2300,7 +2381,7 @@ function animateViews(dir) {
 function shiftHist(dir) {
   const list = currentList();
   const maxWe = list.length - 1;
-  const minWe = Math.min(5, maxWe);
+  const minWe = Math.min(histN() - 1, maxWe);
   const we = idx + histShift + dir;
   if (we < minWe || we > maxWe) return;
   histShift += dir;
