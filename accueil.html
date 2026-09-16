@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Accueil | Rosario</title>
+<link rel="icon" href="favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bordeaux:#8B1A1A; --gold:#C8963C; --gold-soft:#E8D5AE;
+  --warm:#f7f6f3; --paper:#fff; --ink:#1c1a18; --ink-2:#5a5450; --ink-3:#8d8680;
+  --line:#e6e2db; --ok:#2F6B4F; --warn:#B8770F; --bad:#A32626;
+  --r:10px; --shadow:0 1px 2px rgba(28,26,24,.04), 0 4px 16px rgba(28,26,24,.05);
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{background:var(--warm);color:var(--ink);font-family:'Sora',system-ui,-apple-system,'Segoe UI',sans-serif;font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased}
+a{color:inherit;text-decoration:none}
+.wrap{max-width:1180px;margin:0 auto;padding:0 20px 64px}
+
+header.top{background:var(--bordeaux);color:#fff;padding:22px 0 26px;margin-bottom:26px}
+header.top .wrap{padding-bottom:0;display:flex;align-items:flex-end;justify-content:space-between;gap:20px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:14px}
+.brand .mark{width:40px;height:40px;border-radius:var(--r);border:1.5px solid var(--gold);display:grid;place-items:center;font-weight:700;font-size:17px;color:var(--gold);flex:0 0 auto}
+.brand h1{margin:0;font-size:19px;font-weight:600;letter-spacing:.2px}
+.brand p{margin:2px 0 0;font-size:12px;color:var(--gold-soft);font-weight:300}
+.greet{text-align:right;font-size:12.5px;color:var(--gold-soft);font-weight:300}
+.greet strong{display:block;color:#fff;font-size:14px;font-weight:500}
+.greet strong::first-letter{text-transform:uppercase}
+
+/* gate */
+#gate{display:none;flex-direction:column;align-items:center;gap:16px;background:var(--paper);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);padding:44px 24px;text-align:center}
+#gate h2{margin:0;font-size:16px;font-weight:600}
+#gate p{margin:0;color:var(--ink-3);font-size:13px;max-width:420px}
+#gate-msg{color:var(--bad);font-size:12.5px;min-height:1em}
+
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
+.card{background:var(--paper);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);padding:18px 20px 20px;display:flex;flex-direction:column;min-height:212px}
+.card-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:16px}
+.card-head h2{margin:0;font-size:11px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-3);display:flex;align-items:center;gap:8px}
+.card-head h2::before{content:'';width:5px;height:5px;border-radius:50%;background:var(--gold);flex:0 0 auto}
+.card-link{font-size:12px;color:var(--bordeaux);font-weight:500;white-space:nowrap}
+.card-link:hover{text-decoration:underline}
+.card-body{flex:1;display:flex;flex-direction:column;justify-content:center}
+
+.stat-row{display:flex;gap:26px;flex-wrap:wrap;align-items:flex-start}
+.stat{min-width:0}
+.stat .k{font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3);margin-bottom:4px;font-weight:500}
+.stat .v{font-size:25px;font-weight:600;letter-spacing:-.02em;line-height:1.1;font-variant-numeric:tabular-nums}
+.stat .v.sm{font-size:19px}
+.stat .d{font-size:11.5px;font-weight:500;margin-top:3px}
+.up{color:var(--ok)} .down{color:var(--bad)} .flat{color:var(--ink-3)}
+
+.rows{display:flex;flex-direction:column}
+.row{display:flex;align-items:center;gap:12px;padding:9px 0;border-bottom:1px solid var(--line);font-size:13px}
+.row:last-child{border-bottom:0}
+.row .date{flex:0 0 46px;text-align:center;line-height:1.05;color:var(--bordeaux);font-weight:600}
+.row .date span{display:block;font-size:9.5px;font-weight:500;color:var(--ink-3);text-transform:uppercase;letter-spacing:.05em}
+.row .main{flex:1;min-width:0}
+.row .main b{display:block;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.row .main small{color:var(--ink-3);font-size:11.5px}
+.row .amt{font-weight:600;white-space:nowrap;font-variant-numeric:tabular-nums}
+
+.badge{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;font-weight:600;padding:3px 9px;border-radius:999px;border:1px solid transparent}
+.badge.n{background:#F3EEE4;color:var(--warn);border-color:#EADFC6}
+.badge.g{background:#EDF4EF;color:var(--ok);border-color:#D7E7DD}
+.badge.r{background:#FAEDED;color:var(--bad);border-color:#F0D8D8}
+.dot{width:6px;height:6px;border-radius:50%;background:currentColor;flex:0 0 auto}
+
+.spark{margin-top:14px}
+.spark svg{display:block;width:100%;height:38px;overflow:visible}
+.rating{display:flex;align-items:center;gap:8px}
+.stars{color:var(--gold);font-size:13px;letter-spacing:1px}
+
+.muted{color:var(--ink-3);font-size:12.5px}
+.unbound{display:flex;align-items:flex-start;gap:8px;font-size:12px;color:var(--ink-3);background:var(--warm);border:1px dashed var(--line);border-radius:8px;padding:12px 14px}
+.unbound .dot{margin-top:6px}
+.skeleton{background:linear-gradient(90deg,#eee9e2 25%,#f4f0ea 50%,#eee9e2 75%);background-size:200% 100%;animation:sk 1.3s infinite;border-radius:5px;color:transparent}
+@keyframes sk{0%{background-position:200% 0}100%{background-position:-200% 0}}
+
+.section-title{margin:34px 0 14px;font-size:11px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-3)}
+.links{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.link{background:var(--paper);border:1px solid var(--line);border-radius:var(--r);padding:14px 15px;display:flex;flex-direction:column;gap:3px;transition:border-color .15s,transform .15s,box-shadow .15s}
+.link:hover{border-color:var(--gold);transform:translateY(-1px);box-shadow:var(--shadow)}
+.link b{font-size:13.5px;font-weight:500}
+.link small{font-size:11.5px;color:var(--ink-3);line-height:1.35}
+.link.ext b::after{content:' ↗';color:var(--ink-3);font-weight:400}
+footer{margin-top:40px;text-align:center;font-size:11.5px;color:var(--ink-3)}
+
+@media(max-width:860px){.grid{grid-template-columns:1fr}.links{grid-template-columns:repeat(2,minmax(0,1fr))}.greet{text-align:left}}
+@media(max-width:420px){.links{grid-template-columns:1fr}.stat-row{gap:18px}}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap">
+    <div class="brand">
+      <div class="mark">R</div>
+      <div>
+        <h1>Rosario — Portail interne</h1>
+        <p>Grupo Domingo · 96 rue de Richelieu, Paris 2<sup>e</sup></p>
+      </div>
+    </div>
+    <div class="greet">
+      <strong id="greet-day">—</strong>
+      <span id="greet-sub">Vue d'ensemble</span>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <!-- Porte d'accès : même mécanique que le dashboard (Google Identity Services).
+       Sur la même origine, le jeton rz_tok est partagé : si tu es déjà connecté
+       au dashboard, cette porte ne s'affiche jamais. -->
+  <div id="gate">
+    <h2>Portail Rosario</h2>
+    <p>Connecte-toi avec ton adresse @grupodomingo.io.</p>
+    <div id="gsi-btn"></div>
+    <div id="gate-msg"></div>
+  </div>
+
+  <div id="app" style="display:none">
+    <div class="grid">
+
+      <section class="card">
+        <div class="card-head">
+          <h2>Performance</h2>
+          <a class="card-link" href="index.html">Dashboard →</a>
+        </div>
+        <div class="card-body">
+          <div class="stat-row">
+            <div class="stat">
+              <div class="k">CA semaine</div>
+              <div class="v" data-f="ca">—</div>
+              <div class="d flat" data-f="ca-delta">&nbsp;</div>
+            </div>
+            <div class="stat">
+              <div class="k">Ticket moyen</div>
+              <div class="v sm" data-f="tm">—</div>
+              <div class="d flat" data-f="tm-delta">&nbsp;</div>
+            </div>
+            <div class="stat">
+              <div class="k">Note Google</div>
+              <div class="rating">
+                <div class="v sm" data-f="note">—</div>
+                <div>
+                  <div class="stars" data-f="stars"></div>
+                  <div class="muted" data-f="avis">&nbsp;</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="spark" data-f="spark"></div>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="card-head">
+          <h2>Privatisations</h2>
+          <a class="card-link" id="lnk-priv" href="#">Gérer →</a>
+        </div>
+        <div class="card-body" data-f="priv-body">
+          <div class="rows"><div class="row"><span class="skeleton">chargement…</span></div></div>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="card-head">
+          <h2>Réconciliation caisse</h2>
+          <a class="card-link" id="lnk-caisse" href="#">Clôtures →</a>
+        </div>
+        <div class="card-body" data-f="reco-body">
+          <div class="rows"><div class="row"><span class="skeleton">chargement…</span></div></div>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="card-head">
+          <h2>Maintenance</h2>
+          <a class="card-link" id="lnk-maint" href="#">Tickets →</a>
+        </div>
+        <div class="card-body" data-f="maint-body">
+          <div class="rows"><div class="row"><span class="skeleton">chargement…</span></div></div>
+        </div>
+      </section>
+
+    </div>
+
+    <div class="section-title">Toutes les pages</div>
+    <nav class="links" id="portal-links"></nav>
+  </div>
+
+  <footer>Rosario · Grupo Domingo — <span id="stamp">—</span></footer>
+</div>
+
+<script>
+/* ══════════════════════════════════════════════════════════════════════════
+   ROSARIO · PAGE D'ACCUEIL DU PORTAIL
+   ──────────────────────────────────────────────────────────────────────────
+   Cette page se greffe sur l'infrastructure EXISTANTE du dashboard :
+     · même Worker Cloudflare (WORKER_URL + '?tab=')
+     · même classeur privé, mêmes onglets
+     · même jeton (localStorage 'rz_tok'), donc même origine → aucune
+       deuxième connexion si le dashboard est déjà ouvert.
+   Aucune valeur affichée n'est inventée : un onglet absent affiche
+   explicitement ce qu'il manque.
+   Prévisualisation hors ligne : ajouter ?demo=1 à l'URL.
+   ══════════════════════════════════════════════════════════════════════════ */
+
+const WORKER_URL     = 'https://rosario-dashboard-api.theodore-0c2.workers.dev';
+const GOOGLE_CLIENT_ID = '350141197678-dn4lnfi9k4kfomj1tbcps7t0jvqnupmb.apps.googleusercontent.com';
+const ALLOWED_DOMAIN = 'grupodomingo.io';
+
+/* Origine JavaScript déclarée dans le client OAuth — exactement celle-ci,
+   sans barre finale. C'est aussi l'origine qui porte le localStorage où vit
+   rz_tok : servir cette page ailleurs casse à la fois la connexion Google et
+   le partage de session avec le dashboard. */
+const ORIGINE_AUTORISEE = 'https://dashboard.grupodomingo.io';
+
+/* Onglets du classeur. Les deux derniers n'existent pas encore — voir la note
+   en bas de fichier pour les colonnes à créer. Tant qu'ils sont absents,
+   l'encart correspondant le dit au lieu d'afficher un chiffre faux. */
+const TABS = {
+  kpi      : 'KPI_Journaliers',        // Date(AAAAMMJJ) · CA_Net_Total · Couverts_Total
+  priv     : 'Privatisations_Detail',  // Date · Client · Service · CA_HT_Retenu · Pax_Retenu
+  pipeline : 'Privatisations_Pipeline',// (à créer) Statut · Date · Client · Pax
+  rating   : 'Google_Rating',          // Rating · Reviews (dernière ligne = à jour)
+  reco     : 'Reconciliation',         // (à créer) Date · Depot · Especes
+  maint    : 'Maintenance',            // (à créer) Date · Objet · Lieu · Priorite · Statut
+};
+
+/* Liens du portail. ⚠ Les URL marquées TODO sont à confirmer. */
+const PAGES = [
+  {t:'Dashboard',         d:'CA, ticket moyen, opérations, P&L',  h:'index.html'},
+  {t:'Méthodologie',      d:'Définition de chaque indicateur',    h:'methodologie.html'},
+  {t:'Privatisations',    d:'Pipeline, devis, suivi des demandes',h:'https://privatisations.grupodomingo.io', ext:true}, // TODO confirmer
+  {t:'Clôture de caisse', d:'Formulaire de fin de service',       h:'https://caisse.grupodomingo.io', ext:true},
+  {t:'Rapport quotidien', d:'Compte rendu de service par mail',   h:'https://summary.grupodomingo.io', ext:true},        // TODO confirmer
+  {t:'Réconciliation',    d:'Espèces, dépôts, rapprochement',     h:'reconciliation.html'},                              // TODO
+  {t:'Maintenance',       d:'Tickets et interventions',           h:'maintenance.html'},                                 // TODO
+  {t:'Quiz équipe',       d:'Briefs avant service',               h:'quiz.html'},                                        // TODO
+];
+
+/* ────────────────────────── utilitaires ────────────────────────── */
+const DEMO = new URLSearchParams(location.search).has('demo');
+const $ = (s,r=document)=>r.querySelector(s);
+const F = n=>$(`[data-f="${n}"]`);
+
+const n_ = v => { const x = parseFloat(String(v==null?'':v).replace(/\s/g,'').replace(',','.').replace(/[^\d.\-]/g,'')); return isNaN(x)?0:x; };
+const eur  = v => (v==null||isNaN(v)) ? '—' : Math.round(v).toLocaleString('fr-FR')+' €';
+const eur2 = v => (v==null||isNaN(v)) ? '—' : v.toLocaleString('fr-FR',{minimumFractionDigits:2,maximumFractionDigits:2})+' €';
+
+/* Les onglets stockent les dates en AAAAMMJJ (chiffres seulement) */
+const dateKey  = v => String(v==null?'':v).replace(/\D/g,'');
+const keyOf    = d => '' + d.getFullYear() + String(d.getMonth()+1).padStart(2,'0') + String(d.getDate()).padStart(2,'0');
+const keyToDate= k => k && k.length===8 ? new Date(+k.slice(0,4), +k.slice(4,6)-1, +k.slice(6,8)) : null;
+const startOfDay = d => new Date(d.getFullYear(),d.getMonth(),d.getDate());
+function lundiDeLaSemaine(ref=new Date()){ const d=startOfDay(ref); d.setDate(d.getDate()-((d.getDay()+6)%7)); return d; }
+
+/* ────────────────────────── authentification ────────────────────────── */
+window.RZ_TOKEN = '';
+try { window.RZ_TOKEN = localStorage.getItem('rz_tok') || ''; } catch(e){}
+
+function ouvrirPorte(msg){
+  $('#gate').style.display = 'flex';
+  $('#app').style.display  = 'none';
+  $('#gate-msg').textContent = msg || '';
+  chargerGSI();
+}
+function fermerPorte(){
+  $('#gate').style.display = 'none';
+  $('#app').style.display  = 'block';
+}
+function deconnecter(msg){
+  window.RZ_TOKEN = '';
+  try { localStorage.removeItem('rz_tok'); localStorage.removeItem('rz_exp'); } catch(e){}
+  ouvrirPorte(msg);
+}
+
+let gsiCharge_ = false;
+function chargerGSI(){
+  if (gsiCharge_ || DEMO) return; gsiCharge_ = true;
+
+  /* Google Identity Services refuse toute origine non déclarée dans le client
+     OAuth — et une page ouverte depuis le disque (file://) n'a pas d'origine
+     déclarable du tout. Sans ce garde-fou, le bouton s'affiche puis renvoie
+     « Accès bloqué — Erreur 400 : invalid_request », ce qui ressemble à une
+     panne alors que c'est simplement la page servie depuis le mauvais endroit.
+     L'origine autorisée doit être exactement ORIGINE_AUTORISEE, sans barre
+     finale (même contrainte que le dashboard). */
+  if (location.origin !== ORIGINE_AUTORISEE){
+    $('#gsi-btn').innerHTML = '';
+    $('#gate-msg').innerHTML =
+      'Cette page doit être servie depuis <b>' + ORIGINE_AUTORISEE + '</b>.<br>' +
+      'Ouverte depuis ' + (location.protocol === 'file:' ? 'le disque (file://)' : location.origin) +
+      ', la connexion Google renvoie « Erreur 400 : invalid_request » — cette origine ' +
+      "n'est pas déclarée dans le client OAuth, et ne peut pas l'être pour un fichier local.<br>" +
+      '<a href="?demo=1" style="color:var(--bordeaux);font-weight:600">Prévisualiser la mise en page (données d\'exemple) →</a>';
+    return;
+  }
+
+  const s = document.createElement('script');
+  s.src = 'https://accounts.google.com/gsi/client'; s.async = true; s.defer = true;
+  s.onload = () => {
+    google.accounts.id.initialize({ client_id: GOOGLE_CLIENT_ID, callback: onGoogleCredential });
+    google.accounts.id.renderButton($('#gsi-btn'), { theme:'outline', size:'large', text:'signin_with', locale:'fr' });
+  };
+  s.onerror = () => { $('#gate-msg').textContent = 'Impossible de charger la connexion Google (réseau ou bloqueur ?).'; };
+  document.head.appendChild(s);
+}
+
+function onGoogleCredential(rep){
+  const jwt = rep && rep.credential;
+  if (!jwt) { $('#gate-msg').textContent = 'Connexion annulée.'; return; }
+  let charge = {};
+  try { charge = JSON.parse(atob(jwt.split('.')[1].replace(/-/g,'+').replace(/_/g,'/'))); } catch(e){}
+  const email = String(charge.email||'').toLowerCase();
+  if (!email.endsWith('@'+ALLOWED_DOMAIN)){
+    $('#gate-msg').textContent = 'Accès réservé aux adresses @'+ALLOWED_DOMAIN+(email?' ('+email+')':'');
+    return;
+  }
+  window.RZ_TOKEN = jwt;
+  try { localStorage.setItem('rz_tok', jwt); } catch(e){}
+  demarrer();
+  echangerContreSession();
+}
+
+/* Le jeton Google expire en 1 h ; le Worker en émet un valable 30 jours.
+   Exactement le même échange que le dashboard — le résultat est partagé
+   entre les deux pages puisqu'elles sont sur la même origine. */
+async function echangerContreSession(){
+  try{
+    const r = await fetch(WORKER_URL + '?session=1', { headers:{ Authorization:'Bearer ' + (window.RZ_TOKEN||'') } });
+    if (!r.ok) return;
+    const d = await r.json();
+    if (!d || !d.token) return;
+    window.RZ_TOKEN = d.token;
+    localStorage.setItem('rz_tok', d.token);
+    if (d.exp) localStorage.setItem('rz_exp', d.exp);
+  }catch(e){}
+}
+
+/* ────────────────────────── lecture d'un onglet ──────────────────────────
+   Identique à fetchSheet() du dashboard : le Worker renvoie la réponse brute
+   de l'API Sheets ({values:[[...]]}), la première ligne sert d'en-têtes. */
+async function fetchSheet(tabName){
+  const r = await fetch(WORKER_URL + '?tab=' + encodeURIComponent(tabName),
+                        { headers:{ Authorization:'Bearer ' + (window.RZ_TOKEN||'') } });
+  if (r.status === 401){ deconnecter('Session expirée — reconnecte-toi.'); throw new Error('non authentifié'); }
+  if (!r.ok) throw new Error('HTTP ' + r.status);
+  const d = await r.json();
+  const values = (d && d.values) || [];
+  if (!values.length) return [];
+  const heads = values[0].map(h => String(h==null?'':h));
+  return values.slice(1).map(row => {
+    const o = {};
+    heads.forEach((h,i) => { o[h] = row[i] == null ? '' : row[i]; });
+    return o;
+  });
+}
+
+/* ────────────────────────── rendu ────────────────────────── */
+function unbound(el, msg){
+  el.innerHTML = `<div class="unbound"><span class="dot" style="color:var(--ink-3)"></span><span>${msg}</span></div>`;
+}
+function deltaTxt(el, cur, prev, suffix='vs sem. préc.'){
+  if (cur==null || !prev){ el.textContent=' '; el.className='d flat'; return; }
+  const p = (cur-prev)/Math.abs(prev)*100;
+  el.className = 'd ' + (Math.abs(p)<0.5 ? 'flat' : (p>0?'up':'down'));
+  el.textContent = (p>0?'+':'') + p.toFixed(1) + ' % ' + suffix;
+}
+function stars(v){
+  if (v==null || !v) return '';
+  const full = Math.floor(v), half = v-full>=.25 && v-full<.75, extra = v-full>=.75;
+  const f = full + (extra?1:0);
+  return '★'.repeat(f) + (half?'⯨':'') + '☆'.repeat(Math.max(0, 5-f-(half?1:0)));
+}
+function sparkline(el, pts){
+  if (!pts || pts.length<2){ el.innerHTML=''; return; }
+  const w=100,h=30,max=Math.max(...pts),min=Math.min(...pts),span=(max-min)||1;
+  const xy = pts.map((v,i)=>[i/(pts.length-1)*w, h-(v-min)/span*h]);
+  const d = xy.map((p,i)=>(i?'L':'M')+p[0].toFixed(2)+' '+p[1].toFixed(2)).join(' ');
+  el.innerHTML = `<svg viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" aria-hidden="true">
+    <path d="${d} L ${w} ${h} L 0 ${h} Z" fill="rgba(139,26,26,.07)"/>
+    <path d="${d}" fill="none" stroke="var(--bordeaux)" stroke-width="1.4" vector-effect="non-scaling-stroke" stroke-linejoin="round" stroke-linecap="round"/>
+    <circle cx="${xy[xy.length-1][0]}" cy="${xy[xy.length-1][1]}" r="2" fill="var(--gold)" vector-effect="non-scaling-stroke"/>
+  </svg>`;
+}
+
+/* ══════════════════ 1. PERFORMANCE ══════════════════
+   CA total = Lightspeed (CA_Net_Total) + privatisations RETENUES
+   (CA_HT_Retenu ; 0 € = déjà encaissé en caisse, donc déjà dans Lightspeed).
+   Ticket moyen = CA total / (Couverts_Total + Pax_Retenu).
+   C'est la définition utilisée par le dashboard — ne pas la changer d'un
+   côté sans l'autre, sous peine de deux chiffres différents pour la même
+   semaine. */
+async function loadPerf(){
+  if (DEMO){
+    F('ca').textContent = eur(48210); deltaTxt(F('ca-delta'), 48210, 45100);
+    F('tm').textContent = eur2(42.80); deltaTxt(F('tm-delta'), 42.80, 41.20);
+    F('note').textContent='4,6'; F('stars').textContent=stars(4.6); F('avis').textContent='812 avis';
+    sparkline(F('spark'), [5100,6200,5800,7400,9100,8300,6310]);
+    return;
+  }
+  try{
+    const [kpi, priv] = await Promise.all([
+      fetchSheet(TABS.kpi),
+      fetchSheet(TABS.priv).catch(()=>[]),
+    ]);
+
+    const lundi = lundiDeLaSemaine(), lundiPrec = new Date(lundi); lundiPrec.setDate(lundi.getDate()-7);
+    const kSem = keyOf(lundi), kPrec = keyOf(lundiPrec);
+
+    let caS=0, cvS=0, caP=0, cvP=0;
+    const parJour = new Map();
+
+    (kpi||[]).forEach(r=>{
+      const k = dateKey(r['Date']); if (k.length!==8) return;
+      const ca = n_(r['CA_Net_Total']), cv = n_(r['Couverts_Total']);
+      if (k >= kSem)      { caS+=ca; cvS+=cv; parJour.set(k, (parJour.get(k)||0)+ca); }
+      else if (k >= kPrec){ caP+=ca; cvP+=cv; }
+    });
+
+    (priv||[]).forEach(r=>{
+      const k = dateKey(r['Date']); if (k.length!==8) return;
+      const t = n_(r['CA_HT_Retenu']); if (!t) return;   // 0 € retenu = déjà en caisse
+      const p = n_(r['Pax_Retenu']);
+      if (k >= kSem)      { caS+=t; cvS+=p; parJour.set(k, (parJour.get(k)||0)+t); }
+      else if (k >= kPrec){ caP+=t; cvP+=p; }
+    });
+
+    F('ca').textContent = caS ? eur(caS) : '—';
+    deltaTxt(F('ca-delta'), caS||null, caP);
+    const tm = cvS ? caS/cvS : null, tmP = cvP ? caP/cvP : null;
+    F('tm').textContent = tm ? eur2(tm) : '—';
+    deltaTxt(F('tm-delta'), tm, tmP);
+    sparkline(F('spark'), [...parJour.entries()].sort((a,b)=>a[0]<b[0]?-1:1).map(e=>e[1]));
+  }catch(e){
+    F('ca').textContent='—'; F('tm').textContent='—';
+    F('ca-delta').textContent = 'indisponible';
+    console.warn('[perf]', e);
+  }
+  loadNote();
+}
+
+async function loadNote(){
+  try{
+    const rows = await fetchSheet(TABS.rating);
+    if (!rows.length) throw new Error('onglet vide');
+    const last = rows[rows.length-1];
+    const note = parseFloat(String(last['Rating'] || last['rating'] || '').replace(',','.')) || 0;
+    const nb   = parseInt(String(last['Reviews'] || last['reviews'] || '').replace(/\D/g,'')) || 0;
+    F('note').textContent = note ? String(note.toFixed(1)).replace('.',',') : '—';
+    F('stars').textContent = stars(note);
+    F('avis').textContent  = nb ? nb.toLocaleString('fr-FR')+' avis' : ' ';
+  }catch(e){
+    F('note').textContent='—'; F('avis').textContent='indisponible'; console.warn('[note]', e);
+  }
+}
+
+/* ══════════════════ 2. PRIVATISATIONS ══════════════════
+   À venir : Privatisations_Detail ne contient que les CONFIRMÉES — c'est
+   exactement ce qu'on veut afficher ici. Le montant n'est montré que s'il
+   reste du CA retenu (sinon la prestation est déjà passée en caisse).
+   Demandes à répondre : onglet Privatisations_Pipeline (à créer). Absent,
+   le badge se tait plutôt que d'afficher 0. */
+function rowPriv(p){
+  const jj = p.d ? String(p.d.getDate()).padStart(2,'0') : '—';
+  const mm = p.d ? p.d.toLocaleDateString('fr-FR',{month:'short'}).replace('.','') : '';
+  const sub = [p.pax ? p.pax+' couverts' : '', p.service].filter(Boolean).join(' · ');
+  return `<div class="row">
+    <div class="date">${jj}<span>${mm}</span></div>
+    <div class="main"><b>${p.client||'Sans nom'}</b><small>${sub}</small></div>
+    <div class="amt">${p.total ? eur(p.total) : ''}</div>
+  </div>`;
+}
+async function loadPriv(){
+  const body = F('priv-body');
+  if (DEMO){
+    const demo = [
+      {d:new Date(Date.now()+2*864e5),  client:'Cabinet Lefèvre',    pax:24, total:2880, service:'Dîner'},
+      {d:new Date(Date.now()+6*864e5),  client:'Anniversaire M. Roy',pax:38, total:4560, service:'Dîner'},
+      {d:new Date(Date.now()+13*864e5), client:'Séminaire Alteca',   pax:60, total:7200, service:'Déjeuner'},
+    ];
+    body.innerHTML = `<div class="rows">${demo.map(rowPriv).join('')}</div>
+      <div style="margin-top:12px"><span class="badge n"><span class="dot"></span>5 demandes à répondre</span></div>`;
+    return;
+  }
+  try{
+    const rows = await fetchSheet(TABS.priv);
+    const todayKey = keyOf(new Date());
+    const items = (rows||[]).map(r=>{
+      const k = dateKey(r['Date']);
+      return { k, d:keyToDate(k), client:String(r['Client']||'').trim(),
+               service:String(r['Service']||'').trim(), pax:n_(r['Pax_Retenu']), total:n_(r['CA_HT_Retenu']) };
+    }).filter(x => x.k.length===8 && x.k >= todayKey)
+      .sort((a,b)=> a.k<b.k ? -1 : 1);
+
+    /* Badge « à répondre » — silencieux tant que l'onglet n'existe pas */
+    let badge = '';
+    try{
+      const pipe = await fetchSheet(TABS.pipeline);
+      /* Statuts repris tels quels de l'app privatisations (STATUT_SELECT_CLASS_) :
+         Nouvelle demande · À répondre · En attente client · Confirmé · Archivée.
+         Seuls les deux premiers appellent une action de notre côté. */
+      const norm = s => String(s||'').normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase().trim();
+      const A_REPONDRE = ['nouvelle demande','a repondre'];
+      const nb = (pipe||[]).filter(r => A_REPONDRE.includes(norm(r['Statut'] || r['statut']))).length;
+      badge = nb
+        ? `<span class="badge ${nb>3?'r':'n'}"><span class="dot"></span>${nb} demande${nb>1?'s':''} à répondre</span>`
+        : `<span class="badge g"><span class="dot"></span>Aucune demande en attente</span>`;
+    }catch(e){
+      badge = `<span class="muted">Onglet ${TABS.pipeline} absent — compteur de demandes en attente.</span>`;
+      console.warn('[pipeline]', e);
+    }
+
+    body.innerHTML = (items.length
+        ? `<div class="rows">${items.slice(0,3).map(rowPriv).join('')}</div>`
+        : `<div class="muted">Aucune privatisation confirmée à venir.</div>`)
+      + `<div style="margin-top:12px">${badge}</div>`;
+  }catch(e){
+    unbound(body, 'Privatisations indisponibles — ' + e.message);
+    console.warn('[priv]', e);
+  }
+}
+
+/* ══════════════════ 3. RÉCONCILIATION ══════════════════
+   Onglet Reconciliation à créer : Date (AAAAMMJJ) · Depot (€, vide si pas de
+   dépôt ce jour-là) · Especes (€ mis au coffre ce jour-là). */
+async function loadReco(){
+  const body = F('reco-body');
+  if (DEMO){
+    body.innerHTML = `<div class="stat-row">
+        <div class="stat"><div class="k">Dernier dépôt</div><div class="v sm">8 sept.</div><div class="d flat">il y a 6 jours · ${eur(5200)}</div></div>
+        <div class="stat"><div class="k">Espèces au coffre</div><div class="v">${eur(3420)}</div><div class="d flat">depuis le dernier dépôt</div></div>
+      </div>
+      <div style="margin-top:14px"><span class="badge n"><span class="dot"></span>6 clôtures depuis le dépôt</span></div>`;
+    return;
+  }
+  try{
+    const rows = await fetchSheet(TABS.reco);
+    const lignes = (rows||[]).map(r=>({ k:dateKey(r['Date']), dep:n_(r['Depot']), esp:n_(r['Especes']) }))
+                             .filter(x=>x.k.length===8).sort((a,b)=> a.k<b.k ? -1 : 1);
+    let kDepot='', mDepot=0;
+    lignes.forEach(l => { if (l.dep){ kDepot=l.k; mDepot=l.dep; } });
+    let cumul=0, nb=0;
+    lignes.forEach(l => { if (!kDepot || l.k > kDepot){ cumul += l.esp; nb++; } });
+
+    const dDepot = keyToDate(kDepot);
+    const jours = dDepot ? Math.round((startOfDay(new Date()) - dDepot)/864e5) : null;
+    body.innerHTML = `<div class="stat-row">
+        <div class="stat"><div class="k">Dernier dépôt</div>
+          <div class="v sm">${dDepot ? dDepot.toLocaleDateString('fr-FR',{day:'numeric',month:'short'}) : '—'}</div>
+          <div class="d ${jours!=null && jours>7 ? 'down' : 'flat'}">${
+            jours!=null ? (jours===0 ? "aujourd'hui" : 'il y a '+jours+' jour'+(jours>1?'s':'')) : ' '
+          }${mDepot ? ' · '+eur(mDepot) : ''}</div>
+        </div>
+        <div class="stat"><div class="k">Espèces au coffre</div>
+          <div class="v">${cumul ? eur(cumul) : '—'}</div>
+          <div class="d flat">depuis le dernier dépôt</div>
+        </div>
+      </div>
+      <div style="margin-top:14px"><span class="badge ${nb>5?'r':(nb?'n':'g')}"><span class="dot"></span>${
+        nb ? nb+' clôture'+(nb>1?'s':'')+' depuis le dépôt' : 'À jour'
+      }</span></div>`;
+  }catch(e){
+    unbound(body, `Onglet « ${TABS.reco} » à créer dans le classeur — colonnes Date · Depot · Especes.`);
+    console.warn('[reco]', e);
+  }
+}
+
+/* ══════════════════ 4. MAINTENANCE ══════════════════
+   Onglet Maintenance à créer :
+   Date (AAAAMMJJ) · Objet · Lieu · Priorite (Urgent|Moyen|Bas) · Statut
+   (vide = ouvert ; Clos / Résolu / Fait = filtré). */
+const PRIO_CLS = t => /urgent|haute|critique/i.test(t) ? 'r' : (/moyen/i.test(t) ? 'n' : 'g');
+function rowMaint(t){
+  const sub = [t.lieu, t.d ? t.d.toLocaleDateString('fr-FR',{day:'numeric',month:'short'}) : ''].filter(Boolean).join(' · ');
+  return `<div class="row">
+    <div class="main"><b>${t.objet}</b><small>${sub}</small></div>
+    <span class="badge ${PRIO_CLS(t.prio)}"><span class="dot"></span>${t.prio||'À traiter'}</span>
+  </div>`;
+}
+async function loadMaint(){
+  const body = F('maint-body');
+  if (DEMO){
+    body.innerHTML = `<div class="rows">${[
+      {objet:'Fuite bac à glaçons', lieu:'Bar',     prio:'Urgent', d:new Date(Date.now()-2*864e5)},
+      {objet:'Hotte — bruit anormal', lieu:'Cuisine', prio:'Moyen', d:new Date(Date.now()-5*864e5)},
+      {objet:'Néon salle du fond',  lieu:'Salle',   prio:'Bas',    d:new Date(Date.now()-9*864e5)},
+    ].map(rowMaint).join('')}</div>`;
+    return;
+  }
+  try{
+    const rows = await fetchSheet(TABS.maint);
+    const clos = /clos|clotur|clôtur|resolu|résolu|fait|termin/i;
+    const items = (rows||[]).map(r=>({
+      k: dateKey(r['Date']), d: keyToDate(dateKey(r['Date'])),
+      objet: String(r['Objet']||'').trim(), lieu: String(r['Lieu']||'').trim(),
+      prio: String(r['Priorite']||r['Priorité']||'').trim(), statut: String(r['Statut']||'').trim(),
+    })).filter(t => t.objet && !clos.test(t.statut));
+
+    const ordre = ['r','n','g'];
+    items.sort((a,b)=>(ordre.indexOf(PRIO_CLS(a.prio))-ordre.indexOf(PRIO_CLS(b.prio))) || (a.k<b.k?-1:1));
+
+    body.innerHTML = items.length
+      ? `<div class="rows">${items.slice(0,3).map(rowMaint).join('')}</div>`
+        + (items.length>3 ? `<div class="muted" style="margin-top:10px">+ ${items.length-3} autre${items.length-3>1?'s':''} ticket${items.length-3>1?'s':''}</div>` : '')
+      : `<div class="unbound"><span class="dot" style="color:var(--ok)"></span><span>Aucun ticket ouvert.</span></div>`;
+  }catch(e){
+    unbound(body, `Onglet « ${TABS.maint} » à créer dans le classeur — colonnes Date · Objet · Lieu · Priorite · Statut.`);
+    console.warn('[maint]', e);
+  }
+}
+
+/* ────────────────────────── démarrage ────────────────────────── */
+function renderLinks(){
+  $('#portal-links').innerHTML = PAGES.map(p =>
+    `<a class="link${p.ext?' ext':''}" href="${p.h}"${p.ext?' target="_blank" rel="noopener"':''}>
+       <b>${p.t}</b><small>${p.d}</small></a>`).join('');
+  const find = t => (PAGES.find(p=>p.t===t)||{}).h || '#';
+  $('#lnk-priv').href   = find('Privatisations');
+  $('#lnk-caisse').href = find('Clôture de caisse');
+  $('#lnk-maint').href  = find('Maintenance');
+}
+
+function demarrer(){
+  fermerPorte();
+  renderLinks();
+  loadPerf(); loadPriv(); loadReco(); loadMaint();
+}
+
+(function init(){
+  const now = new Date();
+  $('#greet-day').textContent = now.toLocaleDateString('fr-FR',{weekday:'long', day:'numeric', month:'long'});
+  $('#greet-sub').textContent = 'Semaine du ' + lundiDeLaSemaine().toLocaleDateString('fr-FR',{day:'numeric', month:'long'});
+  $('#stamp').textContent = 'mis à jour ' + now.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
+
+  if (DEMO || window.RZ_TOKEN) demarrer();
+  else ouvrirPorte();
+})();
+</script>
+</body>
+</html>
